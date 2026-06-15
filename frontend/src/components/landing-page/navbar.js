@@ -10,7 +10,9 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 flex flex-row justify-between pt-1 pb-1 pl-8 pr-8 bg-[#008338] w-fu">
+    <nav className="sticky top-0 z-50 flex flex-row justify-between pt-1 pb-1 pl-8 pr-8 bg-[#008338] w-fu"
+    style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+    >
       <div className="order-1 items-center gap-50">
         <div className="flex flex-row items-center">
           <Image src="/denrlogo.png" alt="denrlogo" width={56} height={56} />
@@ -49,7 +51,10 @@ export default function Navbar() {
           Services
         </Button>
 
-        <Button variant="link" className="text-lg text-[#FFFFFF]">
+        <Button variant="link"
+         className="text-lg text-[#FFFFFF]"
+         onClick={() => scrollToSection("login")}
+         >
           Login
         </Button>
       </div>
