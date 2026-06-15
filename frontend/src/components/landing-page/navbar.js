@@ -3,12 +3,6 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 
 export default function Navbar() {
-  const scrollToSection = (id) => {
-    document.getElementById(id)?.scrollIntoView({
-      behavior: "smooth",
-    });
-  };
-
   return (
     <nav className="sticky top-0 z-50 flex flex-row justify-between pt-1 pb-1 pl-8 pr-8 bg-[#008338] w-fu">
       <div className="order-1 items-center gap-50">
@@ -25,28 +19,16 @@ export default function Navbar() {
         </div>
       </div>
       <div className="order-2 flex flex-row items-center gap-12">
-        <Button
-          variant="link"
-          className="text-lg text-[#FFFFFF]"
-          onClick={() => scrollToSection("home")}
-        >
-          Home
+        <Button asChild variant="link" className="text-lg text-[#FFFFFF]">
+          <a href="#home">Home</a>
         </Button>
 
-        <Button
-          variant="link"
-          className="text-lg text-[#FFFFFF]"
-          onClick={() => scrollToSection("aboutus")}
-        >
-          About Us
+        <Button asChild variant="link" className="text-lg text-[#FFFFFF]">
+          <a href="#aboutus">About Us</a>
         </Button>
 
-        <Button
-          variant="link"
-          className="text-lg text-[#FFFFFF]"
-          onClick={() => scrollToSection("services")}
-        >
-          Services
+        <Button asChild variant="link" className="text-lg text-[#FFFFFF]">
+          <a href="#services">Services</a>
         </Button>
 
         <Button variant="link" className="text-lg text-[#FFFFFF]">

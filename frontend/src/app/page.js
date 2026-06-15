@@ -4,9 +4,9 @@ export default function Home() {
   return (
     <>
       <Navbar></Navbar>
-      <section id="home" className="scroll-mt-64"></section>
-      <section id="aboutus"></section>
-      <section id="services"></section>
+      <section id="#home" className="scroll-mt-64"></section>
+      <section id="#aboutus"></section>
+      <section id="#services"></section>
     </>
   );
 }
