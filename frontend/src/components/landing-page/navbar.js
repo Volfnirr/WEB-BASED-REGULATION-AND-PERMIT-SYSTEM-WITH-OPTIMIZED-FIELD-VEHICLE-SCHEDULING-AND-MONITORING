@@ -1,40 +1,119 @@
 "use client";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "../ui/button";
+import Link from "next/link";
+
+const links = [
+  { label: "Home", href: "#home" },
+  { label: "About Us", href: "#aboutus" },
+  { label: "Services", href: "#services" },
+];
 
 export default function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState("");
+
+  useEffect(() => {
+    const sectionIds = ["home", "aboutus", "services"];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveHash("#" + entry.target.id);
+          }
+        });
+      },
+      { threshold: 0.5 },
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
   return (
-    <nav className="sticky top-0 z-50 flex flex-row justify-between pt-1 pb-1 pl-8 pr-8 bg-[#008338] w-fu">
-      <div className="order-1 items-center gap-50">
+    <nav
+      aria-label="Main navigation"
+      className="sticky top-0 z-50 bg-[#008338] w-full py-1 px-8"
+    >
+      <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row items-center">
-          <Image src="/denrlogo.png" alt="denrlogo" width={56} height={56} />
-          <div className="flex-col pl-4">
-            <h3 className="font-bold text-[#FFFFFF]">
+          <Image src="/denrlogo.png" alt="DENR logo" width={56} height={56} />
+          <div className="flex flex-col pl-4">
+            <h3 className="md:hidden font-bold text-white text-sm">
+              {" "}
               Provincial Environment and Natural Resources Office
             </h3>
-            <p className="font-thin text-[#FFFFFF]">
-              Brgy. San Antonio, Guagua, Pampanga, 2003
-            </p>
+            <div className="hidden md:flex flex-col">
+              <h3 className="font-bold text-white">
+                Provincial Environment and Natural Resources Office
+              </h3>
+              <p className="font-thin text-white text-sm">
+                Brgy. San Antonio, Guagua, Pampanga, 2003
+              </p>
+            </div>
           </div>
         </div>
+
+        <div className="hidden lg:flex flex-row items-center gap-12">
+          {links.map(({ label, href }) => (
+            <Button
+              key={href}
+              asChild
+              variant="link"
+              className="text-lg text-white"
+            >
+              <a
+                href={href}
+                onClick={() => setActiveHash(href)}
+                className={activeHash === href ? "underline" : ""}
+              >
+                {label}
+              </a>
+            </Button>
+          ))}
+        </div>
+
+        <div className="flex flex-row justify-between items-center gap-2">
+          <Button className="text-lg text-white ">
+            <Link href="/login">Login</Link>
+          </Button>
+          <button
+            className="md:hidden text-white text-2xl"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
-      <div className="order-2 flex flex-row items-center gap-12">
-        <Button asChild variant="link" className="text-lg text-[#FFFFFF]">
-          <a href="#home">Home</a>
-        </Button>
 
-        <Button asChild variant="link" className="text-lg text-[#FFFFFF]">
-          <a href="#aboutus">About Us</a>
-        </Button>
-
-        <Button asChild variant="link" className="text-lg text-[#FFFFFF]">
-          <a href="#services">Services</a>
-        </Button>
-
-        <Button variant="link" className="text-lg text-[#FFFFFF]">
-          Login
-        </Button>
-      </div>
+      {menuOpen && (
+        <div className="md:hidden flex flex-col items-start gap-2 pb-4">
+          {links.map(({ label, href }) => (
+            <Button
+              key={href}
+              asChild
+              variant="link"
+              className="text-lg text-white"
+            >
+              <a
+                href={href}
+                onClick={() => {
+                  setActiveHash(href);
+                  setMenuOpen(false);
+                }}
+              >
+                {label}
+              </a>
+            </Button>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }
