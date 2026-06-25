@@ -36,18 +36,11 @@ export default function Navbar() {
     return () => observer.disconnect();
   }, []);
   return (
-    <nav
-      aria-label="Main navigation"
-      className="sticky top-0 z-50 bg-[#008338] w-full py-1 px-8"
-    >
+    <nav className="sticky top-0 z-50 bg-[#008338] w-full py-1 px-8">
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row items-center">
           <Image src="/denrlogo.png" alt="DENR logo" width={56} height={56} />
           <div className="flex flex-col pl-4">
-            <h3 className="md:hidden font-bold text-white text-sm">
-              {" "}
-              Provincial Environment and Natural Resources Office
-            </h3>
             <div className="hidden md:flex flex-col">
               <h3 className="font-bold text-white">
                 Provincial Environment and Natural Resources Office
@@ -83,9 +76,8 @@ export default function Navbar() {
             <Link href="/login">Login</Link>
           </Button>
           <button
-            className="md:hidden text-white text-2xl"
+            className="lg:hidden text-white text-2xl"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
           >
             {menuOpen ? "✕" : "☰"}
           </button>
@@ -93,7 +85,7 @@ export default function Navbar() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden flex flex-col items-start gap-2 pb-4">
+        <div className="lg:hidden flex flex-col items-start gap-2 pb-4">
           {links.map(({ label, href }) => (
             <Button
               key={href}
@@ -107,6 +99,7 @@ export default function Navbar() {
                   setActiveHash(href);
                   setMenuOpen(false);
                 }}
+                className={activeHash === href ? "underline" : ""}
               >
                 {label}
               </a>
