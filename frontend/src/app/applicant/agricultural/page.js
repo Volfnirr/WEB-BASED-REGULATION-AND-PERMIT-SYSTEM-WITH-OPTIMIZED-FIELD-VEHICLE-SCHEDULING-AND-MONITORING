@@ -1,7 +1,5 @@
+import AgriculturalForm from "@/components/applicant/agricultural/agricultural-form";
+
 export default function AgriculturalApplication() {
-  return (
-    <>
-      <h1>Hello</h1>
-    </>
-  );
+  return <AgriculturalForm />;
 }

@@ -1,4 +1,4 @@
-import TreeCuttingForm from "@/components/application-admin/tree-cutting/page";
+import TreeCuttingForm from "@/components/applicant/tree-cutting/tree-cutting-form";
 
 export default function TreeCuttingApplication() {
   return <TreeCuttingForm />;

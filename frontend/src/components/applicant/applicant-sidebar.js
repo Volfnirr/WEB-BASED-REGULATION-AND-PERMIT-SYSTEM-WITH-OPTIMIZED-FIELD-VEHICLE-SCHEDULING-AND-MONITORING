@@ -39,7 +39,7 @@ export default function ApplicantSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(true);
   const close = () => {
-    if (window.matchMedia("(max-width: 1023px)").matches) {
+    if (window.matchMedia("(max-width: 767px)").matches) {
       setIsOpen(false);
     }
   };

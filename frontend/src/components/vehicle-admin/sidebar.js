@@ -38,7 +38,11 @@ const links = [
 export default function VehicleAdminSiderbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(true);
-
+  const close = () => {
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setIsOpen(false);
+    }
+  };
   return (
     <>
       {!isOpen && (
@@ -82,6 +86,7 @@ export default function VehicleAdminSiderbar() {
             <nav className="p-4 space-y-1">
               <Link
                 href="/vehicle/dashboard"
+                onClick={close}
                 className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                   pathname === "/vehicle/dashboard"
                     ? "bg-white text-[#005221] font-bold shadow-md"
@@ -101,6 +106,7 @@ export default function VehicleAdminSiderbar() {
                   <Link
                     key={service.href}
                     href={service.href}
+                    onClick={close}
                     className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       isActive
                         ? "bg-white text-[#005221] font-bold shadow-md"

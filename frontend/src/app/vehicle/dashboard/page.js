@@ -6,16 +6,8 @@ export default function DashboardPage() {
     <>
       <InfoCardContainer title="Application">
         <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
-        <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
-        <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
-        <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
-        <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
       </InfoCardContainer>
       <InfoCardContainer title="Application">
-        <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
-        <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
-        <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
-        <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
         <InfoCard label="New Applications" total="80" bg="bg-[#0BEA1C]" />
       </InfoCardContainer>
       <p> Admin Dashboard</p>

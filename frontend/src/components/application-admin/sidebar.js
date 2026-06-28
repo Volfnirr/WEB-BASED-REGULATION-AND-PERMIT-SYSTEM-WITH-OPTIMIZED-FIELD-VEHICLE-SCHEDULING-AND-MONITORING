@@ -43,7 +43,11 @@ const ALL_SERVICES = [
 export default function ApplicationAdminSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(true);
-
+  const close = () => {
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setIsOpen(false);
+    }
+  };
   const currentUser = {
     name: "Juan Dela Cruz",
     assignedServices: ["1", "2", "3", "4"],
@@ -99,6 +103,7 @@ export default function ApplicationAdminSidebar() {
             <nav className="p-4 space-y-1">
               <Link
                 href="/application-admin/dashboard"
+                onClick={close}
                 className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                   pathname === "/application-admin/dashboard"
                     ? "bg-white text-[#005221] font-bold shadow-md"
@@ -120,6 +125,7 @@ export default function ApplicationAdminSidebar() {
                   <Link
                     key={service.href}
                     href={service.href}
+                    onClick={close}
                     className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       isActive
                         ? "bg-white text-[#005221] font-bold shadow-md"
@@ -138,6 +144,7 @@ export default function ApplicationAdminSidebar() {
 
                 <Link
                   href="/application-admin/field-inspection-application"
+                  onClick={close}
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     pathname ===
                     "/application-admin/field-inspection-application"
@@ -151,6 +158,7 @@ export default function ApplicationAdminSidebar() {
 
                 <Link
                   href="/application-admin/my-applications"
+                  onClick={close}
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     pathname === "/application-admin/my-applications"
                       ? "bg-white text-[#005221] font-bold shadow-md"
