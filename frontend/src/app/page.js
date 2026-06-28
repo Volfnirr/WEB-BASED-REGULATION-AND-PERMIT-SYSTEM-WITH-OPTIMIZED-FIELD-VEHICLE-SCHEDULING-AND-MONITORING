@@ -2,7 +2,6 @@ import Navbar from "@/components/landing-page/navbar";
 import ServicesPage from "@/components/landing-page/services";
 import Home from "@/components/landing-page/home";
 import AboutUs from "@/components/landing-page/aboutus";
-import InfoCard from "@/components/ui/infocard.js";
 
 export default function LandingPage() {
   return (
@@ -24,16 +23,6 @@ export default function LandingPage() {
           <section id="services">
             <ServicesPage />
           </section>
-          {/*
-          example 
-          <div className="  w-full left-50% right-50%">
-            <InfoCard
-              className="pl-500px"
-              departmentName="name"
-              description="asda"
-              bg="bg-blue-500"
-            />
-          </div> */}
         </div>
       </div>
     </>

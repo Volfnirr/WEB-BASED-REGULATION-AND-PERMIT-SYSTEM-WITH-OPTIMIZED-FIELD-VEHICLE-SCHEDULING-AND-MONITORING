@@ -1,4 +1,4 @@
-import ApplicationAdminSidebar from "@/components/applicantion-admin/sidebar";
+import ApplicationAdminSidebar from "@/components/application-admin/sidebar";
 
 export default function ApplicationAdminLayout({ children }) {
   return (

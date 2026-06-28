@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 export default function ApplicationAdminDashboard() {
-  return <></>;
+  return redirect("application-admin/dashboard");
 }

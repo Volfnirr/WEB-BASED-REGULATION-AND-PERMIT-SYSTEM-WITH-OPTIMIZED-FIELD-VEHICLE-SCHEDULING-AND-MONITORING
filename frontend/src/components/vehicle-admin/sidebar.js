@@ -6,19 +6,32 @@ import Image from "next/image";
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { X } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
+import { FileText } from "lucide-react";
+import { CalendarCog } from "lucide-react";
+import { UsersRound } from "lucide-react";
+import { Car } from "lucide-react";
 
 const links = [
   {
+    icon: <FileText />,
     name: "Review Applications",
     href: "/vehicle/applications",
   },
   {
+    icon: <CalendarCog />,
     name: "Vehicle Schedules",
-    href: "/vehicle/schedules",
+    href: "/vehicle/vehicles-schedules",
   },
   {
+    icon: <UsersRound />,
     name: "Driver Availability",
-    href: "/vehicle/driver",
+    href: "/vehicle/driver-availability",
+  },
+  {
+    icon: <Car />,
+    name: "Vehicles",
+    href: "/vehicle/manage-vehicles",
   },
 ];
 
@@ -38,7 +51,7 @@ export default function VehicleAdminSiderbar() {
       )}
 
       {isOpen && (
-        <aside className="w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
+        <aside className="fixed md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
           <div>
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -60,7 +73,7 @@ export default function VehicleAdminSiderbar() {
 
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-green-800 transition-colors shrink-0"
+                className="md:hidden p-1.5 rounded-lg hover:bg-green-800 transition-colors shrink-0"
               >
                 <X />
               </button>
@@ -69,12 +82,13 @@ export default function VehicleAdminSiderbar() {
             <nav className="p-4 space-y-1">
               <Link
                 href="/vehicle/dashboard"
-                className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                  pathname === "/application-admin/dashboard"
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                  pathname === "/vehicle/dashboard"
                     ? "bg-white text-[#005221] font-bold shadow-md"
                     : "text-green-100 hover:bg-green-800"
                 }`}
               >
+                <LayoutDashboard />
                 Dashboard
               </Link>
               <div className="px-3 mb-2 text-xs font-semibold text-green-300 uppercase tracking-wider">
@@ -87,12 +101,13 @@ export default function VehicleAdminSiderbar() {
                   <Link
                     key={service.href}
                     href={service.href}
-                    className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       isActive
                         ? "bg-white text-[#005221] font-bold shadow-md"
                         : "text-green-100 hover:bg-green-800"
                     }`}
                   >
+                    {service.icon}
                     {service.name}
                   </Link>
                 );

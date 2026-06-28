@@ -6,21 +6,30 @@ import Image from "next/image";
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { X } from "lucide-react";
+import { ToolCase } from "lucide-react";
+import { HousePlus } from "lucide-react";
+import { Leaf } from "lucide-react";
+import { Trees } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 
 const links = [
   {
+    icon: <Leaf />,
     name: "Agricultural Free Patent",
     href: "/applicant/agricultural",
   },
   {
+    icon: <HousePlus />,
     name: "Residential Free Patent",
     href: "/applicant/residential",
   },
   {
+    icon: <ToolCase />,
     name: "Chainsaw Registration",
     href: "/applicant/chainsaw",
   },
   {
+    icon: <Trees />,
     name: "Tree Cutting Permit",
     href: "/applicant/tree-cutting",
   },
@@ -46,7 +55,7 @@ export default function ApplicantSidebar() {
       )}
 
       {isOpen && (
-        <aside className="w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
+        <aside className="fixed md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
           <div>
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -68,7 +77,7 @@ export default function ApplicantSidebar() {
 
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-green-800 transition-colors shrink-0"
+                className=" p-1.5 rounded-lg hover:bg-green-800 transition-colors shrink-0 md:hidden"
               >
                 <X />
               </button>
@@ -86,12 +95,13 @@ export default function ApplicantSidebar() {
                     key={service.href}
                     href={service.href}
                     onClick={close}
-                    className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       isActive
                         ? "bg-white text-[#005221] font-bold shadow-md"
                         : "text-green-100 hover:bg-green-800"
                     }`}
                   >
+                    {service.icon}
                     {service.name}
                   </Link>
                 );
@@ -104,12 +114,13 @@ export default function ApplicantSidebar() {
                 <Link
                   href="/applicant/my-applications"
                   onClick={close}
-                  className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     pathname === "/applicant/my-applications"
                       ? "bg-white text-[#005221] font-bold shadow-md"
                       : "text-green-100 hover:bg-green-800"
                   }`}
                 >
+                  <ClipboardList />
                   My Application Status
                 </Link>
               </div>

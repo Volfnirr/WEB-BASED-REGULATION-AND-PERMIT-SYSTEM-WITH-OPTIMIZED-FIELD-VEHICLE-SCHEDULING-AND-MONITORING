@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Button } from "../ui/button";
 import Link from "next/link";
 
 const links = [
@@ -54,27 +53,27 @@ export default function Navbar() {
 
         <div className="hidden lg:flex flex-row items-center gap-12">
           {links.map(({ label, href }) => (
-            <Button
+            <Link
               key={href}
-              asChild
-              variant="link"
-              className="text-lg text-white"
+              href={href}
+              onClick={() => setActiveHash(href)}
+              className={`text-lg font-medium text-white underline-offset-4 hover:underline ${
+                activeHash === href ? "underline" : ""
+              }`}
             >
-              <a
-                href={href}
-                onClick={() => setActiveHash(href)}
-                className={activeHash === href ? "underline" : ""}
-              >
-                {label}
-              </a>
-            </Button>
+              {label}
+            </Link>
           ))}
         </div>
 
         <div className="flex flex-row justify-between items-center gap-2">
-          <Button className="text-lg text-white ">
-            <Link href="/login">Login</Link>
-          </Button>
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center rounded-lg bg-green-600 px-2 py-0.5 text-lg text-white font-medium transition hover:bg-green-700"
+          >
+            Login
+          </Link>
+
           <button
             className="lg:hidden text-white text-2xl"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -87,23 +86,19 @@ export default function Navbar() {
       {menuOpen && (
         <div className="lg:hidden flex flex-col items-start gap-2 pb-4">
           {links.map(({ label, href }) => (
-            <Button
+            <a
               key={href}
-              asChild
-              variant="link"
-              className="text-lg text-white"
+              href={href}
+              onClick={() => {
+                setActiveHash(href);
+                setMenuOpen(false);
+              }}
+              className={`text-lg font-medium text-white underline-offset-4 hover:underline ${
+                activeHash === href ? "underline" : ""
+              }`}
             >
-              <a
-                href={href}
-                onClick={() => {
-                  setActiveHash(href);
-                  setMenuOpen(false);
-                }}
-                className={activeHash === href ? "underline" : ""}
-              >
-                {label}
-              </a>
-            </Button>
+              {label}
+            </a>
           ))}
         </div>
       )}

@@ -1,7 +1,4 @@
+import { redirect } from "next/navigation";
 export default function Applicant() {
-  return (
-    <>
-      <h1>H</h1>
-    </>
-  );
+  return redirect("applicant/my-applications");
 }
