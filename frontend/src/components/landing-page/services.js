@@ -33,7 +33,7 @@ export default function ServicesPage() {
       title: "Application for Residential Free Patent (RO-L-04)",
       hasSubMenu: false,
       description:
-        "To register a chainsaw under Application for Chainsaw Registration (RO-F-04), you must submit a completed application form, proof of ownership (such as a sales invoice or deed of sale), detailed technical specifications, an official stencil of the chainsaw’s serial number, a legal purpose permit or barangay certification, and the PHP 500.00 registration fee while presenting the actual unit for verification.",
+        "To apply for a residential free patent under Republic Act No. 10023 (RO-L-04), you must submit a completed application form, an approved subdivision plan or cadastral map, the technical description of the land, a joint affidavit of two disinterested residents, a barangay certification confirming the land is within a residential zone, and the PHP 50.00 application fee while presenting any existing tax declarations or proof of possession for verification.",
     },
   ];
 
