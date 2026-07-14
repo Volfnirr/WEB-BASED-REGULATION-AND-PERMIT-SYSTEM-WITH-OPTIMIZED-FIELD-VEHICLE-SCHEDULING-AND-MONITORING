@@ -1,34 +1,8 @@
-import Table from "@/components/ui/tables/table";
+import ScheduleCardInfo from "@/components/ui/card/card";
+import CardContainer from "@/components/ui/card/card-container";
 
-export default async function ResidentialTable() {
+export default function ScheduleCardValue() {
   const page = "/application-admin/residential/";
-  const column = [
-    {
-      head: "Request ID",
-      data: "id",
-    },
-    {
-      head: "Requester Name",
-      data: "requester_name",
-    },
-
-    {
-      head: "Service Name",
-      data: "service_name",
-    },
-    {
-      head: "Submission Date",
-      data: "submission_date",
-    },
-    {
-      head: "Status",
-      data: "status",
-    },
-    {
-      head: "Action",
-      data: "action",
-    },
-  ];
 
   const data = [
     {
@@ -67,7 +41,21 @@ export default async function ResidentialTable() {
 
   return (
     <div>
-      <Table columns={column} rows={data} page={page} />
+      <CardContainer title="Pending Applications">
+        {data.map((data) => {
+          return (
+            <ScheduleCardInfo
+              key={data.id}
+              name={data.requester_name}
+              reqid={data.id}
+              date={data.submission_date}
+              status={data.status}
+              serviceName={data.service_name}
+              link={page}
+            />
+          );
+        })}
+      </CardContainer>
     </div>
   );
 }

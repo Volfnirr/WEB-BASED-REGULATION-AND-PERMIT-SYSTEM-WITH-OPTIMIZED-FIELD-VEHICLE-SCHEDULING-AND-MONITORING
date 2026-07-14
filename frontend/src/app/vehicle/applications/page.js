@@ -1,7 +1,11 @@
+import ApplicationInfo from "@/components/vehicle-admin/review-applications/application-info";
+import ReviewApplicationTable from "@/components/vehicle-admin/review-applications/review-applications-table";
+
 export default function ReviewApplications() {
   return (
     <>
-      <h1>ReviewApplications</h1>
+      <ApplicationInfo />
+      <ReviewApplicationTable />
     </>
   );
 }

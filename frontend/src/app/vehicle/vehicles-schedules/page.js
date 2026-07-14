@@ -1,7 +1,9 @@
+import VehicleSchedulesTable from "@/components/vehicle-admin/vehicle-schedules/vehicle-schedules-table";
+
 export default function VehicleSchedules() {
   return (
     <>
-      <h1>VehicleSchedules</h1>
+      <VehicleSchedulesTable />
     </>
   );
 }
