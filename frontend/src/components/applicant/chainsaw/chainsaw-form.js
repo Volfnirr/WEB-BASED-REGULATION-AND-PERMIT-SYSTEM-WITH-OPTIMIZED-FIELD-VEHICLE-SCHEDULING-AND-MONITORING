@@ -1,12 +1,12 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function ChainsawForm() {
   const inputClass = "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
 
-  // Get today's date to prevent future dates in the Date of Acquisition field
-  const today = new Date().toISOString().split('T')[0];
+ const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+
 
   return (
     <div className="flex-1 w-full min-h-screen overflow-y-auto p-4 md:p-8 font-sans" style={{ backgroundColor: '#4DAA74' }}>
@@ -116,7 +116,7 @@ export default function ChainsawForm() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Date of Acquisition:<span className="text-red-500">*</span></label>
-                <input type="date" name="dateAcquisition" max={today} className={inputClass} required />
+                <input type="text" name="dateAcquisition" placeholder="*MM/DD/YYYY" className={inputClass} required />
               </div>
             </div>
 
@@ -136,11 +136,40 @@ export default function ChainsawForm() {
             </div>
           </div>
 
+   {/* DATA PRIVACY CONSENT SECTION */}
+          <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
+            <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">
+              Data Privacy Consent
+            </h2>
+            <p className="text-xs leading-relaxed text-gray-600 mb-3">
+              In compliance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>, 
+              I hereby authorize the agency/local government unit to collect, process, 
+              store, and evaluate my personal data and land information strictly for the 
+              purpose of processing this Agricultural Free Patent Application. I understand 
+              that my information will be protected and will not be shared with unauthorized 
+              third parties without my express written consent.
+            </p>
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                name="privacy_consent"
+                value="agreed"
+                checked={agreedToPrivacy}
+                onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                className="mt-0.5 h-4 w-4 text-[#1a5632] border-gray-300 rounded focus:ring-2 focus:ring-[#1a5632] cursor-pointer"
+                required
+              />
+              <span className="font-semibold text-gray-800 text-xs md:text-sm">
+                I have read and agree to the Data Privacy Consent statement above.*
+              </span>
+            </label>
+          </div>
+
           {/* Form Submission Action */}
           <div className="flex justify-end pt-4">
             <button 
-              type="submit" 
-              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] transition-colors"
+               disabled={!agreedToPrivacy}
+              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               Submit Application
             </button>

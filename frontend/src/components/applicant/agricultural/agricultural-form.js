@@ -1,29 +1,13 @@
 "use client";
 import React, { useState } from "react";
+
 export default function AgriculturalForm() {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
 
-  // Get today's date to prevent future dates in calendar inputs
-  const today = new Date().toISOString().split("T")[0];
+  // State for Data Privacy Consent
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
-  // Cascading location data (Replace with your actual data)
-  const locations = {
-    "City of San Fernando": [
-      "Barangay San Jose",
-      "Barangay Dolores",
-      "Barangay Sindalan",
-    ],
-    "Angeles City": [
-      "Barangay Balibago",
-      "Barangay Malabanias",
-      "Barangay Pulung Maragul",
-    ],
-    Mabalacat: ["Barangay Dau", "Barangay Mamatitang", "Barangay Mabiga"],
-  };
-
-  const [municipality, setMunicipality] = useState("");
-  const [barangay, setBarangay] = useState("");
   return (
     <div
       className="flex-1 w-full min-h-screen overflow-y-auto p-4 md:p-8 font-sans"
@@ -40,6 +24,7 @@ export default function AgriculturalForm() {
           method="POST"
           className="space-y-8"
         >
+          {/* APPLICANT'S INFORMATION */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Applicant's Information
@@ -101,10 +86,11 @@ export default function AgriculturalForm() {
                 <label className="block text-xs font-bold text-gray-700 mb-1">
                   DATE OF BIRTH*
                 </label>
+                {/* Changed to text input so user types the date manually */}
                 <input
-                  type="date"
+                  type="text"
                   name="birthday"
-                  max={today}
+                  placeholder="*MM/DD/YYYY"
                   className={inputClass}
                   required
                 />
@@ -200,69 +186,50 @@ export default function AgriculturalForm() {
               <input
                 type="text"
                 name="mailingAddress"
-                placeholder="*FULL MAILING ADDRESS"
+                placeholder="*FULL MAILING ADDRESS (e.g., House No., Street, Barangay, City, Province)"
                 className={inputClass}
                 required
               />
             </div>
           </div>
 
+          {/* LOCATION OF AGRICULTURAL LAND APPLIED FOR */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Location of Agricultural Land Applied For
             </h2>
 
+            {/* Address fields are now fully typed by the user */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <select
+              <input
+                type="text"
                 name="province"
-                className={`${inputClass} bg-gray-100 pointer-events-none`}
+                placeholder="*PROVINCE"
                 defaultValue="Pampanga"
-                required
-              >
-                <option value="Pampanga">Pampanga</option>
-              </select>
-              <select
-                name="municipality"
                 className={inputClass}
-                defaultValue=""
                 required
-                onChange={(e) => {
-                  setMunicipality(e.target.value);
-                  setBarangay("");
-                }}
-              >
-                <option value="" disabled>
-                  *SELECT MUNICIPALITY
-                </option>
-                {Object.keys(locations).map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
+              />
+              <input
+                type="text"
+                name="municipality"
+                placeholder="*MUNICIPALITY / CITY"
+                className={inputClass}
+                required
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <select
+              <input
+                type="text"
                 name="barangay"
+                placeholder="*BARANGAY"
                 className={inputClass}
-                value={barangay}
                 required
-                onChange={(e) => setBarangay(e.target.value)}
-              >
-                <option value="" disabled>
-                  *SELECT BARANGAY
-                </option>
-                {(locations[municipality] || []).map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
+              />
               <input
                 type="text"
                 name="location"
-                placeholder="SPECIFIC LOCATION / SITIO"
+                placeholder="SPECIFIC LOCATION / SITIO / STREET"
                 className={inputClass}
               />
             </div>
@@ -292,6 +259,7 @@ export default function AgriculturalForm() {
             </div>
           </div>
 
+          {/* DECLARATIONS */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Declarations
@@ -307,10 +275,11 @@ export default function AgriculturalForm() {
                 <label className="block mb-1 font-medium">
                   3. I entered upon and began cultivation of the same on:
                 </label>
+                {/* Changed to text input so user types the date manually */}
                 <input
-                  type="date"
+                  type="text"
                   name="cultivationDate"
-                  max={today}
+                  placeholder="MM/DD/YYYY or Year"
                   className={`${inputClass} w-full md:w-64 mb-3`}
                 />
                 <textarea
@@ -353,6 +322,7 @@ export default function AgriculturalForm() {
             </div>
           </div>
 
+          {/* HEIR DECLARATION & WITNESSES */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Heir Declaration & Witnesses
@@ -442,6 +412,7 @@ export default function AgriculturalForm() {
             </div>
           </div>
 
+          {/* SWORN STATEMENT */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Sworn Statement
@@ -455,10 +426,11 @@ export default function AgriculturalForm() {
                 <label className="block text-xs font-bold text-gray-700 mb-1">
                   DATE FILED
                 </label>
+                {/* Changed to text input so user types the date manually */}
                 <input
-                  type="date"
+                  type="text"
                   name="date_filed"
-                  max={today}
+                  placeholder="*MM/DD/YYYY"
                   className={inputClass}
                   required
                 />
@@ -478,10 +450,41 @@ export default function AgriculturalForm() {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4">
+          {/* DATA PRIVACY CONSENT SECTION */}
+          <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
+            <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">
+              Data Privacy Consent
+            </h2>
+            <p className="text-xs leading-relaxed text-gray-600 mb-3">
+              In compliance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>, 
+              I hereby authorize the agency/local government unit to collect, process, 
+              store, and evaluate my personal data and land information strictly for the 
+              purpose of processing this Agricultural Free Patent Application. I understand 
+              that my information will be protected and will not be shared with unauthorized 
+              third parties without my express written consent.
+            </p>
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                name="privacy_consent"
+                value="agreed"
+                checked={agreedToPrivacy}
+                onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                className="mt-0.5 h-4 w-4 text-[#1a5632] border-gray-300 rounded focus:ring-2 focus:ring-[#1a5632] cursor-pointer"
+                required
+              />
+              <span className="font-semibold text-gray-800 text-xs md:text-sm">
+                I have read and agree to the Data Privacy Consent statement above.*
+              </span>
+            </label>
+          </div>
+
+          {/* SUBMIT BUTTON */}
+          <div className="flex justify-end pt-2">
             <button
               type="submit"
-              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] transition-colors"
+              disabled={!agreedToPrivacy}
+              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               Submit Application
             </button>
