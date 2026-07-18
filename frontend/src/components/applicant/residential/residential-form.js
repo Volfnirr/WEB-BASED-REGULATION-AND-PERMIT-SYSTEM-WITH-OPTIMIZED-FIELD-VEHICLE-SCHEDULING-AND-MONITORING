@@ -378,7 +378,7 @@ export default function ResidentialForm() {
               In compliance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>, 
               I hereby authorize the agency/local government unit to collect, process, 
               store, and evaluate my personal data and land information strictly for the 
-              purpose of processing this Agricultural Free Patent Application. I understand 
+              purpose of processing this Residential Free Patent Application. I understand 
               that my information will be protected and will not be shared with unauthorized 
               third parties without my express written consent.
             </p>
@@ -399,7 +399,7 @@ export default function ResidentialForm() {
           </div>
 
           {/* Form Submission Action */}
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end pt-2">
             <button
               type="submit"
                disabled={!agreedToPrivacy}

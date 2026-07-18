@@ -5,7 +5,7 @@ export default function AgriculturalForm() {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
 
-  // State for Data Privacy Consent
+  
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
   return (
@@ -86,7 +86,6 @@ export default function AgriculturalForm() {
                 <label className="block text-xs font-bold text-gray-700 mb-1">
                   DATE OF BIRTH*
                 </label>
-                {/* Changed to text input so user types the date manually */}
                 <input
                   type="text"
                   name="birthday"
