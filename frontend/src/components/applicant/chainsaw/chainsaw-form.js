@@ -1,15 +1,21 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function ChainsawForm() {
   const inputClass = "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
 
-  // Get today's date to prevent future dates in the Date of Acquisition field
-  const today = new Date().toISOString().split('T')[0];
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Trigger modal upon form submission
+    setShowModal(true);
+  };
 
   return (
-    <div className="flex-1 w-full min-h-screen overflow-y-auto p-4 md:p-8 font-sans" style={{ backgroundColor: '#4DAA74' }}>
+    <div className="flex-1 w-full min-h-screen overflow-y-auto p-4 md:p-8 font-sans relative" style={{ backgroundColor: '#4DAA74' }}>
       
       <div className="max-w-6xl mx-auto w-full bg-white rounded-xl shadow-xl p-6 md:p-10 h-fit">
         
@@ -26,7 +32,7 @@ export default function ChainsawForm() {
         
         <hr className="border-gray-200 mb-8" />
 
-        <form action="/submit_chainsaw.php" method="POST" className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
           
           {/* Section: Registration Type */}
           <div>
@@ -116,7 +122,7 @@ export default function ChainsawForm() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Date of Acquisition:<span className="text-red-500">*</span></label>
-                <input type="date" name="dateAcquisition" max={today} className={inputClass} required />
+                <input type="text" name="dateAcquisition" placeholder="*MM/DD/YYYY" className={inputClass} required />
               </div>
             </div>
 
@@ -136,18 +142,80 @@ export default function ChainsawForm() {
             </div>
           </div>
 
+          {/* DATA PRIVACY CONSENT SECTION */}
+          <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
+            <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">
+              Data Privacy Consent
+            </h2>
+            <p className="text-xs leading-relaxed text-gray-600 mb-3">
+              In compliance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>, 
+              I hereby authorize the agency/local government unit to collect, process, 
+              store, and evaluate my personal data and land information strictly for the 
+              purpose of processing this Chainsaw Registration Application. I understand 
+              that my information will be protected and will not be shared with unauthorized 
+              third parties without my express written consent.
+            </p>
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                name="privacy_consent"
+                value="agreed"
+                checked={agreedToPrivacy}
+                onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                className="mt-0.5 h-4 w-4 text-[#1a5632] border-gray-300 rounded focus:ring-2 focus:ring-[#1a5632] cursor-pointer"
+                required
+              />
+              <span className="font-semibold text-gray-800 text-xs md:text-sm">
+                I have read and agree to the Data Privacy Consent statement above.*
+              </span>
+            </label>
+          </div>
+
           {/* Form Submission Action */}
           <div className="flex justify-end pt-4">
             <button 
-              type="submit" 
-              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] transition-colors"
+              type="submit"
+              disabled={!agreedToPrivacy}
+              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               Submit Application
             </button>
           </div>
-
         </form>
+
       </div>
+
+      
+      {showModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
+          style={{
+            backgroundColor: "#4DAA74",
+            backgroundImage: "url('/background.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center transform transition-all animate-scaleUp">
+            <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-3">
+              Thank You For Your Application!
+            </h3>
+            <p className="text-sm md:text-base font-medium text-gray-700 mb-8 max-w-sm mx-auto leading-relaxed">
+              Your application has been set! You can click button below to view your application status.
+            </p>
+            
+            <a
+              href="/application-status"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#8AD29D] hover:bg-[#74c48a] text-gray-900 font-bold text-xs md:text-sm rounded-full shadow-md hover:shadow-lg transition-all transform active:scale-95"
+            >
+              <span>View Application status</span>
+              <span className="text-base leading-none">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

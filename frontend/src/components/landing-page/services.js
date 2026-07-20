@@ -15,26 +15,26 @@ export default function ServicesPage() {
       title: "Application for Agricultural Free Patent (RO-L-03)",
       hasSubMenu: false,
       description:
-        "To apply for an Agricultural Free Patent (RO-L-03), submit an application form, joint witness affidavit, tax declaration, proof of ownership, approved survey plan, and court clearance proving the land is alienable and undisputed.",
+        "To apply for an Agricultural Free Patent (RO-L-03), submit an application form, Technical description of the land, LRA clearance / MTC or RTC clearance, Tax Declaration, Deed of Conveyance, Barangay and Municipal Posting, Birth Certificate (Applcant must be natural born Filipino Citizen)",
     },
     {
       title: "Issuance of Tree Cutting Permit (RO-F-06)",
       hasSubMenu: false,
       description:
-        "To secure a Tree Cutting Permit (RO-F-06), you must submit a formal application letter, proof of land ownership (such as a land title), clear photographs of the specific trees, an official LGU Barangay/Municipal Endorsement or Certification of No Objection, and a technical inventory report alongside applicable processing and inspection fees.",
+        "To secure a Tree Cutting Permit (RO-F-06), you must submit a formal application letter, proof of land ownership (such as a land title), clear photographs of the specific trees, an official LGU Barangay/Municipal Endorsement or Certification of No Objection, and a technical inventory report alongside applicable processing.",
     },
     {
       title: "Application for Chainsaw Registration (RO-F-04)",
       hasSubMenu: false,
       description:
-        "To register a chainsaw under Application for Chainsaw Registration (RO-F-04), you must submit a completed application form, proof of ownership (such as a sales invoice or deed of sale), detailed technical specifications, an official stencil of the chainsaw’s serial number, a legal purpose permit or barangay certification, and the PHP 500.00 registration fee while presenting the actual unit for verification.",
+        "To register a chainsaw under Application for Chainsaw Registration (RO-F-04), you must submit a completed application form, Official Receipt of Chainsaw Purchase (one (1) certified copy and 1 original for verification), SPA if the applicant is not the owner of the chainsaw, Stencil Serial Number of Chainsaw, Detailed Specification of Chainsaw (e.g, brand, model, engine capacity, etc), Notarized Deed of Absolute Sale, if transfer of ownersship (1 original), and Chainsaw to be registered ."
     },
     {
       title: "Application for Residential Free Patent (RO-L-04)",
       hasSubMenu: false,
       description:
-        "To apply for a residential free patent under Republic Act No. 10023 (RO-L-04), you must submit a completed application form, an approved subdivision plan or cadastral map, the technical description of the land, a joint affidavit of two disinterested residents, a barangay certification confirming the land is within a residential zone, and the PHP 50.00 application fee while presenting any existing tax declarations or proof of possession for verification.",
-    },
+        "To apply for a residential free patent under Republic Act No. 10023 (RO-L-04), you must submit a completed application form, Technical Description of the land (Lot data computation and Cadastal Map), LRA Clearance/ MTC or RTC Clearance, Deed of Conveyance (EJS/DOS/Deed of donation/Waiver of rights, etc), Zoning Clearance from Municipality Planning and Devt Office, Barangay Posting and four (4) documentary stamp.",
+        },
   ];
 
   return (

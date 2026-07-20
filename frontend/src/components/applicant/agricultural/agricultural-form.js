@@ -1,32 +1,22 @@
 "use client";
 import React, { useState } from "react";
+
 export default function AgriculturalForm() {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
 
-  // Get today's date to prevent future dates in calendar inputs
-  const today = new Date().toISOString().split("T")[0];
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
-  // Cascading location data (Replace with your actual data)
-  const locations = {
-    "City of San Fernando": [
-      "Barangay San Jose",
-      "Barangay Dolores",
-      "Barangay Sindalan",
-    ],
-    "Angeles City": [
-      "Barangay Balibago",
-      "Barangay Malabanias",
-      "Barangay Pulung Maragul",
-    ],
-    Mabalacat: ["Barangay Dau", "Barangay Mamatitang", "Barangay Mabiga"],
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Trigger modal upon form submission
+    setShowModal(true);
   };
 
-  const [municipality, setMunicipality] = useState("");
-  const [barangay, setBarangay] = useState("");
   return (
     <div
-      className="flex-1 w-full min-h-screen overflow-y-auto p-4 md:p-8 font-sans"
+      className="flex-1 w-full min-h-screen overflow-y-auto p-4 md:p-8 font-sans relative"
       style={{ backgroundColor: "#4DAA74" }}
     >
       <div className="max-w-6xl mx-auto w-full bg-white rounded-xl shadow-xl p-6 md:p-10 h-fit">
@@ -36,10 +26,10 @@ export default function AgriculturalForm() {
         <hr className="border-gray-200 mb-8" />
 
         <form
-          action="/submit_appointment.php"
-          method="POST"
+          onSubmit={handleSubmit}
           className="space-y-8"
         >
+          {/* APPLICANT'S INFORMATION */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Applicant's Information
@@ -102,9 +92,9 @@ export default function AgriculturalForm() {
                   DATE OF BIRTH*
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   name="birthday"
-                  max={today}
+                  placeholder="*MM/DD/YYYY"
                   className={inputClass}
                   required
                 />
@@ -200,69 +190,49 @@ export default function AgriculturalForm() {
               <input
                 type="text"
                 name="mailingAddress"
-                placeholder="*FULL MAILING ADDRESS"
+                placeholder="*FULL MAILING ADDRESS (e.g., House No., Street, Barangay, City, Province)"
                 className={inputClass}
                 required
               />
             </div>
           </div>
 
+          {/* LOCATION OF AGRICULTURAL LAND APPLIED FOR */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Location of Agricultural Land Applied For
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <select
+              <input
+                type="text"
                 name="province"
-                className={`${inputClass} bg-gray-100 pointer-events-none`}
+                placeholder="*PROVINCE"
                 defaultValue="Pampanga"
-                required
-              >
-                <option value="Pampanga">Pampanga</option>
-              </select>
-              <select
-                name="municipality"
                 className={inputClass}
-                defaultValue=""
                 required
-                onChange={(e) => {
-                  setMunicipality(e.target.value);
-                  setBarangay("");
-                }}
-              >
-                <option value="" disabled>
-                  *SELECT MUNICIPALITY
-                </option>
-                {Object.keys(locations).map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
+              />
+              <input
+                type="text"
+                name="municipality"
+                placeholder="*MUNICIPALITY / CITY"
+                className={inputClass}
+                required
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <select
+              <input
+                type="text"
                 name="barangay"
+                placeholder="*BARANGAY"
                 className={inputClass}
-                value={barangay}
                 required
-                onChange={(e) => setBarangay(e.target.value)}
-              >
-                <option value="" disabled>
-                  *SELECT BARANGAY
-                </option>
-                {(locations[municipality] || []).map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
+              />
               <input
                 type="text"
                 name="location"
-                placeholder="SPECIFIC LOCATION / SITIO"
+                placeholder="SPECIFIC LOCATION / SITIO / STREET"
                 className={inputClass}
               />
             </div>
@@ -292,6 +262,7 @@ export default function AgriculturalForm() {
             </div>
           </div>
 
+          {/* DECLARATIONS */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Declarations
@@ -308,9 +279,9 @@ export default function AgriculturalForm() {
                   3. I entered upon and began cultivation of the same on:
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   name="cultivationDate"
-                  max={today}
+                  placeholder="MM/DD/YYYY or Year"
                   className={`${inputClass} w-full md:w-64 mb-3`}
                 />
                 <textarea
@@ -353,6 +324,7 @@ export default function AgriculturalForm() {
             </div>
           </div>
 
+          {/* HEIR DECLARATION & WITNESSES */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Heir Declaration & Witnesses
@@ -442,6 +414,7 @@ export default function AgriculturalForm() {
             </div>
           </div>
 
+          {/* SWORN STATEMENT */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Sworn Statement
@@ -456,9 +429,9 @@ export default function AgriculturalForm() {
                   DATE FILED
                 </label>
                 <input
-                  type="date"
+                  type="text"
                   name="date_filed"
-                  max={today}
+                  placeholder="*MM/DD/YYYY"
                   className={inputClass}
                   required
                 />
@@ -478,16 +451,78 @@ export default function AgriculturalForm() {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4">
+          {/* DATA PRIVACY CONSENT SECTION */}
+          <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
+            <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">
+              Data Privacy Consent
+            </h2>
+            <p className="text-xs leading-relaxed text-gray-600 mb-3">
+              In compliance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>, 
+              I hereby authorize the agency/local government unit to collect, process, 
+              store, and evaluate my personal data and land information strictly for the 
+              purpose of processing this Agricultural Free Patent Application. I understand 
+              that my information will be protected and will not be shared with unauthorized 
+              third parties without my express written consent.
+            </p>
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                name="privacy_consent"
+                value="agreed"
+                checked={agreedToPrivacy}
+                onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                className="mt-0.5 h-4 w-4 text-[#1a5632] border-gray-300 rounded focus:ring-2 focus:ring-[#1a5632] cursor-pointer"
+                required
+              />
+              <span className="font-semibold text-gray-800 text-xs md:text-sm">
+                I have read and agree to the Data Privacy Consent statement above.*
+              </span>
+            </label>
+          </div>
+
+          {/* SUBMIT BUTTON */}
+          <div className="flex justify-end pt-2">
             <button
               type="submit"
-              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] transition-colors"
+              disabled={!agreedToPrivacy}
+              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               Submit Application
             </button>
           </div>
         </form>
       </div>
+
+      {/* FIGMA DESIGN MODAL POP-UP WITH BACKGROUND.PNG */}
+      {showModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
+          style={{
+            backgroundColor: "#4DAA74",
+            backgroundImage: "url('/background.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center transform transition-all animate-scaleUp">
+            <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-3">
+              Thank You For Your Application!
+            </h3>
+            <p className="text-sm md:text-base font-medium text-gray-700 mb-8 max-w-sm mx-auto leading-relaxed">
+              Your application has been set! You can click button below to view your application status.
+            </p>
+            
+            <a
+              href="/application-status"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#8AD29D] hover:bg-[#74c48a] text-gray-900 font-bold text-xs md:text-sm rounded-full shadow-md hover:shadow-lg transition-all transform active:scale-95"
+            >
+              <span>View Application status</span>
+              <span className="text-base leading-none">&rarr;</span>
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
