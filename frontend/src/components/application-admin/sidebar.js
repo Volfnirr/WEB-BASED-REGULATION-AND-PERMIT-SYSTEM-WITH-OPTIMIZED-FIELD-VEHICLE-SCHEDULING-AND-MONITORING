@@ -72,7 +72,7 @@ export default function ApplicationAdminSidebar() {
       )}
 
       {isOpen && (
-        <aside className="fixed md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
+        <aside className="fixed md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl  z-99">
           <div>
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -139,34 +139,20 @@ export default function ApplicationAdminSidebar() {
               })}
               <div className="flex flex-col gap-1 pt-1">
                 <div className="px-3 mb-2 text-xs font-semibold text-green-300 uppercase tracking-wider">
-                  <h2>Field Inspection</h2>
+                  <h2>Trip</h2>
                 </div>
 
                 <Link
-                  href="/application-admin/field-inspection-application"
+                  href="/application-admin/trip-history"
                   onClick={close}
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    pathname ===
-                    "/application-admin/field-inspection-application"
+                    pathname === "/application-admin/trip-history"
                       ? "bg-white text-[#005221] font-bold shadow-md"
                       : "text-green-100 hover:bg-green-800"
                   }`}
                 >
                   <FileText />
-                  Field Inspection Form
-                </Link>
-
-                <Link
-                  href="/application-admin/my-applications"
-                  onClick={close}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    pathname === "/application-admin/my-applications"
-                      ? "bg-white text-[#005221] font-bold shadow-md"
-                      : "text-green-100 hover:bg-green-800"
-                  }`}
-                >
-                  <ClipboardList />
-                  My Application
+                  Trip History
                 </Link>
               </div>
             </nav>

@@ -48,7 +48,7 @@ export default function ApplicantSidebar() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#005221] text-white shadow-md hover:bg-green-800 transition-colors"
+          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#005221] text-white shadow-md hover:bg-green-800 transition-colors  z-99"
         >
           <Menu />
         </button>

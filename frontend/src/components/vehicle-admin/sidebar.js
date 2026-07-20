@@ -15,18 +15,13 @@ import { Car } from "lucide-react";
 const links = [
   {
     icon: <FileText />,
-    name: "Review Applications",
-    href: "/vehicle/applications",
+    name: "Trip Applications",
+    href: "/vehicle/trip-applications",
   },
   {
     icon: <CalendarCog />,
     name: "Vehicle Schedules",
     href: "/vehicle/vehicles-schedules",
-  },
-  {
-    icon: <UsersRound />,
-    name: "Driver Availability",
-    href: "/vehicle/driver-availability",
   },
   {
     icon: <Car />,
@@ -55,7 +50,7 @@ export default function VehicleAdminSiderbar() {
       )}
 
       {isOpen && (
-        <aside className="fixed md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
+        <aside className="fixed md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl z-99">
           <div>
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">

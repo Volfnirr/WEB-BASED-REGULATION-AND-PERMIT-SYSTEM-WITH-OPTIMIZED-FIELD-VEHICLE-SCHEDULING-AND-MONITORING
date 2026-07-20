@@ -1,0 +1,21 @@
+export const ResidentialFormData = [
+  {
+    id: "4",
+    applicationNo: "AP-0001-2026",
+    dateSubmitted: "2026-07-08",
+    status: "PENDING",
+    fullname: "Juan Dsela Cruz",
+    comp_address: "Sta .Ines, Bacolor, Pampanga",
+    citizenship: "Natural-born Filipino",
+    civil_status: "single",
+    date: "2026-07-10",
+    nameofSpouse: "N/A",
+    pob: "sa bahay",
+    province: "Pampanga",
+    municipality: "Bacolor",
+    barangay: "Sta. Ines",
+    specific_loc: "Purok 2, Sta.Ines, Bacolor, Pampanga",
+    lot_no: "LOT 0143 - B",
+    land_area: "200",
+  },
+];

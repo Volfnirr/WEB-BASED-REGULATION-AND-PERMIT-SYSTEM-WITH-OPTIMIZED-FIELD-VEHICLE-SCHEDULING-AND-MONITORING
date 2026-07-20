@@ -1,11 +1,16 @@
-export default function InfoCard({ label, total, bg }) {
+export default function InfoCard({ icon, label, total, bg }) {
   return (
-    <div
-      className={`rounded-xl p-4 text-white shadow-md min-w-30 max-w-sm ${bg}`}
-    >
-      <div className="flex flex-col gap-2">
-        <span className="text-sm sm:text-base font-semibold">{label}</span>
-        <span className="text-2xl sm:text-4xl font-bold">{total}</span>
+    <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm flex items-center gap-3 flex-1 min-w-[200px] max-w-xs transition-transform hover:-translate-y-0.5 hover:shadow-md">
+      <div
+        className={`shrink-0 w-11 h-11 rounded-full flex items-center justify-center ${bg}`}
+      >
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <span className="block text-sm text-gray-500 truncate">{label}</span>
+        <span className="block text-xl sm:text-2xl font-bold text-gray-900 tabular-nums">
+          {total}
+        </span>
       </div>
     </div>
   );
