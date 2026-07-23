@@ -4,12 +4,10 @@ export default function Home() {
   return (
     <div className="relative z-10 flex flex-col md:flex-row items-center justify-center md:justify-between h-150 px-6 lg:px-24 gap-10">
       <div className="hidden md:block text-left">
-        <h1 className="text-white font-bold text-4xl md:text-6xl lg:text-7xl leading-tight">
-          Provincial <br />
-          Environment and <br />
-          Natural Resources <br />
-          Office - Pampanga
-        </h1>
+        <div className="text-white font-bold text-4xl md:text-6xl lg:text-7xl leading-tight">
+          <div>Welcome to PENRO Pampanga</div>
+          <div className="text-2x1 font-bold">Online Services</div>
+        </div>
       </div>
       {/* RIGHT: LOGO + BUTTON */}
       <div className="flex flex-col items-center gap-6">
@@ -18,19 +16,17 @@ export default function Home() {
           alt="DENR Logo"
           width={250}
           height={250}
-          className="drop-shadow-xl"
+          className="hidden md:block drop-shadow-xl"
         />
 
-        <div className="text-center md:hidden">
-          <h1 className="text-white font-bold text-4xl md:hidden">
-            Provincial <br />
-            Environment and <br />
-            Natural Resources <br />
-            Office - Pampanga
-          </h1>
+        <div className="text-center">
+          <div className="text-white font-bold text-4xl md:text-6xl lg:text-7xl leading-tight md:hidden">
+            <div>Welcome to PENRO Pampanga</div>
+            <div className="text-2x1 font-bold">Online Services</div>
+          </div>
         </div>
 
-        <button className="bg-green-600 hover:bg-green-700 text-white font-bold text-lg md:text-2xl px-10 py-4 rounded-2xl shadow-lg transition">
+        <button className="bg-green-600 hover:bg-green-700 text-white font-bold text-lg md:text-md px-10 py-4 rounded-2xl shadow-lg transition">
           <Link href="/login">Start Application</Link>
         </button>
       </div>

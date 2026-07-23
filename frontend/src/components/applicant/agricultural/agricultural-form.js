@@ -1,4 +1,5 @@
 "use client";
+import ThankYouModal from "@/components/ui/modal/thankyou";
 import React, { useState } from "react";
 
 export default function AgriculturalForm() {
@@ -25,10 +26,7 @@ export default function AgriculturalForm() {
         </h1>
         <hr className="border-gray-200 mb-8" />
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-8"
-        >
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* APPLICANT'S INFORMATION */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
@@ -457,12 +455,14 @@ export default function AgriculturalForm() {
               Data Privacy Consent
             </h2>
             <p className="text-xs leading-relaxed text-gray-600 mb-3">
-              In compliance with the <strong>Data Privacy Act of 2012 (RA 10173)</strong>, 
-              I hereby authorize the agency/local government unit to collect, process, 
-              store, and evaluate my personal data and land information strictly for the 
-              purpose of processing this Agricultural Free Patent Application. I understand 
-              that my information will be protected and will not be shared with unauthorized 
-              third parties without my express written consent.
+              In compliance with the{" "}
+              <strong>Data Privacy Act of 2012 (RA 10173)</strong>, I hereby
+              authorize the agency/local government unit to collect, process,
+              store, and evaluate my personal data and land information strictly
+              for the purpose of processing this Agricultural Free Patent
+              Application. I understand that my information will be protected
+              and will not be shared with unauthorized third parties without my
+              express written consent.
             </p>
             <label className="flex items-start gap-3 cursor-pointer select-none">
               <input
@@ -475,7 +475,8 @@ export default function AgriculturalForm() {
                 required
               />
               <span className="font-semibold text-gray-800 text-xs md:text-sm">
-                I have read and agree to the Data Privacy Consent statement above.*
+                I have read and agree to the Data Privacy Consent statement
+                above.*
               </span>
             </label>
           </div>
@@ -494,35 +495,7 @@ export default function AgriculturalForm() {
       </div>
 
       {/* FIGMA DESIGN MODAL POP-UP WITH BACKGROUND.PNG */}
-      {showModal && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
-          style={{
-            backgroundColor: "#4DAA74",
-            backgroundImage: "url('/background.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
-        >
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center transform transition-all animate-scaleUp">
-            <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-3">
-              Thank You For Your Application!
-            </h3>
-            <p className="text-sm md:text-base font-medium text-gray-700 mb-8 max-w-sm mx-auto leading-relaxed">
-              Your application has been set! You can click button below to view your application status.
-            </p>
-            
-            <a
-              href="/application-status"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#8AD29D] hover:bg-[#74c48a] text-gray-900 font-bold text-xs md:text-sm rounded-full shadow-md hover:shadow-lg transition-all transform active:scale-95"
-            >
-              <span>View Application status</span>
-              <span className="text-base leading-none">&rarr;</span>
-            </a>
-          </div>
-        </div>
-      )}
+      {showModal && <ThankYouModal onClose={() => setShowModal(false)} />}
     </div>
   );
 }
