@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(6)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(6)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime  @db.Timestamptz(6)
+  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([userId])
+}
+
+model rateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+}
+
+model service {
+  id                        Int                         @id @default(autoincrement())
+  name                      String                      @unique
+  application_admin_service application_admin_service[]
+}
+
+model session {
+  id        String   @id
+  expiresAt DateTime @db.Timestamptz(6)
+  token     String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @db.Timestamptz(6)
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([userId])
+}
+
+model user {
+  id                        String                      @id
+  name                      String
+  email                     String                      @unique
+  emailVerified             Boolean
+  image                     String?
+  createdAt                 DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt                 DateTime                    @default(now()) @db.Timestamptz(6)
+  role                      role                        @default(USER)
+  account                   account[]
+  application_admin_service application_admin_service[]
+  session                   session[]
+}
+
+model verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([identifier])
+}
+
+model application_admin_service {
+  userId    String
+  serviceId Int
+  service   service @relation(fields: [serviceId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "admin_service_service_fkey")
+  user      user    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "admin_service_user_fkey")
+
+  @@id([userId, serviceId], map: "admin_service_pkey")
+}
+
+enum role {
+  USER
+  APPLICATION_ADMIN
+  VEHICLE_ADMIN
+  SUPER_ADMIN
+}

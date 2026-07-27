@@ -1,4 +1,9 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -8,28 +13,126 @@ const modalH3 =
   "text-xs font-bold text-green-800 mt-4 mb-1.5 pb-1 border-b border-gray-200 uppercase tracking-[0.04em]";
 const modalP = "text-[13px] leading-7 text-[#444] mb-3";
 const modalStrong = "text-[#1a1a1a]";
+const inputDesign =
+  "w-full px-2.5 py-2.5 border border-gray-300 rounded text-sm bg-white outline-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.05)] transition-all duration-200 focus:border-green-700 focus:ring-2 focus:ring-green-700/20";
+const loginSchema = z.object({
+  email: z.email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+const registerSchema = z
+  .object({
+    name: z.string().min(3, "Full name must be at least 3 characters"),
+    email: z.email("Invalid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter")
+      .regex(
+        /[^A-Za-z0-9]/,
+        "Password must contain at least 1 special character",
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export default function AuthSection() {
   const [isLoginView, setIsLoginView] = useState(true);
   const [showTerms, setShowTerms] = useState(false);
 
-  const handleLoginSubmit = (e) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    console.log("Processing login for:", data.identifier);
-    console.log("Processing password:", data.password);
-  };
+  // const handleLoginSubmit = (e) => {
+  //   e.preventDefault();
+  //   const form = e.currentTarget;
+  //   const formData = new FormData(form);
+  //   const data = Object.fromEntries(formData.entries());
+  //   console.log("Processing login for:", data.identifier);
+  //   console.log("Processing password:", data.password);
+  // };
 
-  const handleRegisterSubmit = (e) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    console.log("Form submitted data (Frontend only):", data);
-  };
+  // const handleRegisterSubmit = (e) => {
+  //   e.preventDefault();
+  //   const form = e.currentTarget;
+  //   const formData = new FormData(form);
+  //   const data = Object.fromEntries(formData.entries());
+  //   console.log("Form submitted data (Frontend only):", data);
+  // };
+  const {
+    register: registerLogin,
+    handleSubmit: handleLoginSubmit,
+    setError: setLoginError,
 
+    formState: { errors: loginErrors, isSubmitting: isLoginSubmitting },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const {
+    register: registerSignUp,
+    handleSubmit: handleRegisterSubmit,
+    formState: { errors, isSubmitting: isRegisterSubmitting },
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const router = useRouter();
+  const onLogin = async (data) => {
+    const { email, password } = data;
+
+    const { error } = await authClient.signIn.email(
+      {
+        email,
+        password,
+        callbackURL: "/applicant",
+        rememberMe: true,
+      },
+      {
+        onSuccess: (ctx) => {
+          const role = ctx.data.user.role;
+
+          switch (role) {
+            case "SUPER_ADMIN":
+              router.push("/super-admin");
+              break;
+            case "APPLICATION_ADMIN":
+              router.push("/application-admin");
+              break;
+            case "VEHICLE_ADMIN":
+              router.push("/vehicle-admin");
+              break;
+            case "USER":
+            default:
+              router.push("/applicant");
+              break;
+          }
+        },
+        onError: (ctx) => {
+          setLoginError("root", {
+            message: ctx.error.message,
+          });
+        },
+      },
+    );
+  };
+  const onSignUp = async (data) => {
+    const { confirmPassword, ...signUpData } = data;
+    const { error } = await authClient.signUp.email({
+      email: signUpData.email, // user email address
+      password: signUpData.password, // user password -> min 8 characters by default
+      name: signUpData.name, // user display name
+    });
+    if (error) {
+      console.error(error.message);
+      return;
+    }
+    {
+      () => setIsLoginView(true);
+    }
+
+    console.log(data);
+  };
   return (
     <div
       className="relative w-full flex-grow flex flex-col min-h-screen"
@@ -71,31 +174,52 @@ export default function AuthSection() {
           {isLoginView ? (
             <div className="animate-in fade-in zoom-in duration-300">
               <form
-                onSubmit={handleLoginSubmit}
+                onSubmit={handleLoginSubmit(onLogin)}
                 className="flex flex-col gap-4 text-left"
               >
-                <CustomInput
-                  label="UserName or Email"
-                  type="text"
-                  id="identifier"
-                  name="identifier"
-                  placeholder="e.g. juan.delacruz"
-                  required={true}
-                />
-                <CustomInput
-                  label="Password"
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="********"
-                  required={true}
-                />
-
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-xs text-gray-500">Email</label>
+                  <input
+                    {...registerLogin("email")}
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Email"
+                    className={inputDesign}
+                  />
+                  {loginErrors.email && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {loginErrors.email.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-xs text-gray-500">Password</label>
+                  <input
+                    {...registerLogin("password")}
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="********"
+                    className={inputDesign}
+                  />
+                  {loginErrors.password && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {loginErrors.password.message}
+                    </div>
+                  )}
+                </div>
+                {loginErrors.root && (
+                  <div className="text-red-600 text-sm font-medium text-center">
+                    {loginErrors.root.message}
+                  </div>
+                )}
                 <button
+                  disabled={isLoginSubmitting}
                   type="submit"
                   className="w-full py-3 mt-2 bg-green-700 text-white font-bold rounded text-sm transition-colors duration-300 hover:bg-green-800"
                 >
-                  Log In
+                  {isLoginSubmitting ? "Loading..." : "Log In"}
                 </button>
               </form>
 
@@ -113,52 +237,81 @@ export default function AuthSection() {
             /* === SIGNUP VIEW === */
             <div className="animate-in fade-in zoom-in duration-300">
               <form
-                onSubmit={handleRegisterSubmit}
+                onSubmit={handleRegisterSubmit(onSignUp)}
                 className="flex flex-col gap-4 text-left"
               >
-                <CustomInput
-                  label="Username"
-                  type="text"
-                  id="username"
-                  name="username"
-                  required={true}
-                />
-                <CustomInput
-                  label="Full name"
-                  type="text"
-                  id="fullname"
-                  name="fullname"
-                  required={true}
-                />
-                <CustomInput
-                  label="Password"
-                  type="password"
-                  id="password"
-                  name="password"
-                  required={true}
-                />
-                <CustomInput
-                  label="Confirm Password"
-                  type="password"
-                  id="confirmpassword"
-                  name="confirmpassword"
-                  required={true}
-                />
-                <CustomInput
-                  label="Email"
-                  type="email"
-                  id="email"
-                  name="email"
-                  required={true}
-                />
-
-                <div className="flex flex-row items-center gap-2">
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-xs text-gray-500">Full name</label>
                   <input
+                    {...registerSignUp("name")}
+                    type="text"
+                    name="name"
+                    placeholder="Full Name"
+                    className={inputDesign}
+                  />
+                  {errors.name && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.name.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-xs text-gray-500">Email</label>
+                  <input
+                    {...registerSignUp("email")}
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Email"
+                    className={inputDesign}
+                  />
+                  {errors.email && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.email.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-xs text-gray-500">Password</label>
+                  <input
+                    {...registerSignUp("password")}
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Password"
+                    className={inputDesign}
+                  />
+                  {errors.password && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.password.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="text-xs text-gray-500">
+                    Confirm Password
+                  </label>
+                  <input
+                    {...registerSignUp("confirmPassword")}
+                    type="password"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    className={inputDesign}
+                  />
+                  {errors.confirmPassword && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.confirmPassword.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-row items-center gap-2">
+                  <CustomInput
                     type="checkbox"
                     id="acceptTerms"
                     name="acceptTerms"
-                    required
-                    className="cursor-pointer"
+                    required={true}
+                    classNamelassName={inputDesign + "cursor-pointer"}
                   />
                   <label
                     htmlFor="acceptTerms"
@@ -176,10 +329,11 @@ export default function AuthSection() {
                 </div>
 
                 <button
+                  disabled={isRegisterSubmitting}
                   type="submit"
                   className="w-full py-3 mt-2 bg-green-700 text-white font-bold rounded text-sm transition-colors duration-300 hover:bg-green-800"
                 >
-                  Register
+                  {isRegisterSubmitting ? "Loading..." : "Register"}
                 </button>
               </form>
 
