@@ -8,6 +8,7 @@ import { z } from "zod";
 import { useState } from "react";
 import Image from "next/image";
 import CustomInput from "@/components/landing-page/CustomInput";
+import { Eye, EyeOff } from "lucide-react";
 
 const modalH3 =
   "text-xs font-bold text-green-800 mt-4 mb-1.5 pb-1 border-b border-gray-200 uppercase tracking-[0.04em]";
@@ -42,6 +43,9 @@ const registerSchema = z
 export default function AuthSection() {
   const [isLoginView, setIsLoginView] = useState(true);
   const [showTerms, setShowTerms] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRegPassword, setRegShowPassword] = useState(false);
+  const [showConfirmPassword, setshowConfirmPassword] = useState(false);
 
   // const handleLoginSubmit = (e) => {
   //   e.preventDefault();
@@ -195,14 +199,27 @@ export default function AuthSection() {
                 </div>
                 <div className="flex flex-col gap-1 text-left">
                   <label className="text-xs text-gray-500">Password</label>
-                  <input
-                    {...registerLogin("password")}
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="********"
-                    className={inputDesign}
-                  />
+                  <div className="relative">
+                    <input
+                      {...registerLogin("password")}
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      placeholder="********"
+                      className={inputDesign}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <Eye className="w-4 h-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
                   {loginErrors.password && (
                     <div className="text-red-600 text-xs font-medium">
                       {loginErrors.password.message}
@@ -273,14 +290,28 @@ export default function AuthSection() {
                 </div>
                 <div className="flex flex-col gap-1 text-left">
                   <label className="text-xs text-gray-500">Password</label>
-                  <input
-                    {...registerSignUp("password")}
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Password"
-                    className={inputDesign}
-                  />
+                  <div className="relative">
+                    <input
+                      {...registerSignUp("password")}
+                      type={showRegPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      placeholder="********"
+                      className={inputDesign}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setRegShowPassword(!showRegPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {showRegPassword ? (
+                        <EyeOff className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <Eye className="w-4 h-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
+
                   {errors.password && (
                     <div className="text-red-600 text-xs font-medium">
                       {errors.password.message}
@@ -291,14 +322,30 @@ export default function AuthSection() {
                   <label className="text-xs text-gray-500">
                     Confirm Password
                   </label>
-                  <input
-                    {...registerSignUp("confirmPassword")}
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    placeholder="Confirm Password"
-                    className={inputDesign}
-                  />
+                  <div className="relative">
+                    <input
+                      {...registerSignUp("confirmPassword")}
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      placeholder="********"
+                      className={inputDesign}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setshowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <Eye className="w-4 h-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
                   {errors.confirmPassword && (
                     <div className="text-red-600 text-xs font-medium">
                       {errors.confirmPassword.message}
