@@ -1,14 +1,17 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
+import { toast } from "sonner";
 import { useState } from "react";
 import Image from "next/image";
 import CustomInput from "@/components/landing-page/CustomInput";
 import { Eye, EyeOff } from "lucide-react";
+import { getRoleRoute } from "@/lib/role-route";
+import { Spinner } from "@/components/ui/spinner";
 
 const modalH3 =
   "text-xs font-bold text-green-800 mt-4 mb-1.5 pb-1 border-b border-gray-200 uppercase tracking-[0.04em]";
@@ -67,7 +70,7 @@ export default function AuthSection() {
     register: registerLogin,
     handleSubmit: handleLoginSubmit,
     setError: setLoginError,
-
+    reset: resetLogin,
     formState: { errors: loginErrors, isSubmitting: isLoginSubmitting },
   } = useForm({
     resolver: zodResolver(loginSchema),
@@ -76,7 +79,9 @@ export default function AuthSection() {
   const {
     register: registerSignUp,
     handleSubmit: handleRegisterSubmit,
-    formState: { errors, isSubmitting: isRegisterSubmitting },
+    setError: setregisterError,
+    reset: resetSignUp,
+    formState: { errors: registerErrors, isSubmitting: isRegisterSubmitting },
   } = useForm({
     resolver: zodResolver(registerSchema),
   });
@@ -85,32 +90,18 @@ export default function AuthSection() {
   const onLogin = async (data) => {
     const { email, password } = data;
 
-    const { error } = await authClient.signIn.email(
+    const {} = await authClient.signIn.email(
       {
         email,
         password,
-        callbackURL: "/applicant",
         rememberMe: true,
       },
       {
         onSuccess: (ctx) => {
+          toast.success("Signed in successfully", { position: "top-center" });
           const role = ctx.data.user.role;
-
-          switch (role) {
-            case "SUPER_ADMIN":
-              router.push("/super-admin");
-              break;
-            case "APPLICATION_ADMIN":
-              router.push("/application-admin");
-              break;
-            case "VEHICLE_ADMIN":
-              router.push("/vehicle-admin");
-              break;
-            case "USER":
-            default:
-              router.push("/applicant");
-              break;
-          }
+          const route = getRoleRoute(role);
+          router.push(route);
         },
         onError: (ctx) => {
           setLoginError("root", {
@@ -122,20 +113,24 @@ export default function AuthSection() {
   };
   const onSignUp = async (data) => {
     const { confirmPassword, ...signUpData } = data;
-    const { error } = await authClient.signUp.email({
-      email: signUpData.email, // user email address
-      password: signUpData.password, // user password -> min 8 characters by default
-      name: signUpData.name, // user display name
-    });
-    if (error) {
-      console.error(error.message);
-      return;
-    }
-    {
-      () => setIsLoginView(true);
-    }
-
-    console.log(data);
+    const { error } = await authClient.signUp.email(
+      {
+        email: signUpData.email, // user email address
+        password: signUpData.password, // user password -> min 8 characters by default
+        name: signUpData.name, // user display name
+      },
+      {
+        onSuccess: () => {
+          onLogin(signUpData);
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message, { position: "top-center" });
+          setregisterError("root", {
+            message: ctx.error.message,
+          });
+        },
+      },
+    );
   };
   return (
     <div
@@ -234,16 +229,26 @@ export default function AuthSection() {
                 <button
                   disabled={isLoginSubmitting}
                   type="submit"
-                  className="w-full py-3 mt-2 bg-green-700 text-white font-bold rounded text-sm transition-colors duration-300 hover:bg-green-800"
+                  className="w-full py-3 mt-2 bg-green-700 text-white font-bold rounded text-sm transition-colors duration-300 hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {isLoginSubmitting ? "Loading..." : "Log In"}
+                  {isLoginSubmitting ? (
+                    <>
+                      <Spinner data-icon="inline-start" />
+                      <span>Loading...</span>
+                    </>
+                  ) : (
+                    "Log In"
+                  )}
                 </button>
               </form>
 
               <div className="text-[12px] text-gray-600 mt-6">
                 <span>Don&apos;t have an account? </span>{" "}
                 <button
-                  onClick={() => setIsLoginView(false)}
+                  onClick={() => {
+                    setIsLoginView(false);
+                    resetLogin();
+                  }}
                   className="text-blue-600 font-bold bg-transparent border-none p-0 cursor-pointer hover:underline"
                 >
                   Sign up
@@ -266,9 +271,9 @@ export default function AuthSection() {
                     placeholder="Full Name"
                     className={inputDesign}
                   />
-                  {errors.name && (
+                  {registerErrors.name && (
                     <div className="text-red-600 text-xs font-medium">
-                      {errors.name.message}
+                      {registerErrors.name.message}
                     </div>
                   )}
                 </div>
@@ -282,9 +287,9 @@ export default function AuthSection() {
                     placeholder="Email"
                     className={inputDesign}
                   />
-                  {errors.email && (
+                  {registerErrors.email && (
                     <div className="text-red-600 text-xs font-medium">
-                      {errors.email.message}
+                      {registerErrors.email.message}
                     </div>
                   )}
                 </div>
@@ -312,9 +317,9 @@ export default function AuthSection() {
                     </button>
                   </div>
 
-                  {errors.password && (
+                  {registerErrors.password && (
                     <div className="text-red-600 text-xs font-medium">
-                      {errors.password.message}
+                      {registerErrors.password.message}
                     </div>
                   )}
                 </div>
@@ -346,9 +351,9 @@ export default function AuthSection() {
                       )}
                     </button>
                   </div>
-                  {errors.confirmPassword && (
+                  {registerErrors.confirmPassword && (
                     <div className="text-red-600 text-xs font-medium">
-                      {errors.confirmPassword.message}
+                      {registerErrors.confirmPassword.message}
                     </div>
                   )}
                 </div>
@@ -374,20 +379,34 @@ export default function AuthSection() {
                     </button>
                   </label>
                 </div>
-
+                {registerErrors.root && (
+                  <div className="text-red-600 text-sm font-medium text-center">
+                    {registerErrors.root.message}
+                  </div>
+                )}
                 <button
                   disabled={isRegisterSubmitting}
                   type="submit"
-                  className="w-full py-3 mt-2 bg-green-700 text-white font-bold rounded text-sm transition-colors duration-300 hover:bg-green-800"
+                  className="w-full py-3 mt-2 bg-green-700 text-white font-bold rounded text-sm transition-colors duration-300 hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {isRegisterSubmitting ? "Loading..." : "Register"}
+                  {isRegisterSubmitting ? (
+                    <>
+                      <Spinner data-icon="inline-start" />
+                      <span>Loading...</span>
+                    </>
+                  ) : (
+                    "Register"
+                  )}
                 </button>
               </form>
 
               <div className="text-[12px] text-gray-600 mt-6">
                 <span>Already have an account? </span>{" "}
                 <button
-                  onClick={() => setIsLoginView(true)}
+                  onClick={() => {
+                    setIsLoginView(true);
+                    resetSignUp();
+                  }}
                   className="text-blue-600 font-bold bg-transparent border-none p-0 cursor-pointer hover:underline"
                 >
                   Log in

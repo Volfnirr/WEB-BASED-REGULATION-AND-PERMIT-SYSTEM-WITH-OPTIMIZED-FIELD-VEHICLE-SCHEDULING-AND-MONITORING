@@ -8,29 +8,33 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   secret: process.env.BETTER_AUTH_SECRET,
-  advanced: {
-    // TODO: Add this when the backend is deployed. -N.
-    // ipAddress: {
-    //   ipAddressHeaders:
-    //     process.env.NODE_ENV === "production" ? ["x-real-ip"] : [],
-    //     //x-forwarded-for Used by Render, most load balancers, Nginx, Cloudflare, etc.
-    //     //x-real-ip -Nginx-specific convention
-    //     //cf-connecting-ip if cloudflare
-    //     //x-client-ip apache
-    //     //true-client-ip akamai
-    //     // empty in dev — falls back to raw connection IP
-    // },
-  },
-  rateLimit: {
-    enabled: true,
-    window: 60,
-    max: 5,
-    storage: "database",
-    modelName: "rateLimit",
-  },
+  // advanced: {
+  //   // TODO: Add this when the backend is deployed. -N.
+  //   // ipAddress: {
+  //   //   ipAddressHeaders:
+  //   //     process.env.NODE_ENV === "production" ? ["x-real-ip"] : [],
+  //   //     //x-forwarded-for Used by Render, most load balancers, Nginx, Cloudflare, etc.
+  //   //     //x-real-ip -Nginx-specific convention
+  //   //     //cf-connecting-ip if cloudflare
+  //   //     //x-client-ip apache
+  //   //     //true-client-ip akamai
+  //   //     // empty in dev — falls back to raw connection IP
+  //   // },
+  // },
+  // rateLimit: {
+  //   5 request per minute
+  //   enabled: true,
+  // windows time in sec
+  //   window: 60,
+  // maximum try
+  //   max: 5,
+  //   storage: "database",
+  //   modelName: "rateLimit",
+  // },
 
   emailAndPassword: {
     enabled: true,
+    autoSignIn: false,
   },
 
   session: {

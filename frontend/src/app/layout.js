@@ -1,5 +1,6 @@
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +24,9 @@ export default function RootLayout({ children }) {
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${geist.variable} h-full antialiased`}
     >
-      <body className="min-h-full min-w-full flex flex-col">{children}</body>
+      <body className="min-h-full min-w-full flex flex-col">
+        {children} <Toaster />
+      </body>
     </html>
   );
 }

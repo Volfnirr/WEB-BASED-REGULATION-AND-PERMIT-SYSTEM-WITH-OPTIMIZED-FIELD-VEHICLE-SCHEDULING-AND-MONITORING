@@ -71,7 +71,7 @@ export default function ResidentialForm() {
                 <option value="Single">Single</option>
                 <option value="Married">Married</option>
                 <option value="Widowed">Widowed</option>
-                <option value="Legally Separated">Legally Separated</option>
+                <option value="Legally Separated">Annulled </option>
               </select>
             </div>
 
