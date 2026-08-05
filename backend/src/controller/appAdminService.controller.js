@@ -15,11 +15,28 @@ export async function getAppAdminAssignServices(req, res) {
     const services = await prisma.application_admin_service.findMany({
       where: {
         userId: req.session.userId,
-        // user: true,
+        //  user: true,
+      },
+      select: {
+        serviceId: true,
       },
     });
-    res.json(services);
-    console.log(`${req.user.name}  services data sent`);
+
+    //lol rare
+    if (services.length === 0) {
+      console.log(
+        `User:${req.user.name} Tried to access Services but was met with Unauthorized access: You are not assigned any services`,
+      );
+      return res.status(403).json({
+        message: "Unauthorized access: You are not assigned to any services",
+      });
+    }
+
+    res.json({
+      name: req.user.name,
+      services: services,
+    });
+    console.log(`${req.user.name},${req.user.role} services data sent `);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });

@@ -1,78 +1,91 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useState } from "react";
-import { Menu } from "lucide-react";
-import { X } from "lucide-react";
-import { ToolCase } from "lucide-react";
-import { HousePlus } from "lucide-react";
-import { Leaf } from "lucide-react";
-import { Trees } from "lucide-react";
-import { LayoutDashboard } from "lucide-react";
-import { FileText } from "lucide-react";
-import { ClipboardList } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Menu,
+  X,
+  ToolCase,
+  HousePlus,
+  Leaf,
+  Trees,
+  LayoutDashboard,
+  FileText,
+} from "lucide-react";
+import { useServices } from "@/lib/context/service-context";
+
+import { Spinner } from "@/components/ui/spinner";
+import { toTitleCase } from "@/lib/title-case";
+
+import { logout } from "@/lib/api/logout";
+
 const ALL_SERVICES = [
   {
-    id: "1",
+    id: 1,
     icon: <Leaf />,
     name: "Agricultural Free Patent",
     href: "/application-admin/agricultural",
   },
   {
-    id: "2",
+    id: 2,
     icon: <HousePlus />,
     name: "Residential Free Patent",
     href: "/application-admin/residential",
   },
   {
-    id: "3",
+    id: 3,
     icon: <ToolCase />,
-    name: "Chainsaw Registration",
-    href: "/application-admin/chainsaw",
-  },
-  {
-    id: "4",
-    icon: <Trees />,
     name: "Tree Cutting Permit",
     href: "/application-admin/tree-cutting",
   },
+  {
+    id: 4,
+    icon: <Trees />,
+    name: "Chainsaw Registration",
+    href: "/application-admin/tree-cutting",
+  },
 ];
-
-export default function ApplicationAdminSidebar() {
-  const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(true);
+// 1 = Agricultural Free Patent,
+// 2 = Residential Free Patent,
+// 3 = Tree Cutting Permit,
+// 4 = Chainsaw Registration
+export default function ApplicationAdminSidebar({}) {
   const close = () => {
     if (window.matchMedia("(max-width: 767px)").matches) {
       setIsOpen(false);
     }
   };
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(true);
+
+  const { assignedServices, loading, error } = useServices();
+
+  // console.log(assignedServices);
+
   const currentUser = {
-    name: "Juan Dela Cruz",
-    assignedServices: ["1", "2", "3", "4"],
-    isSuperAdmin: false,
+    name: assignedServices.name ? toTitleCase(assignedServices.name) : "",
   };
 
-  const visibleServices = ALL_SERVICES.filter((service) => {
-    if (currentUser.isSuperAdmin) return true;
-
-    return currentUser.assignedServices.includes(service.id);
-  });
+  const visibleServices = ALL_SERVICES.filter((service) =>
+    assignedServices.services?.some((s) => s.serviceId === service.id),
+  );
 
   return (
     <>
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#005221] text-white shadow-md hover:bg-green-800 transition-colors"
+          className="fixed top-4 left-4 z-99 p-2 rounded-lg bg-[#005221] text-white shadow-md hover:bg-green-800 transition-colors"
         >
           <Menu />
         </button>
       )}
 
       {isOpen && (
-        <aside className="fixed md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl  z-99">
+        <aside className="fixed z-99 md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
           <div>
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -119,24 +132,34 @@ export default function ApplicationAdminSidebar() {
                   : "Your Assigned Service"}
               </div>
 
-              {visibleServices.map((service) => {
-                const isActive = pathname.startsWith(service.href);
-                return (
-                  <Link
-                    key={service.href}
-                    href={service.href}
-                    onClick={close}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      isActive
-                        ? "bg-white text-[#005221] font-bold shadow-md"
-                        : "text-green-100 hover:bg-green-800"
-                    }`}
-                  >
-                    {service.icon}
-                    {service.name}
-                  </Link>
-                );
-              })}
+              {loading ? (
+                <div className="flex justify-center px-3 py-2">
+                  <Spinner className="size-6 text-green-300 animate-spin" />
+                </div>
+              ) : error ? (
+                <p className="px-3 text-sm text-red-300">
+                  Failed to load services
+                </p>
+              ) : (
+                visibleServices.map((service) => {
+                  const isActive = pathname.startsWith(service.href);
+                  return (
+                    <Link
+                      key={service.href}
+                      href={service.href}
+                      onClick={close}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        isActive
+                          ? "bg-white text-[#005221] font-bold shadow-md"
+                          : "text-green-100 hover:bg-green-800"
+                      }`}
+                    >
+                      {service.icon}
+                      {service.name}
+                    </Link>
+                  );
+                })
+              )}
               <div className="flex flex-col gap-1 pt-1">
                 <div className="px-3 mb-2 text-xs font-semibold text-green-300 uppercase tracking-wider">
                   <h2>Trip</h2>
@@ -159,12 +182,12 @@ export default function ApplicationAdminSidebar() {
           </div>
 
           <div className="p-4 border-t border-green-800">
-            <Link
-              href="/"
+            <button
+              onClick={() => logout(router)}
               className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium bg-red-700 hover:bg-red-800 text-white rounded-lg transition-colors shadow"
             >
               Logout
-            </Link>
+            </button>
           </div>
         </aside>
       )}

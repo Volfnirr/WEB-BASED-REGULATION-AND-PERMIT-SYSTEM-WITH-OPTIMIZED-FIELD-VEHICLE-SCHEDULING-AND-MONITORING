@@ -68,7 +68,7 @@ export default function Navbar() {
 
         <div className="flex flex-row justify-between items-center gap-2">
           <Link
-            href="/auth"
+            href="/login"
             className="inline-flex items-center justify-center rounded-lg bg-green-600 px-2 py-0.5 text-lg text-white font-medium transition hover:bg-green-700"
           >
             Login

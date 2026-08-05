@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
 import { Menu } from "lucide-react";
@@ -11,7 +11,7 @@ import { HousePlus } from "lucide-react";
 import { Leaf } from "lucide-react";
 import { Trees } from "lucide-react";
 import { ClipboardList } from "lucide-react";
-
+import { logout } from "@/lib/api/logout";
 const links = [
   {
     icon: <Leaf />,
@@ -36,6 +36,7 @@ const links = [
 ];
 
 export default function ApplicantSidebar() {
+  const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(true);
   const close = () => {
@@ -48,14 +49,14 @@ export default function ApplicantSidebar() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#005221] text-white shadow-md hover:bg-green-800 transition-colors  z-99"
+          className="fixed top-4 left-4 z-99 p-2 rounded-lg bg-[#005221] text-white shadow-md hover:bg-green-800 transition-colors "
         >
           <Menu />
         </button>
       )}
 
       {isOpen && (
-        <aside className="fixed md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
+        <aside className="fixed z-99 md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
           <div>
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -128,12 +129,12 @@ export default function ApplicantSidebar() {
           </div>
 
           <div className="p-4 border-t border-green-800">
-            <Link
-              href="/"
+            <button
+              onClick={() => logout(router)}
               className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium bg-red-700 hover:bg-red-800 text-white rounded-lg transition-colors shadow"
             >
               Logout
-            </Link>
+            </button>
           </div>
         </aside>
       )}

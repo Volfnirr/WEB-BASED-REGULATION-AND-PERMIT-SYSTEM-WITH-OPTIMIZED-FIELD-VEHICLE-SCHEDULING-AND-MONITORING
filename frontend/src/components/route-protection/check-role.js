@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
+import Loading from "@/components/ui/loading";
 export default function CheckRole({ userRoles, children }) {
   const router = useRouter();
 
@@ -13,7 +14,7 @@ export default function CheckRole({ userRoles, children }) {
 
     // Not logged in
     if (!session) {
-      router.replace("/auth");
+      router.replace("/login");
       return;
     }
 
@@ -26,10 +27,9 @@ export default function CheckRole({ userRoles, children }) {
 
   // Show loading while checking
   if (isPending) {
-    return <p>Loading...</p>;
+    return <Loading />;
   }
 
-  // Don't render anything while redirecting
   if (!session || !userRoles.includes(session.user.role)) {
     return null;
   }

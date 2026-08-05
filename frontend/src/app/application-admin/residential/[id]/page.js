@@ -1,4 +1,5 @@
 import ReviewResidential from "@/components/review/residential/residential-review";
+import AssignedServices from "@/components/route-protection/check-service";
 import { ResidentialFormData } from "@/lib/form-sample-data/residential_form_data";
 import { notFound } from "next/navigation";
 
@@ -12,7 +13,9 @@ export default async function ResidentialFormReview({ params }) {
 
   return (
     <div>
-      <ReviewResidential data={application} />
+      <AssignedServices reqServices={[2]}>
+        <ReviewResidential data={application} />
+      </AssignedServices>
     </div>
   );
 }
