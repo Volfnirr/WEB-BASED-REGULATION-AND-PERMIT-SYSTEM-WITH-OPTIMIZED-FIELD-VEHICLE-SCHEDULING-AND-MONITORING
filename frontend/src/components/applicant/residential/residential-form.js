@@ -34,14 +34,37 @@ export default function ResidentialForm() {
               Applicant Information
             </h2>
 
-            <div className="grid grid-cols-1 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <input
                 type="text"
-                name="applicant_name"
-                placeholder="*FULL NAME"
+                name="lastName"
+                placeholder="*LAST NAME"
                 className={inputClass}
                 required
               />
+              <input
+                type="text"
+                name="firstName"
+                placeholder="*FIRST NAME"
+                className={inputClass}
+                required
+              />
+              <input
+                type="text"
+                name="middleName"
+                placeholder="*MIDDLE NAME"
+                className={inputClass}
+                required
+              />
+              <input
+                type="text"
+                name="extension"
+                placeholder="*NAME EXTENSION"
+                className={inputClass}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 mb-4">
               <input
                 type="text"
                 name="address"
@@ -71,10 +94,35 @@ export default function ResidentialForm() {
                 <option value="Single">Single</option>
                 <option value="Married">Married</option>
                 <option value="Widowed">Widowed</option>
-                <option value="Legally Separated">Annulled </option>
+                <option value="Anulled">Annulled</option>
               </select>
             </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  CONTACT NUMBER*
+                </label>
+                <input
+                  type="text"
+                  name="contactNum"
+                  placeholder="*09XXXXXXXXX"
+                  className={inputClass}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  EMAIL ADDRESS*
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="*EMAIL ADDRESS"
+                  className={inputClass}
+                  required
+                />
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
@@ -315,60 +363,6 @@ export default function ResidentialForm() {
                   name="affiant_signature"
                   placeholder="TYPE FULL NAME AS SIGNATURE"
                   className={`${inputClass} w-full md:w-1/2`}
-                  required
-                />
-              </div>
-
-              <hr className="border-gray-200 my-6" />
-
-              {/* Notary / Subscribed Section */}
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                <span className="font-bold">SUBSCRIBED AND SWORN TO</span>
-                <span>before me this</span>
-                <input
-                  type="date"
-                  name="affidavit_subscribed_date"
-                  className={`${inputClass} w-full md:w-40`}
-                  required
-                />
-                <span>at</span>
-                <input
-                  type="text"
-                  name="affidavit_subscribed_location"
-                  placeholder="LOCATION"
-                  className={`${inputClass} w-full md:w-48`}
-                  required
-                />
-                ,<span>Philippines.</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  name="affidavit_id_type"
-                  placeholder="*TYPE OF ID PRESENTED"
-                  className={inputClass}
-                  required
-                />
-                <input
-                  type="text"
-                  name="affidavit_id_number"
-                  placeholder="*ID NUMBER"
-                  className={inputClass}
-                  required
-                />
-                <input
-                  type="text"
-                  name="affidavit_issuing_authority"
-                  placeholder="*ISSUING AUTHORITY"
-                  className={inputClass}
-                  required
-                />
-                <input
-                  type="text"
-                  name="affidavit_officer_name"
-                  placeholder="*NAME OF OFFICER ADMINISTERING OATH"
-                  className={inputClass}
                   required
                 />
               </div>

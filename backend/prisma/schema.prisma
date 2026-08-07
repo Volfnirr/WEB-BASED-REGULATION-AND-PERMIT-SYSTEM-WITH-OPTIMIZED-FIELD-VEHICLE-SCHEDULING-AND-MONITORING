@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated"
+  provider        = "prisma-client-js"
+  output          = "../generated"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -36,6 +37,7 @@ model rateLimit {
 model service {
   id                        Int                         @id @default(autoincrement())
   name                      String                      @unique
+  application               application[]
   application_admin_service application_admin_service[]
 }
 
@@ -54,17 +56,24 @@ model session {
 }
 
 model user {
-  id                        String                      @id
-  name                      String
-  email                     String                      @unique
-  emailVerified             Boolean
-  image                     String?
-  createdAt                 DateTime                    @default(now()) @db.Timestamptz(6)
-  updatedAt                 DateTime                    @default(now()) @db.Timestamptz(6)
-  role                      role                        @default(USER)
-  account                   account[]
-  application_admin_service application_admin_service[]
-  session                   session[]
+  id                                         String                      @id
+  name                                       String
+  email                                      String                      @unique
+  emailVerified                              Boolean
+  image                                      String?
+  createdAt                                  DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt                                  DateTime                    @default(now()) @db.Timestamptz(6)
+  role                                       role                        @default(USER)
+  termsAndCondition                          Boolean                     @default(false)
+  account                                    account[]
+  application_application_assignedToIdTouser application[]               @relation("application_assignedToIdTouser")
+  application_application_reviewedByIdTouser application[]               @relation("application_reviewedByIdTouser")
+  application_application_userIdTouser       application[]               @relation("application_userIdTouser")
+  application_admin_service                  application_admin_service[]
+  audit_log                                  audit_log[]
+  session                                    session[]
+  trip_ticket                                trip_ticket[]
+  vehicle                                    vehicle[]
 }
 
 model verification {
@@ -87,9 +96,251 @@ model application_admin_service {
   @@id([userId, serviceId], map: "admin_service_pkey")
 }
 
+model agricultural_form {
+  id                     Int          @id @default(autoincrement())
+  applicationId          Int          @unique
+  lastName               String
+  firstName              String
+  middleName             String?
+  extensionName          String?
+  contactNo              String
+  email                  String
+  dateOfBirth            DateTime     @db.Date
+  sex                    sex
+  citizenship            String
+  naturalBorn            Boolean
+  civilStatus            civil_status
+  spouseName             String?
+  fullAddress            String
+  province               String
+  municipality           String
+  barangay               String
+  specificLocation       String
+  lotNo                  String
+  surveyNo               String?
+  landAreaSqm            Decimal      @db.Decimal(10, 2)
+  cultivationDate        String
+  improvementsMade       String
+  isTransferee           Boolean?     @default(false)
+  transfereeDetails      String?
+  heirDetailsRelation    String?
+  heirRelationDetails    String?
+  heir1Name              String?
+  heir1Address           String?
+  heir2Name              String?
+  heir2Address           String?
+  heirRepresentativeName String?
+  heirsOfAncestorName    String?
+  witness1Name           String
+  witness1Address        String
+  witness2Name           String
+  witness2Address        String
+  dateFiled              DateTime     @db.Date
+  application            application  @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model application {
+  id                                  Int                           @id @default(autoincrement())
+  referenceNo                         String                        @unique
+  userId                              String
+  serviceId                           Int
+  status                              application_status            @default(PENDING)
+  submittedAt                         DateTime                      @default(now()) @db.Timestamptz(6)
+  updatedAt                           DateTime                      @default(now()) @db.Timestamptz(6)
+  reviewedAt                          DateTime?                     @db.Timestamptz(6)
+  reviewedById                        String?
+  remarks                             String?
+  dataPrivacyConsent                  Boolean                       @default(false)
+  assignedToId                        String?
+  agricultural_form                   agricultural_form?
+  user_application_assignedToIdTouser user?                         @relation("application_assignedToIdTouser", fields: [assignedToId], references: [id], onUpdate: NoAction)
+  user_application_reviewedByIdTouser user?                         @relation("application_reviewedByIdTouser", fields: [reviewedById], references: [id], onUpdate: NoAction)
+  service                             service                       @relation(fields: [serviceId], references: [id], onUpdate: NoAction)
+  user_application_userIdTouser       user                          @relation("application_userIdTouser", fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  chainsaw_registration_form          chainsaw_registration_form?
+  residential_free_patent_form        residential_free_patent_form?
+  tree_cutting_permit_form            tree_cutting_permit_form?
+}
+
+model chainsaw_registration_form {
+  id                Int               @id @default(autoincrement())
+  applicationId     Int               @unique
+  registrationType  registration_type
+  lastName          String
+  firstName         String
+  middleName        String?
+  extensionName     String?
+  province          String
+  municipality      String
+  barangay          String
+  fullAddress       String
+  email             String
+  contactNo         String
+  brand             String
+  model             String
+  dateOfAcquisition DateTime          @db.Date
+  serialNumber      String
+  horsePower        Decimal           @db.Decimal(6, 2)
+  maxGuideBarLength Decimal           @db.Decimal(6, 2)
+  application       application       @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model residential_free_patent_form {
+  id                    Int          @id @default(autoincrement())
+  applicationId         Int          @unique
+  lastName              String
+  firstName             String
+  middleName            String?
+  extensionName         String?
+  contactNo             String
+  email                 String
+  fullAddress           String
+  citizenship           String
+  civilStatus           civil_status
+  dateOfBirth           DateTime     @db.Date
+  placeOfBirth          String
+  spouseName            String?
+  province              String
+  municipality          String
+  barangay              String
+  specificLocation      String
+  lotNo                 String
+  landAreaSqm           Decimal      @db.Decimal(10, 2)
+  affidavitProvince     String
+  affidavitCity         String
+  affiantName           String
+  affiantAddress        String
+  affidavitLandLocation String
+  yearsOfOccupation     Int
+  purposeOfUse          String
+  affidavitDate         DateTime     @db.Date
+  affidavitLocation     String
+  application           application  @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model tree_cutting_permit_form {
+  id                 Int         @id @default(autoincrement())
+  applicationId      Int         @unique
+  lastName           String
+  firstName          String
+  middleName         String?
+  extensionName      String?
+  fullAddress        String
+  email              String
+  contactNo          String
+  treeCuttingAddress String
+  noTreesToBeRemoved Int
+  signatureName      String
+  application        application @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model trip_ticket {
+  id                   Int                @id @default(autoincrement())
+  tripTicketNo         String             @unique
+  vehicleId            Int
+  driverName           String
+  authorizedPassengers String
+  placesToVisit        String
+  purpose              String
+  status               trip_ticket_status @default(ACTIVE)
+  createdById          String
+  createdAt            DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime           @default(now()) @db.Timestamptz(6)
+  user                 user               @relation(fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  vehicle              vehicle            @relation(fields: [vehicleId], references: [id], onUpdate: NoAction)
+  vehicle_schedule     vehicle_schedule[]
+}
+
+model vehicle {
+  id                     Int                @id @default(autoincrement())
+  brand                  String
+  model                  String
+  plateNumber            String             @unique
+  fuelType               fuel_type
+  seatCapacity           Int?
+  color                  String?
+  isUsable               Boolean            @default(true)
+  addedById              String?
+  lastMaintenanceDate    DateTime?          @db.Date
+  lastRegistrationDate   DateTime?          @db.Date
+  registrationExpiration DateTime?          @db.Date
+  imageUrl               String?
+  createdAt              DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime           @default(now()) @db.Timestamptz(6)
+  trip_ticket            trip_ticket[]
+  user                   user?              @relation(fields: [addedById], references: [id], onUpdate: NoAction)
+  vehicle_schedule       vehicle_schedule[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model vehicle_schedule {
+  id           Int            @id @default(autoincrement())
+  vehicleId    Int
+  tripTicketId Int?
+  startDate    DateTime       @db.Date
+  endDate      DateTime       @db.Date
+  status       vehicle_status
+  createdAt    DateTime       @default(now()) @db.Timestamptz(6)
+  trip_ticket  trip_ticket?   @relation(fields: [tripTicketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  vehicle      vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model audit_log {
+  logId     Int      @id @default(autoincrement())
+  logDate   DateTime @default(now()) @db.Timestamptz(6)
+  actorId   String?
+  actorName String   @db.VarChar(100)
+  actorRole String   @db.VarChar(50)
+  action    String   @db.VarChar(100)
+  target    String   @db.VarChar(100)
+  details   String?
+  user      user?    @relation(fields: [actorId], references: [id], onUpdate: NoAction)
+}
+
 enum role {
   USER
   APPLICATION_ADMIN
   VEHICLE_ADMIN
   SUPER_ADMIN
+}
+
+enum application_status {
+  PENDING
+  ACCEPTED
+  REJECTED
+  NEEDS_REVISION
+}
+
+enum civil_status {
+  SINGLE
+  MARRIED
+  WIDOWED
+  ANNULLED
+}
+
+enum fuel_type {
+  DIESEL
+  GASOLINE
+  ELECTRIC
+}
+
+enum registration_type {
+  NEW
+  RENEWAL
+}
+
+enum sex {
+  MALE
+  FEMALE
+}
+
+enum trip_ticket_status {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum vehicle_status {
+  RESERVED
+  MAINTENANCE
 }

@@ -5,6 +5,7 @@ export async function getMyServices() {
       credentials: "include",
     },
   );
-  if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+  if (!res.ok)
+    throw new Error(`Failed to fetch try again later: ${res.status}`);
   return res.json();
 }

@@ -33,7 +33,7 @@ export default function AgriculturalForm() {
               Applicant's Information
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <input
                 type="text"
                 name="lastName"
@@ -55,16 +55,22 @@ export default function AgriculturalForm() {
                 className={inputClass}
                 required
               />
+              <input
+                type="text"
+                name="extension"
+                placeholder="*NAME EXTENSION"
+                className={inputClass}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  MOBILE NUMBER*
+                  CONTACT NUMBER*
                 </label>
                 <input
                   type="text"
-                  name="mobile"
+                  name="contactNumber"
                   placeholder="*09XXXXXXXXX"
                   className={inputClass}
                   required
@@ -84,7 +90,7 @@ export default function AgriculturalForm() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
                   DATE OF BIRTH*
@@ -93,18 +99,6 @@ export default function AgriculturalForm() {
                   type="text"
                   name="birthday"
                   placeholder="*MM/DD/YYYY"
-                  className={inputClass}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  AGE*
-                </label>
-                <input
-                  type="number"
-                  name="age"
-                  min="0"
                   className={inputClass}
                   required
                 />
@@ -174,6 +168,7 @@ export default function AgriculturalForm() {
                   <option value="Single">Single</option>
                   <option value="Married">Married</option>
                   <option value="Widowed">Widowed</option>
+                  <option value="Anulled">Annulled</option>
                 </select>
               </div>
             </div>
@@ -248,7 +243,6 @@ export default function AgriculturalForm() {
                 name="surveyNo"
                 placeholder="*SURVEY NO."
                 className={inputClass}
-                required
               />
               <input
                 type="text"

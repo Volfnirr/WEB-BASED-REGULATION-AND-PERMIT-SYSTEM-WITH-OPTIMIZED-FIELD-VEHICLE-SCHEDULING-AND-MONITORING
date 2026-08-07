@@ -1,8 +1,12 @@
 import { prisma } from "../lib/prisma.js";
+import {
+  getServices,
+  getAssignedServices,
+} from "../services/app-admin.service.js";
 
 export async function getAppAdminServices(req, res) {
   try {
-    const services = await prisma.service.findMany();
+    const services = await getServices();
     res.json(services);
   } catch (error) {
     console.log(error);
@@ -12,15 +16,7 @@ export async function getAppAdminServices(req, res) {
 
 export async function getAppAdminAssignServices(req, res) {
   try {
-    const services = await prisma.application_admin_service.findMany({
-      where: {
-        userId: req.session.userId,
-        //  user: true,
-      },
-      select: {
-        serviceId: true,
-      },
-    });
+    const services = await getAssignedServices(req.session.userId);
 
     //lol rare
     if (services.length === 0) {

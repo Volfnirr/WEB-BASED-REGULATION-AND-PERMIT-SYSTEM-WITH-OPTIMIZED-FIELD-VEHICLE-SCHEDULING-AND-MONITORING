@@ -1,18 +1,58 @@
 "use client";
 import ThankYouModal from "@/components/ui/modal/thankyou";
-import React, { useState } from "react";
+import { useState } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { submitTreeCuttingForm } from "@/lib/api/applications/submit-tree-form";
+import { Spinner } from "@/components/ui/spinner";
+
+const treeCuttingFormSchema = z.object({
+  lastName: z.string().min(1, "Last name is required"),
+  firstName: z.string().min(1, "First name is required"),
+  middleName: z.string().optional(),
+  extensionName: z.string().optional(),
+  email: z.email("Invalid email"),
+  fullAddress: z.string().min(1, "More than 1 character is required"),
+  treeCuttingAddress: z.string().min(1, "More than 1 character is required"),
+  noTreesToBeRemoved: z.coerce.number().min(1, "Must remove at least one tree"),
+  signatureName: z.string().min(1, "More than 1 character is required"),
+  privacyConsent: z.literal(true),
+  contactNo: z
+    .string()
+    .regex(/^09\d{9}$/, "Enter a valid Philippine mobile number")
+    .min(11, "Phone number must be 11 digits.")
+    .max(11, "Phone number must be 11 digits."),
+});
 
 export default function TreeCuttingForm() {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
-
-  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Trigger modal upon form submission
-    setShowModal(true);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(treeCuttingFormSchema),
+  });
+
+  const agreedToPrivacy = watch("privacyConsent");
+  const onSubmit = async (data) => {
+    try {
+      await submitTreeCuttingForm(data);
+      console.log(data);
+      reset();
+      setShowModal(true);
+    } catch (err) {
+      toast.error(err.message, {
+        position: "top-center",
+      });
+    }
   };
 
   return (
@@ -43,42 +83,118 @@ export default function TreeCuttingForm() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
+          className="space-y-8"
+        >
           {/* Section I: Contact Information */}
           <div>
             <h3 className="text-sm font-bold text-gray-800 uppercase border-b border-gray-200 pb-2 mb-4">
               Section I. Contact Information
             </h3>
             <div className="space-y-4">
-              <input
-                type="text"
-                name="ownerName"
-                placeholder="*NAME OF RESIDENTIAL LOT OWNER"
-                className={inputClass}
-                required
-              />
-              <input
-                type="text"
-                name="mailingAddress"
-                placeholder="*MAILING ADDRESS"
-                className={inputClass}
-                required
-              />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <span className="text-sm font-bold text-gray-800 uppercase border-gray-200 pb-2">
+                Owner Name
+              </span>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("lastName")}
+                    type="text"
+                    placeholder="*LAST NAME"
+                    className={inputClass}
+                  />
+                  {errors.lastName && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.lastName.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("firstName")}
+                    type="text"
+                    placeholder="*FIRST NAME"
+                    className={inputClass}
+                  />
+                  {errors.firstName && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.firstName.message}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("middleName")}
+                    type="text"
+                    placeholder="*MIDDLE NAME"
+                    className={inputClass}
+                  />
+                  {errors.middleName && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.middleName.message}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("extensionName")}
+                    type="text"
+                    placeholder="*NAME EXTENSION"
+                    className={inputClass}
+                  />
+                  {errors.extensionName && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.extensionName.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 text-left">
                 <input
-                  type="email"
-                  name="email"
-                  placeholder="*EMAIL"
-                  className={inputClass}
-                  required
-                />
-                <input
+                  {...register("fullAddress")}
                   type="text"
-                  name="contactNo"
-                  placeholder="*CONTACT NO."
+                  placeholder="*MAILING ADDRESS"
                   className={inputClass}
-                  required
                 />
+                {errors.fullAddress && (
+                  <div className="text-red-600 text-xs font-medium">
+                    {errors.fullAddress.message}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("email")}
+                    type="email"
+                    placeholder="*EMAIL"
+                    className={inputClass}
+                    required
+                  />
+                  {errors.email && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.email.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("contactNo")}
+                    type="text"
+                    placeholder="*CONTACT NO."
+                    className={inputClass}
+                  />
+                  {errors.contactNo && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {errors.contactNo.message}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -89,33 +205,50 @@ export default function TreeCuttingForm() {
               Section II. Tree Cutting Activity Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="text"
-                name="cuttingAddress"
-                placeholder="*COMPLETE ADDRESS WHERE CUTTING/REMOVAL WILL BE CONDUCTED"
-                className={inputClass}
-                required
-              />
-              <input
-                type="number"
-                name="treeCount"
-                min="1"
-                placeholder="*NO. OF TREES TO BE CUT/REMOVED"
-                className={inputClass}
-                required
-              />
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("treeCuttingAddress")}
+                  type="text"
+                  placeholder="*COMPLETE ADDRESS WHERE CUTTING/REMOVAL WILL BE CONDUCTED"
+                  className={inputClass}
+                />
+                {errors.treeCuttingAddress && (
+                  <div className="text-red-600 text-xs font-medium">
+                    {errors.treeCuttingAddress.message}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("noTreesToBeRemoved")}
+                  type="number"
+                  placeholder="*NO. OF TREES TO BE CUT/REMOVED"
+                  className={inputClass}
+                />
+                {errors.noTreesToBeRemoved && (
+                  <div className="text-red-600 text-xs font-medium">
+                    {errors.noTreesToBeRemoved.message}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Signature Section */}
           <div className="flex flex-col items-center pt-8 mt-8">
-            <input
-              type="text"
-              name="signature"
-              placeholder="SIGNATURE OVER PRINTED NAME"
-              className={`${inputClass} text-center border-t-0 border-r-0 border-l-0 rounded-none border-b-2 border-gray-800 w-64 md:w-80 shadow-none focus:ring-0`}
-              required
-            />
+            <div className="flex flex-col gap-1 text-left">
+              <input
+                {...register("signatureName")}
+                type="text"
+                placeholder="SIGNATURE OVER PRINTED NAME"
+                className={`${inputClass} text-center border-t-0 border-r-0 border-l-0 rounded-none border-b-2 border-gray-800 w-64 md:w-80 shadow-none focus:ring-0`}
+              />
+              {errors.signatureName && (
+                <div className="text-red-600 text-xs font-medium">
+                  {errors.signatureName.message}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* DATA PRIVACY CONSENT SECTION */}
@@ -134,15 +267,18 @@ export default function TreeCuttingForm() {
               express written consent.
             </p>
             <label className="flex items-start gap-3 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                name="privacy_consent"
-                value="agreed"
-                checked={agreedToPrivacy}
-                onChange={(e) => setAgreedToPrivacy(e.target.checked)}
-                className="mt-0.5 h-4 w-4 text-[#1a5632] border-gray-300 rounded focus:ring-2 focus:ring-[#1a5632] cursor-pointer"
-                required
-              />
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  type="checkbox"
+                  {...register("privacyConsent")}
+                  className="mt-0.5 h-4 w-4 text-[#1a5632] border-gray-300 rounded focus:ring-2 focus:ring-[#1a5632] cursor-pointer"
+                />
+                {errors.privacyConsent && (
+                  <div className="text-red-600 text-xs font-medium">
+                    {errors.privacyConsent.message}
+                  </div>
+                )}
+              </div>
               <span className="font-semibold text-gray-800 text-xs md:text-sm">
                 I have read and agree to the Data Privacy Consent statement
                 above.*
@@ -156,7 +292,13 @@ export default function TreeCuttingForm() {
               disabled={!agreedToPrivacy}
               className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              Submit Notification
+              {isSubmitting ? (
+                <>
+                  <Spinner data-icon />
+                </>
+              ) : (
+                "Submit Notification"
+              )}
             </button>
           </div>
         </form>

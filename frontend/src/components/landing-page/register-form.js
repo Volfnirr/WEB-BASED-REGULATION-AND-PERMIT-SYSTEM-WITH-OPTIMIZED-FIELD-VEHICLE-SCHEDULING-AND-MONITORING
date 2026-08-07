@@ -68,28 +68,49 @@ export default function RegisterForm() {
   }
 
   const onSignUp = async (data) => {
-    const { confirmPassword, ...signUpData } = data;
-    const {} = await authClient.signUp.email(
-      {
-        email: signUpData.email, // user email address
-        password: signUpData.password, // user password -> min 8 characters by default
-        name: signUpData.name, // user display name
-      },
-      {
-        onSuccess: () => {
-          toast.success("Registration Successful", {
-            position: "top-center",
-          });
-          router.push("/login");
+    try {
+      const { confirmPassword, ...signUpData } = data;
+      const { error } = await authClient.signUp.email(
+        {
+          email: signUpData.email, // user email address
+          password: signUpData.password, // user password -> min 8 characters by default
+          name: signUpData.name, // user display name
         },
-        onError: (ctx) => {
-          toast.error(ctx.error.message, { position: "top-center" });
-          setregisterError("root", {
-            message: ctx.error.message,
-          });
+
+        {
+          onSuccess: (ctx) => {
+            if (!ctx.data.token) {
+              toast.error("Registration failed. Try using different email.", {
+                position: "top-center",
+              });
+
+              setregisterError("root", {
+                message: "Registration failed. Try using different email.",
+              });
+
+              return;
+            }
+            console.log("SUCCESS FIRED:", ctx); // add this too
+
+            toast.success("Registration Successful", {
+              position: "top-center",
+            });
+            // router.push("/login");
+          },
+          onError: (ctx) => {
+            console.log("FULL ERROR CONTEXT:", ctx);
+            toast.error(ctx.error.message, { position: "top-center" });
+            setregisterError("root", {
+              message: ctx.error.message,
+            });
+          },
         },
-      },
-    );
+      );
+    } catch (error) {
+      toast.error(error.message, {
+        position: "top-center",
+      });
+    }
   };
 
   return (
