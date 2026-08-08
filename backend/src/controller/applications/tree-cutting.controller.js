@@ -8,7 +8,7 @@ export async function submitTreeCuttingFormMW(req, res) {
     const lastId = await getApplicationNumber();
     const nextId = lastId + 1;
     const year = new Date().getFullYear();
-    const refNo = `TCF-${year}-${String(nextId).padStart(5, "0")}`;
+    const refNo = `TCPF-${year}-${String(nextId).padStart(5, "0")}`;
     console.log("userId being sent:", req.user.id);
 
     // apply interactive transaction of prisma uhmmmmmmmmmm

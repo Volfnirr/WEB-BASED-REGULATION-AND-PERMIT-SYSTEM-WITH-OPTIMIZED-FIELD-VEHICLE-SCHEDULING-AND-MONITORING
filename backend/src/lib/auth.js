@@ -34,7 +34,11 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    autoSignIn: false,
+    // requireEmailVerification: false, // change to true when
+    // autoSignIn: false,
+    // onExistingUserSignUp: async ({ user }, request) => {
+    //   console.log(`Duplicate signup attempt for ${user.email}`);
+    // },
   },
 
   session: {
@@ -48,6 +52,12 @@ export const auth = betterAuth({
         required: false,
         defaultValue: "USER",
         input: false,
+      },
+      termsAndCondition: {
+        type: "boolean",
+        required: true,
+        defaultValue: false,
+        input: true,
       },
     },
   },

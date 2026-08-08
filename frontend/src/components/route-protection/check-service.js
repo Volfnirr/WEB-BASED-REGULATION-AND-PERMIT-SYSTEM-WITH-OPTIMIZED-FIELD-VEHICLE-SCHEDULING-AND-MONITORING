@@ -1,7 +1,6 @@
 "use client";
-import { getMyServices } from "@/lib/api/services";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Loading from "../ui/loading";
 import { useServices } from "@/lib/context/service-context";
 

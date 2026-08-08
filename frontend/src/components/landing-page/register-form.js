@@ -34,6 +34,8 @@ const registerSchema = z
         /[^A-Za-z0-9]/,
         "Password must contain at least 1 special character",
       ),
+    termsAndCondition: z.literal(true, "Please check this box to proceed"),
+
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -45,6 +47,7 @@ export default function RegisterForm() {
   const [showTerms, setShowTerms] = useState(false);
   const [showRegPassword, setRegShowPassword] = useState(false);
   const [showConfirmPassword, setshowConfirmPassword] = useState(false);
+
   const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
 
@@ -75,23 +78,10 @@ export default function RegisterForm() {
           email: signUpData.email, // user email address
           password: signUpData.password, // user password -> min 8 characters by default
           name: signUpData.name, // user display name
+          termsAndCondition: signUpData.termsAndCondition,
         },
-
         {
-          onSuccess: (ctx) => {
-            if (!ctx.data.token) {
-              toast.error("Registration failed. Try using different email.", {
-                position: "top-center",
-              });
-
-              setregisterError("root", {
-                message: "Registration failed. Try using different email.",
-              });
-
-              return;
-            }
-            console.log("SUCCESS FIRED:", ctx); // add this too
-
+          onSuccess: () => {
             toast.success("Registration Successful", {
               position: "top-center",
             });
@@ -118,6 +108,7 @@ export default function RegisterForm() {
       <div className="animate-in fade-in zoom-in duration-300">
         <form
           onSubmit={handleRegisterSubmit(onSignUp)}
+          disabled={isRegisterSubmitting}
           className="flex flex-col gap-4 text-left"
         >
           <div className="flex flex-col gap-1 text-left">
@@ -211,28 +202,31 @@ export default function RegisterForm() {
               </div>
             )}
           </div>
-          <div className="flex flex-row items-center gap-2">
-            <CustomInput
-              type="checkbox"
-              id="acceptTerms"
-              name="acceptTerms"
-              required={true}
-              className={inputDesign + "cursor-pointer"}
-            />
-            <label
-              htmlFor="acceptTerms"
-              className="text-xs text-gray-500 cursor-pointer"
-            >
-              I have read and accept{" "}
-              <button
-                type="button"
-                onClick={() => setShowTerms(true)}
-                className="text-blue-600 font-bold text-xs cursor-pointer hover:underline p-0 bg-transparent border-none inline"
-              >
-                terms and conditions
-              </button>
-            </label>
+          <div className="flex flex-col gap-1 text-left">
+            <div className="flex flex-row items-center align gap-2">
+              <input
+                {...registerSignUp("termsAndCondition")}
+                type="checkbox"
+                className=" h-4 w-4 shrink-0 cursor-pointer"
+              />
+              <label className="text-xs text-gray-500 cursor-pointer">
+                I have read and accept{" "}
+                <button
+                  type="button"
+                  onClick={() => setShowTerms(true)}
+                  className="text-blue-600 font-bold text-xs cursor-pointer hover:underline p-0 bg-transparent border-none inline"
+                >
+                  terms and conditions
+                </button>
+              </label>
+            </div>
+            {registerErrors.termsAndCondition && (
+              <div className="text-red-600 text-xs font-medium">
+                {registerErrors.termsAndCondition.message}
+              </div>
+            )}
           </div>
+
           {registerErrors.root && (
             <div className="text-red-600 text-sm font-medium text-center">
               {registerErrors.root.message}

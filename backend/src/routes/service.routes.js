@@ -31,6 +31,7 @@ router.get(
 );
 router.get(
   "/services/my",
+  requireAuthentication,
   requireAppAdminServices([1]),
   getAppAdminAssignServices,
 );

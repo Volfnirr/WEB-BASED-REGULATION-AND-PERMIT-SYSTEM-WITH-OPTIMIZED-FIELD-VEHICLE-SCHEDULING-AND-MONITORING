@@ -1,36 +1,36 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { authClient } from "@/lib/auth-client";
+import { useUser } from "@/lib/context/account-info-context";
 import Loading from "@/components/ui/loading";
 export default function CheckRole({ userRoles, children }) {
   const router = useRouter();
 
-  const { data: session, isPending } = authClient.useSession();
+  const { role, isPending, isLoggedIn } = useUser();
 
   useEffect(() => {
     // Wait until Better Auth finishes checking
     if (isPending) return;
 
     // Not logged in
-    if (!session) {
+    if (!isLoggedIn) {
       router.replace("/login");
       return;
     }
 
     // Logged in but wrong role
-    if (!userRoles.includes(session.user.role)) {
+    if (!userRoles.includes(role)) {
       router.replace("/unauthorized");
       return;
     }
-  }, [session, isPending, userRoles, router]);
+  }, [userRoles, isLoggedIn, isPending, role, router]);
 
   // Show loading while checking
   if (isPending) {
     return <Loading />;
   }
 
-  if (!session || !userRoles.includes(session.user.role)) {
+  if (!isLoggedIn || !userRoles.includes(role)) {
     return null;
   }
   return children;
