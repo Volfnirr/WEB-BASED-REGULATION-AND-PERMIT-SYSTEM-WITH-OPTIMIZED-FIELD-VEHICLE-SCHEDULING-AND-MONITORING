@@ -26,9 +26,9 @@ export default function CheckRole({ userRoles, children }) {
   }, [userRoles, isLoggedIn, isPending, role, router]);
 
   // Show loading while checking
-  if (isPending) {
-    return <Loading />;
-  }
+  // if (isPending) {
+  //   return <Loading />;
+  // }
 
   if (!isLoggedIn || !userRoles.includes(role)) {
     return null;

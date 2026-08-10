@@ -4,8 +4,12 @@ export const validate = (schema) => (req, res, next) => {
 
     if (!result.success) {
       return res.status(400).json({
-        message: "Validation failed",
-        errors: result.error.flatten().fieldErrors,
+        errorCode: "VALIDATION_ERROR",
+        errorMessage: "Validation failed for one or more fields.",
+        errorContext: {
+          fieldErrors: result.error.flatten().fieldErrors,
+        },
+        timestamp: new Date().toISOString(),
       });
     }
 
@@ -13,6 +17,10 @@ export const validate = (schema) => (req, res, next) => {
     next();
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({
+      errorCode: "INTERNAL_SERVER_ERROR",
+      errorMessage: "Something went wrong on the server.",
+      timestamp: new Date().toISOString(),
+    });
   }
 };

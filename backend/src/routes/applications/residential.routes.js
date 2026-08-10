@@ -6,14 +6,14 @@ import { requireAuthorization } from "../../middleware/requireAuthorization.js";
 import { requireAuthentication } from "../../middleware/requireAuthentication.js";
 import { validate } from "../../middleware/validate.js";
 import { residentialFormSchema } from "../../validation/residentialData.js";
-import { submitResidentialFormMW } from "../../controller/applications/application.controller.js";
+import { submitResidentialForm } from "../../controller/applications/residential.controller.js";
 
 router.post(
-  "/applications/residential",
+  "/residential",
   formSubmitLimiter,
   requireAuthentication,
   requireAuthorization("USER"),
   validate(residentialFormSchema),
-  submitResidentialFormMW,
+  submitResidentialForm,
 );
 export default router;

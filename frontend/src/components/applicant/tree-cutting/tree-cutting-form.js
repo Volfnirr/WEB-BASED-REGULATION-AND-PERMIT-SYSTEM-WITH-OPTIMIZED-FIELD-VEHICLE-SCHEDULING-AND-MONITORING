@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
-import { submitTreeCuttingForm } from "@/lib/api/applications/submit-tree-form";
+import { submitTreeCuttingForm } from "@/lib/api/applications/tree-cutting";
 import { Spinner } from "@/components/ui/spinner";
 
 const treeCuttingFormSchema = z.object({

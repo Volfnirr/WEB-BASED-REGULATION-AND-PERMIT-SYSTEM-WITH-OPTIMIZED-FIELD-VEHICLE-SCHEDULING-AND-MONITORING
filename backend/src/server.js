@@ -23,16 +23,16 @@ import { rateLimiter } from "./middleware/rateLimit.js";
 import serviceRoutes from "./routes/service.routes.js";
 import treeCuttingRoutes from "./routes/applications/tree-cutting.routes.js";
 import residentialRoutes from "./routes/applications/residential.routes.js";
-
+import userApplicationStatus from "./routes/applications/application-status.routes.js";
 const app = express();
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 console.log("NODE_ENV is:", process.env.NODE_ENV);
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   }),
 );
@@ -47,9 +47,11 @@ app.use(express.json());
 
 app.use("/api/v1", serviceRoutes);
 
-app.use("/api/v1", treeCuttingRoutes);
+app.use("/api/v1/applications", treeCuttingRoutes);
 
-app.use("/api/v1", residentialRoutes);
+app.use("/api/v1/applications", residentialRoutes);
+
+app.use("/api/v1/applications", userApplicationStatus);
 app.listen(PORT, () => {
   console.log(`Server started PORT ${PORT}`);
 });

@@ -1,9 +1,10 @@
 import { getApplicationNumber } from "../../services/applications/application.service.js";
-import { submitResidentialForm } from "../../services/applications/residential.service.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import { prisma } from "../../lib/prisma.js";
+// to use residentialService.exportName
+import * as residentialService from "../../services/applications/residential.service.js";
 
-export async function submitResidentialFormMW(req, res) {
+export async function submitResidentialForm(req, res) {
   try {
     const lastId = await getApplicationNumber();
     const nextId = lastId + 1;
@@ -13,7 +14,7 @@ export async function submitResidentialFormMW(req, res) {
     console.log("userId being sent:", req.user.id);
 
     const application = await prisma.$transaction(async (tx) => {
-      const newApplication = await submitResidentialForm(
+      const newApplication = await residentialService.submitResidentialForm(
         refNo,
         req.user.id,
         req.validatedData,

@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma.js";
-// to use requireAppAdminServices(["service1","service2"])
+// to use requireAppAdminServices([1,2,3,4])
 export function requireAppAdminServices(services) {
   return async (req, res, next) => {
     try {
