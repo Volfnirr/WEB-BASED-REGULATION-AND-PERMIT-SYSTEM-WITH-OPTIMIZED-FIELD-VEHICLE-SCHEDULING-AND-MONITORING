@@ -1,5 +1,5 @@
 "use client";
-
+import { localDate } from "@/lib/local-date";
 import React from "react";
 
 export default function ReviewTreeCutting({ data }) {
@@ -23,18 +23,24 @@ export default function ReviewTreeCutting({ data }) {
             <p className="text-sm text-gray-600">
               Application No.:{" "}
               <span className="font-medium text-gray-900">
-                {treeCutting?.applicationNo}
+                {treeCutting?.id}
+              </span>
+            </p>
+            <p className="text-sm text-gray-600">
+              Reference No.:{" "}
+              <span className="font-medium text-gray-900">
+                {treeCutting?.application?.referenceNo}
               </span>
             </p>
             <p className="text-sm text-gray-600">
               Date Submitted:{" "}
               <span className="font-medium text-gray-900">
-                {treeCutting?.dateSubmitted}
+                {localDate(treeCutting?.application?.submittedAt)}
               </span>
             </p>
           </div>
           <div className="mt-4 md:mt-0 px-4 py-1.5 bg-yellow-100 text-yellow-800 font-bold text-sm rounded-full border border-yellow-200 shadow-sm">
-            {treeCutting?.status}
+            {treeCutting?.application?.status}
           </div>
         </div>
 
@@ -52,7 +58,12 @@ export default function ReviewTreeCutting({ data }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={treeCutting?.ownerName}
+                  defaultValue={
+                    treeCutting?.lastName +
+                    treeCutting?.firstName +
+                    treeCutting?.middleName +
+                    treeCutting?.extensionName
+                  }
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -63,7 +74,7 @@ export default function ReviewTreeCutting({ data }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={treeCutting?.mailingAddress}
+                  defaultValue={treeCutting?.fullAddress}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -109,7 +120,7 @@ export default function ReviewTreeCutting({ data }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={treeCutting?.cuttingAddress}
+                  defaultValue={treeCutting?.treeCuttingAddress}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -120,7 +131,7 @@ export default function ReviewTreeCutting({ data }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={treeCutting?.treeCount}
+                  defaultValue={treeCutting?.noTreesToBeRemoved}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -138,7 +149,7 @@ export default function ReviewTreeCutting({ data }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={treeCutting?.signature}
+                  defaultValue={treeCutting?.signatureName}
                   className={readOnlyInputClass}
                   readOnly
                 />

@@ -4,14 +4,18 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
-import { Menu } from "lucide-react";
-import { X } from "lucide-react";
-import { ToolCase } from "lucide-react";
-import { HousePlus } from "lucide-react";
-import { Leaf } from "lucide-react";
-import { Trees } from "lucide-react";
-import { ClipboardList } from "lucide-react";
+import {
+  Menu,
+  X,
+  ToolCase,
+  HousePlus,
+  Leaf,
+  Trees,
+  ClipboardList,
+} from "lucide-react";
 import { logout } from "@/lib/api/logout";
+import { useUser } from "@/lib/context/account-info-context";
+
 const links = [
   {
     icon: <Leaf />,
@@ -44,6 +48,24 @@ export default function ApplicantSidebar() {
       setIsOpen(false);
     }
   };
+
+  //   (alias) useUserInfo(): {
+  //  user: StripEmptyObjects<{
+  //  id: string;
+  //  createdAt: Date;
+  //  updatedAt: Date;
+  //  email: string;
+  //  emailVerified: boolean;
+  //  name: string;
+  //  image?: string | null | undefined;
+  //  }> | null;
+  //  role: any;
+  //  isLoggedIn: boolean;
+  //  isPending: boolean;
+  //  error: BetterFetchError | null;
+  // }
+  // import useUserInfo
+  const { user } = useUser();
   return (
     <>
       {!isOpen && (
@@ -71,7 +93,7 @@ export default function ApplicantSidebar() {
                     PENRO Portal
                   </h2>
                   <p className="text-sm font-semibold truncate max-w-37.5">
-                    Juan Dela Cruz
+                    {user ? user.name : "failed to load username"}
                   </p>
                 </div>
               </div>

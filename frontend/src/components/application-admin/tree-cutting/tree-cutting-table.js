@@ -5,28 +5,36 @@ import SearchInput from "@/components/ui/tables/tools/search-input";
 import SortDropdown from "@/components/ui/tables/tools/sort-dropdown";
 import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
-export default function TreeCuttingTable() {
+import { useState } from "react";
+
+export default function TreeCuttingTable({ initialData }) {
   const page = "/application-admin/tree-cutting/";
+  const [data, setData] = useState(initialData);
+
   const column = [
     {
-      head: "Request ID",
+      head: "ID",
       data: "id",
     },
     {
-      head: "Requester Name",
-      data: "requester_name",
+      head: "REF-NO",
+      data: "referenceNo",
     },
     {
-      head: "Requester Email",
-      data: "email",
+      head: "Account Name",
+      data: "userAccName",
+    },
+    {
+      head: "Account Email",
+      data: "userAccEmail",
     },
     {
       head: "Service Name",
-      data: "service_name",
+      data: "serviceName",
     },
     {
       head: "Submission Date",
-      data: "submission_date",
+      data: "submittedAt",
     },
     {
       head: "Status",
@@ -38,44 +46,44 @@ export default function TreeCuttingTable() {
     },
   ];
 
-  const data = [
-    {
-      id: "1",
-      requester_name: "John Smith",
-      email: "johnsmith@gmail.com",
-      service_name: "Tree cutting permit",
-      submission_date: "2026-07-09",
-      status: "Accepted",
-      action: "View",
-    },
-    {
-      id: "2",
-      requester_name: "Mia Cruz",
-      email: "cruz@gmail.com",
-      service_name: "Tree cutting permit",
-      submission_date: "2026-07-10",
-      status: "Rejected",
-      action: "View",
-    },
-    {
-      id: "3",
-      requester_name: "Timothy Saph",
-      email: "timothy@gmail.com",
-      service_name: "Tree cutting permit",
-      submission_date: "2026-07-11",
-      status: "Pending",
-      action: "View",
-    },
-    {
-      id: "4",
-      requester_name: "Roberto Ignacio",
-      email: "robertoignacio@gmail.com",
-      service_name: "Tree cutting permit",
-      submission_date: "2026-07-12",
-      status: "Pending",
-      action: "View",
-    },
-  ];
+  // const data = [
+  //   {
+  //     id: "1",
+  //     requester_name: "John Smith",
+  //     email: "johnsmith@gmail.com",
+  //     service_name: "Tree cutting permit",
+  //     submission_date: "2026-07-09",
+  //     status: "Accepted",
+  //     action: "View",
+  //   },
+  //   {
+  //     id: "2",
+  //     requester_name: "Mia Cruz",
+  //     email: "cruz@gmail.com",
+  //     service_name: "Tree cutting permit",
+  //     submission_date: "2026-07-10",
+  //     status: "Rejected",
+  //     action: "View",
+  //   },
+  //   {
+  //     id: "3",
+  //     requester_name: "Timothy Saph",
+  //     email: "timothy@gmail.com",
+  //     service_name: "Tree cutting permit",
+  //     submission_date: "2026-07-11",
+  //     status: "Pending",
+  //     action: "View",
+  //   },
+  //   {
+  //     id: "4",
+  //     requester_name: "Roberto Ignacio",
+  //     email: "robertoignacio@gmail.com",
+  //     service_name: "Tree cutting permit",
+  //     submission_date: "2026-07-12",
+  //     status: "Pending",
+  //     action: "View",
+  //   },
+  // ];
   const {
     search,
     updateSearch,
@@ -91,14 +99,19 @@ export default function TreeCuttingTable() {
     itemsPerPage,
   } = useDataTable({
     data,
-    searchableFields: ["requester_name", "status", "id", "submission_date"],
+    searchableFields: [
+      "requester_name",
+      "status",
+      "referenceNo",
+      "submission_date",
+    ],
     itemsPerPage: 8,
   });
 
-  const roleOptions = ["Pending", "Rejected", "Accepted"];
+  const roleOptions = ["PENDING", "REJECTED", "ACCEPTED"];
 
   const sortOptions = [
-    { label: "Request ID", key: "id" },
+    { label: "Request ID", key: "referenceNo" },
     { label: "Name", key: "requester_name" },
     { label: "Submission Date", key: "submission_date" },
   ];
@@ -125,6 +138,7 @@ export default function TreeCuttingTable() {
       </div>
 
       <Table columns={column} rows={paginatedData} page={page} />
+
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

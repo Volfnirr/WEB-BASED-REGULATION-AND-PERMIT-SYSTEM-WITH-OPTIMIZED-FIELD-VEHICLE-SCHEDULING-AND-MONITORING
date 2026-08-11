@@ -73,7 +73,7 @@ export default function LoginForm() {
         },
       );
     } catch (err) {
-      console.error("Error:", error);
+      console.error("Error:", err);
       toast.error(err.message, {
         position: "top-center",
       });

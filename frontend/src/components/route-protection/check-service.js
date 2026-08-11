@@ -24,11 +24,15 @@ export default function AssignedServices({ reqServices, children }) {
     }
   }, [loading, error, grantAccess, router]);
 
-  if (loading) {
-    return <Loading />;
-  }
+  // if (loading) {
+  //   return <Loading />;
+  // }
   if (error) {
-    return <p className="px-3 text-sm text-red-300">Failed to load services</p>;
+    return (
+      <p className="px-3 text-sm text-red-300">
+        Failed to load services: {error.message}
+      </p>
+    );
   }
   if (!grantAccess) {
     return null;

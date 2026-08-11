@@ -32,7 +32,7 @@ router.get(
 router.get(
   "/services/my",
   requireAuthentication,
-  requireAppAdminServices([1]),
+  requireAppAdminServices([1, 2, 3, 4]),
   getAppAdminAssignServices,
 );
 export default router;
