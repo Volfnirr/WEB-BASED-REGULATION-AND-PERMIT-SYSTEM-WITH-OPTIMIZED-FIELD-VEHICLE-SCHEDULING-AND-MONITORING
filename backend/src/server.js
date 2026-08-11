@@ -23,7 +23,7 @@ import { rateLimiter } from "./middleware/rateLimit.js";
 import serviceRoutes from "./routes/service.routes.js";
 import treeCuttingRoutes from "./routes/applications/tree-cutting.routes.js";
 import residentialRoutes from "./routes/applications/residential.routes.js";
-
+import chainsawRoutes from "./routes/applications/chainsaw.routes.js";
 const app = express();
 
 const PORT = 5000;
@@ -50,6 +50,9 @@ app.use("/api/v1", serviceRoutes);
 app.use("/api/v1", treeCuttingRoutes);
 
 app.use("/api/v1", residentialRoutes);
+
+app.use("/api/v1", chainsawRoutes);
+
 app.listen(PORT, () => {
   console.log(`Server started PORT ${PORT}`);
 });
