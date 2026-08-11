@@ -138,6 +138,7 @@ export async function selfAssignTreeCuttingApplication(req, res) {
   }
 }
 
+// view an application by the selected id
 export async function viewTreeCuttingFormById(req, res) {
   try {
     const applicationData =
@@ -156,6 +157,125 @@ export async function viewTreeCuttingFormById(req, res) {
     return res.status(200).json({
       message: "Successfully get the Form data",
       treeCuttingFormData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Approve a tree cutting application
+export async function approveTreeCuttingApplication(req, res) {
+  try {
+    const applicationData =
+      await treeCuttingService.listAssignedToTreeCuttingApplications(
+        req.params.id,
+      );
+
+    if (applicationData.assignedToId === null) {
+      return res.status(409).json({
+        message: "You can't approve an application that is not assigned",
+      });
+    }
+
+    if (applicationData.assignedToId !== req.user.id) {
+      return res.status(409).json({
+        message: "You can't approve an application that doesn't belong to you",
+      });
+    }
+
+    if (applicationData.status !== "PENDING") {
+      return res.status(409).json({
+        message: "You can only approve applications that are pending",
+      });
+    }
+
+    const application = await prisma.$transaction(async (tx) => {
+      const approveApplication =
+        await treeCuttingService.approveTreeCuttingApplication(
+          req.params.id,
+          req.validatedData.remarks,
+          req.user.id,
+          tx,
+        );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Approve",
+          target: `Tree Cutting Application ${applicationData.referenceNo}`,
+          details: `Approved a Tree Cutting Permit application with Ref No of  ${applicationData.referenceNo}`,
+        },
+        tx,
+      );
+
+      return approveApplication;
+    });
+    return res.status(200).json({
+      message: `Successfully approved a tree application with the ID of ${applicationData.id} and Ref No. of ${applicationData.referenceNo} `,
+      application,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Reject a tree cutting application
+export async function rejectTreeCuttingApplication(req, res) {
+  console.log(req.validatedData.remarks);
+  try {
+    const applicationData =
+      await treeCuttingService.listAssignedToTreeCuttingApplications(
+        req.params.id,
+      );
+
+    if (applicationData.assignedToId === null) {
+      return res.status(409).json({
+        message: "You can't reject an application that is not assigned",
+      });
+    }
+
+    if (applicationData.assignedToId !== req.user.id) {
+      return res.status(409).json({
+        message: "You can't reject an application that doesn't belong to you",
+      });
+    }
+
+    if (applicationData.status !== "PENDING") {
+      return res
+        .status(409)
+        .json({ message: "You can only reject applications that are pending" });
+    }
+
+    const application = await prisma.$transaction(async (tx) => {
+      const approveApplication =
+        await treeCuttingService.rejectTreeCuttingApplication(
+          req.params.id,
+          req.validatedData.remarks,
+          req.user.id,
+          tx,
+        );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Reject",
+          target: `Tree Cutting Application ${applicationData.referenceNo}`,
+          details: `Rejected a Tree Cutting Permit application with Ref No of ${applicationData.referenceNo}`,
+        },
+        tx,
+      );
+
+      return approveApplication;
+    });
+    return res.status(200).json({
+      message: `Successfully rejected a tree application with the ID of ${applicationData.id} and Ref No. of ${applicationData.referenceNo} `,
+      application,
     });
   } catch (error) {
     console.log(error);

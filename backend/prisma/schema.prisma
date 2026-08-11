@@ -309,7 +309,7 @@ enum role {
 
 enum application_status {
   PENDING
-  ACCEPTED
+  APPROVED
   REJECTED
   NEEDS_REVISION
 }

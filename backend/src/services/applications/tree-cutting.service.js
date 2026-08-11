@@ -30,7 +30,7 @@ export async function submitTreeCuttingForm(refNo, userId, data, db = prisma) {
     },
   });
 }
-
+// List all tree-cutting application with PENDING status
 export async function listTreeCuttingApplications() {
   return await prisma.application.findMany({
     where: {
@@ -60,6 +60,7 @@ export async function listTreeCuttingApplications() {
   });
 }
 
+//list selected tree cutting application
 export async function listAssignedToTreeCuttingApplications(applicationId) {
   return await prisma.application.findUnique({
     where: {
@@ -87,6 +88,7 @@ export async function listAssignedToTreeCuttingApplications(applicationId) {
   });
 }
 
+// view an application by the selected id
 export async function viewTreeCuttingFormById(formId) {
   return await prisma.tree_cutting_permit_form.findUnique({
     where: {
@@ -100,6 +102,48 @@ export async function viewTreeCuttingFormById(formId) {
           status: true,
         },
       },
+    },
+  });
+}
+
+// Approve tree cutting application
+export async function approveTreeCuttingApplication(
+  id,
+  remarks,
+  reviewerId,
+  db = prisma,
+) {
+  return await db.application.update({
+    where: {
+      id: Number(id),
+    },
+    data: {
+      status: "APPROVED",
+      remarks: remarks,
+      reviewedAt: new Date(),
+      reviewedById: reviewerId,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+// Reject tree cutting application
+export async function rejectTreeCuttingApplication(
+  id,
+  remarks,
+  reviewerId,
+  db = prisma,
+) {
+  return await db.application.update({
+    where: {
+      id: Number(id),
+    },
+    data: {
+      status: "REJECTED",
+      remarks: remarks,
+      reviewedAt: new Date(),
+      reviewedById: reviewerId,
+      updatedAt: new Date(),
     },
   });
 }
