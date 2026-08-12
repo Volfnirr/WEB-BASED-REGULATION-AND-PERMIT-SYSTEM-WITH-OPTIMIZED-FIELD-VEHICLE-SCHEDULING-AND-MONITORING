@@ -5,7 +5,6 @@ import { getTreeCuttingFormDataById } from "@/lib/api/applications/tree-cutting-
 export default async function ResidentialFormReview({ params }) {
   const { id } = await params;
   const { treeCuttingFormData } = await getTreeCuttingFormDataById(id);
-  console.log("APPLICATION DATA:", treeCuttingFormData);
   if (!treeCuttingFormData) {
     notFound();
   }
@@ -13,7 +12,7 @@ export default async function ResidentialFormReview({ params }) {
   return (
     <div>
       <AssignedServices reqServices={[3]}>
-        <TreeCuttingReview data={treeCuttingFormData} />
+        <TreeCuttingReview data={treeCuttingFormData} params={id} />
       </AssignedServices>
     </div>
   );

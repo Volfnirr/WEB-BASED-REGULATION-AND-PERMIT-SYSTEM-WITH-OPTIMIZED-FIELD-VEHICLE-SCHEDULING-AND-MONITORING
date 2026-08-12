@@ -13,7 +13,7 @@ import { requireAuthentication } from "../middleware/requireAuthentication.js";
 import { requireAuthorization } from "../middleware/requireAuthorization.js";
 // This is for requireAppAdminServices
 // Important: user after requireAuthentication a nd requireAuthorization
-// requireAppAdminServices to use: requireAuthorization(["services","services"])
+// requireAppAdminServices to use: requireAuthorization([1,2])
 // service = add required service for that action
 // services are
 // 1 = Agricultural Free Patent,

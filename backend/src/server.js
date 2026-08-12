@@ -12,7 +12,7 @@ import { rateLimiter } from "./middleware/rateLimit.js";
 // import { requireAuthorization } from "./middleware/requireAuthorization.js";
 // // This is for requireAppAdminServices
 // // Important: user after requireAuthentication a nd requireAuthorization
-// // requireAppAdminServices to use: requireAuthorization(["services","services"])
+// // requireAppAdminServices to use: requireAuthorization([1,2])
 // // service = add required service for that action
 // // services are
 // // 1 = Agricultural Free Patent,
@@ -53,9 +53,6 @@ app.use("/api/v1/applications", treeCuttingRoutes);
 app.use("/api/v1/applications", residentialRoutes);
 
 app.use("/api/v1/applications", userApplicationStatus);
-app.use("/api/v1", residentialRoutes);
-
-app.use("/api/v1", chainsawRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server started PORT ${PORT}`);
