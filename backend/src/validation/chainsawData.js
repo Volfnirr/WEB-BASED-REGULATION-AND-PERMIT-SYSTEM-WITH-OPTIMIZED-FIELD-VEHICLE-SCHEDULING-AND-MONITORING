@@ -16,7 +16,7 @@ export const chainsawFormSchema = z.object({
   barangay: z.string().min(1, { message: "Barangay is required" }),
   completeAddress: z.string().min(5, { message: "Complete address must be at least 5 characters" }),
   
-  email: z.string().min(1, { message: "Email is required" }).email({ message: "Invalid email address" }),
+  email: z.email({ message: "Invalid email address" }),
   contactNumber: z
     .string()
     .min(1, { message: "Contact number is required" })

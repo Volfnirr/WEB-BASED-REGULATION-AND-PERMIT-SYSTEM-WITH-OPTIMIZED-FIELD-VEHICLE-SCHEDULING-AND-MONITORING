@@ -44,7 +44,7 @@ const ALL_SERVICES = [
     id: 4,
     icon: <Trees />,
     name: "Chainsaw Registration",
-    href: "/application-admin/tree-cutting",
+    href: "/application-admin/chainsaw",
   },
 ];
 // 1 = Agricultural Free Patent,

@@ -1,20 +1,20 @@
 import { getApplicationNumber } from "../../services/applications/application.service.js";
-import * as chainsawService from "../../services/applications/chainsaw.service.js";
-import * as AssignService from "../../services/applications/assign-user.service.js"
+import * as agriculturalService from "../../services/applications/agricultural.service.js";
+import * as AssignService from "../../services/applications/assign-user.service.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import { prisma } from "../../lib/prisma.js";
 
-export async function submitChainsawFormMW(req, res) {
+export async function submitAgriculturalFormMW(req, res) {
   try {
     const lastId = await getApplicationNumber();
     const nextId = lastId + 1;
     const year = new Date().getFullYear();
-    const refNo = `CRF-${year}-${String(nextId).padStart(5, "0")}`;
+    const refNo = `AFP-${year}-${String(nextId).padStart(5, "0")}`;
     
     console.log("userId being sent:", req.user.id);
 
     const application = await prisma.$transaction(async (tx) => {
-      const newApplication = await chainsawService.submitChainsawForm(
+      const newApplication = await agriculturalService.submitAgriculturalForm(
         refNo,
         req.user.id,
         req.validatedData,
@@ -27,8 +27,8 @@ export async function submitChainsawFormMW(req, res) {
           actorName: req.user.name,
           actorRole: req.user.role,
           action: "Submit Form Application",
-          target: "Chainsaw Registration",
-          details: `Submitted Chainsaw Registration application (${refNo})`,
+          target: "Agricultural Free Patent",
+          details: `Submitted Agricultural Free Patent application (${refNo})`,
         },
         tx,
       );
@@ -37,7 +37,7 @@ export async function submitChainsawFormMW(req, res) {
     });
 
     return res.status(201).json({
-      message: "Chainsaw registration application submitted",
+      message: "Agricultural free patent application submitted",
       application,
     });
   } catch (error) {
