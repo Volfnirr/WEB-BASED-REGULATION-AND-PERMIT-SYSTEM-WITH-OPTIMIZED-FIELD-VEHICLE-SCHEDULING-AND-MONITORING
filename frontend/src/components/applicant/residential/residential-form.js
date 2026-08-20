@@ -1,7 +1,7 @@
 "use client";
 
 import ThankYouModal from "@/components/ui/modal/thankyou";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 
 import { CalendarDays } from "lucide-react";
-import { submitResidentialForm } from "@/lib/api/applications/residential-form";
+import { submitResidentialForm } from "@/lib/api/applications/residential/residential";
 import { Spinner } from "@/components/ui/spinner";
 
 const residentialFormSchema = z
@@ -96,14 +96,22 @@ const residentialFormSchema = z
   })
   .refine(
     (data) => {
-      if (data.civilStatus === "MARRIED") {
-        return !!data.spouseName?.trim();
-      }
+      if (data.civilStatus === "MARRIED") return !!data.spouseName?.trim();
       return true;
     },
     {
       path: ["spouseName"],
       message: "Spouse name is required for married applicants",
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.civilStatus !== "MARRIED") return !data.spouseName?.trim();
+      return true;
+    },
+    {
+      path: ["spouseName"],
+      message: "Spouse name should only be set if civil status is Married",
     },
   );
 
@@ -128,6 +136,8 @@ export default function ResidentialForm() {
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(residentialFormSchema),
@@ -139,10 +149,17 @@ export default function ResidentialForm() {
     },
   });
 
+  const civilStatus = watch("civilStatus");
+
+  useEffect(() => {
+    if (civilStatus !== "MARRIED") {
+      setValue("spouseName", "", { shouldValidate: true, shouldDirty: false });
+    }
+  }, [civilStatus, setValue]);
+
   const onSubmit = async (data) => {
     try {
       await submitResidentialForm(data);
-      console.log(data);
       reset();
       setShowModal(true);
     } catch (err) {
@@ -394,19 +411,23 @@ export default function ResidentialForm() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("spouseName")}
-                  type="text"
-                  placeholder="NAME OF SPOUSE (IF MARRIED)"
-                  className={inputClass}
-                />
-                {errors.spouseName && (
-                  <div className={errorClass}>{errors.spouseName.message}</div>
-                )}
+            {civilStatus === "MARRIED" && (
+              <div className="grid grid-cols-1 gap-4 mb-4">
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("spouseName")}
+                    type="text"
+                    placeholder="NAME OF SPOUSE (IF MARRIED)"
+                    className={inputClass}
+                  />
+                  {errors.spouseName && (
+                    <div className={errorClass}>
+                      {errors.spouseName.message}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Section: Land Information */}

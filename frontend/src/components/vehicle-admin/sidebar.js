@@ -120,7 +120,7 @@ export default function VehicleAdminSiderbar() {
           <div className="p-4 border-t border-green-800">
             <button
               onClick={() => logout(router)}
-              className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium bg-red-700 hover:bg-red-800 text-white rounded-lg transition-colors shadow"
+              className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium bg-red-700 hover:bg-red-800 text-white rounded-lg transition-colors shadow cursor-pointer"
             >
               Logout
             </button>

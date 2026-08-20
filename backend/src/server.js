@@ -24,6 +24,8 @@ import serviceRoutes from "./routes/service.routes.js";
 import treeCuttingRoutes from "./routes/applications/tree-cutting.routes.js";
 import residentialRoutes from "./routes/applications/residential.routes.js";
 import userApplicationStatus from "./routes/applications/application-status.routes.js";
+import applicationAdminRoutes from "./routes/applications/admin.routes.js";
+
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -52,6 +54,8 @@ app.use("/api/v1/applications", treeCuttingRoutes);
 app.use("/api/v1/applications", residentialRoutes);
 
 app.use("/api/v1/applications", userApplicationStatus);
+
+app.use("/api/v1/applications", applicationAdminRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server started PORT ${PORT}`);

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { Spinner } from "@/components/ui/spinner.js";
-import { assignUserToApplication } from "@/lib/api/applications/assign-user-to-application";
+import { assignUserToApplication } from "@/lib/api/applications/app-admin-action";
 const confirmSchema = z.object({
   confirm: z
     .string()
@@ -31,8 +31,7 @@ export default function AssignApplication({
   const onSubmit = async (_) => {
     try {
       const response = await assignUserToApplication(serviceId);
-      console.log(serviceId);
-      toast.success(`${response.message} ${response.assignedUserTo}`, {
+      toast.success(`${response.message}`, {
         position: "top-center",
       });
       onClose();
@@ -84,12 +83,6 @@ export default function AssignApplication({
               Application Details
             </p>
             <div className="flex flex-col gap-1.5 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Service ID</span>
-                <span className="font-medium text-gray-900">
-                  {serviceId || "—"}
-                </span>
-              </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Account REF-NO</span>
                 <span className="font-medium text-gray-900">

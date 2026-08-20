@@ -27,7 +27,7 @@ export async function getAppAdminAssignServices(req, res) {
         message: "Unauthorized access: You are not assigned to any services",
       });
     }
-
+    console.log(services);
     res.json({
       name: req.user.name,
       services: services,

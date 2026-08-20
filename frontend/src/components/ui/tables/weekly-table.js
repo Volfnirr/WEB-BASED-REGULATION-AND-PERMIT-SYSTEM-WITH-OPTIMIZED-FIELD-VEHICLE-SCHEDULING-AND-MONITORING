@@ -66,7 +66,7 @@ export default function VehicleSchedulesTableUI({ date, columns, rows, page }) {
                       const schedule = row.vehicle_schedules?.find(
                         (s) => s.date === d,
                       );
-                      const status = schedule?.status ?? "Available";
+                      const status = schedule?.status ?? "AVAILABLE";
 
                       return (
                         <span

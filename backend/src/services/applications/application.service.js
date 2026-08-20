@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma.js";
-
+// need fix
 export async function getApplicationNumber() {
   const last = await prisma.application.findFirst({
     orderBy: {
@@ -12,6 +12,7 @@ export async function getApplicationNumber() {
   return last ? last.id : 0;
 }
 
+// get user applications status
 export async function getUserApplicationStatus(userId) {
   return await prisma.application.findMany({
     where: {

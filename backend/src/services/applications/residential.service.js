@@ -46,3 +46,81 @@ export async function submitResidentialForm(refNo, userId, data, db = prisma) {
     },
   });
 }
+
+// List all residential applications with PENDING status and no ASSIGNED admin
+export async function listResidentialApplications() {
+  return await prisma.application.findMany({
+    where: {
+      serviceId: 2,
+      status: "PENDING",
+      assignedToId: null,
+    },
+    orderBy: { submittedAt: "desc" },
+    select: {
+      id: true,
+      status: true,
+      submittedAt: true,
+      referenceNo: true,
+      assignedToId: true,
+      service: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      user_application_userIdTouser: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+}
+
+// used with get id
+export async function listAssignedResidentialApplications(applicationId) {
+  return await prisma.application.findUnique({
+    where: {
+      id: Number(applicationId),
+      serviceId: 2,
+    },
+    select: {
+      id: true,
+      status: true,
+      assignedToId: true,
+      referenceNo: true,
+      service: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      user_application_assignedToIdTouser: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+}
+
+// view residential form by id
+export async function viewResidentialById(formId) {
+  return await prisma.residential_free_patent_form.findUnique({
+    where: {
+      applicationId: Number(formId),
+    },
+    include: {
+      application: {
+        select: {
+          referenceNo: true,
+          submittedAt: true,
+          status: true,
+          remarks: true,
+        },
+      },
+    },
+  });
+}

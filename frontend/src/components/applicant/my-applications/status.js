@@ -13,7 +13,6 @@ import { ScrollText, SquarePlus } from "lucide-react";
 import Link from "next/link";
 
 export default function ApplicationStatusPage({ initialData }) {
-  console.log(initialData);
   const [data, setData] = useState(initialData);
 
   // useEffect(() => {

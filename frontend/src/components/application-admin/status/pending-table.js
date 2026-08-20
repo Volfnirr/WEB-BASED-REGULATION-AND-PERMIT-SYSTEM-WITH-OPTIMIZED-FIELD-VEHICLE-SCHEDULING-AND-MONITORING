@@ -1,20 +1,17 @@
 "use client";
 import Table from "@/components/ui/tables/table";
+import FilterDropdown from "@/components/ui/tables/tools/dropdown";
 import SearchInput from "@/components/ui/tables/tools/search-input";
 import SortDropdown from "@/components/ui/tables/tools/sort-dropdown";
 import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
 import { useState } from "react";
 
-export default function TreeCuttingTable({ initialData }) {
-  // const page = "/application-admin/tree-cutting/";
+export default function PendingTable({ initialData }) {
+  // const page = {page};
   const [data, setData] = useState(initialData);
 
   const column = [
-    // {
-    //   head: "ID",
-    //   data: "id",
-    // },
     {
       head: "REF-NO",
       data: "referenceNo",
@@ -86,6 +83,8 @@ export default function TreeCuttingTable({ initialData }) {
   const {
     search,
     updateSearch,
+    filters,
+    updateFilter,
     sortConfig,
     updateSort,
     currentPage,
@@ -106,6 +105,8 @@ export default function TreeCuttingTable({ initialData }) {
     itemsPerPage: 8,
   });
 
+  const roleOptions = ["PENDING", "REJECTED", "APPROVED"];
+
   const sortOptions = [
     { label: "Request ID", key: "referenceNo" },
     { label: "Submission Date", key: "submittedAt" },
@@ -118,6 +119,12 @@ export default function TreeCuttingTable({ initialData }) {
           value={search}
           onChange={updateSearch}
           placeholder="Search by name, status, reference no, or email..."
+        />
+        <FilterDropdown
+          value={filters.status}
+          onChange={(value) => updateFilter("status", value)}
+          options={roleOptions}
+          label="Status"
         />
         <SortDropdown
           sortConfig={sortConfig}

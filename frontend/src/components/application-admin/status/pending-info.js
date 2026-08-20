@@ -13,7 +13,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-export default async function TreeCuttingInfo() {
+export default async function PendingInfo() {
   const infocardstatus = [
     {
       label: "Approved",

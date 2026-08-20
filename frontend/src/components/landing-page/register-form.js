@@ -88,7 +88,6 @@ export default function RegisterForm() {
             // router.push("/login");
           },
           onError: (ctx) => {
-            console.log("FULL ERROR CONTEXT:", ctx);
             toast.error(ctx.error.message, { position: "top-center" });
             setregisterError("root", {
               message: ctx.error.message,

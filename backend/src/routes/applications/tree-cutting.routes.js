@@ -7,16 +7,13 @@ import { requireAuthentication } from "../../middleware/requireAuthentication.js
 import { requireAppAdminServices } from "../../middleware/requireAppAdminServices.js";
 import { validate } from "../../middleware/validate.js";
 import { treeCuttingFormSchema } from "../../validation/treeCuttingData.js";
-import { remarks } from "../../validation/remarksData.js";
 import {
   submitTreeCuttingForm,
   listTreeCuttingApplications,
-  selfAssignTreeCuttingApplication,
   viewTreeCuttingFormById,
-  approveTreeCuttingApplication,
-  rejectTreeCuttingApplication,
 } from "../../controller/applications/tree-cutting.controller.js";
 // /api/v1/applications
+// User submits a tree-cutting application
 router.post(
   "/tree-cutting",
   formSubmitLimiter,
@@ -26,10 +23,10 @@ router.post(
   submitTreeCuttingForm,
 );
 
-// Get all pending  tree cutting applications
+// Get all pending  tree cutting applications for self assign
 // FOR APPLICATION ADMINS ASSIGNED TO TREE-CUTTING SERVICES
 router.get(
-  "/tree-cutting/applications",
+  "/tree-cutting",
   requireAuthentication,
   requireAuthorization("APPLICATION_ADMIN"),
   requireAppAdminServices([3]),
@@ -38,41 +35,11 @@ router.get(
 
 // Get Tree Cutting Form by ID
 router.get(
-  "/tree-cutting/applications/:id",
+  "/tree-cutting/:id",
   requireAuthentication,
   requireAuthorization("APPLICATION_ADMIN"),
   requireAppAdminServices([3]),
   viewTreeCuttingFormById,
-);
-
-// Allow Application Admins assigned to Tree Cutting Services to self-assign to applications
-
-router.patch(
-  "/tree-cutting/applications/:id/assign",
-  requireAuthentication,
-  requireAuthorization("APPLICATION_ADMIN"),
-  requireAppAdminServices([3]),
-  selfAssignTreeCuttingApplication,
-);
-
-// Approve tree cutting applications
-router.patch(
-  "/tree-cutting/applications/:id/approve",
-  requireAuthentication,
-  requireAuthorization("APPLICATION_ADMIN"),
-  requireAppAdminServices([3]),
-  validate(remarks),
-  approveTreeCuttingApplication,
-);
-
-// Reject tree cutting applications
-router.patch(
-  "/tree-cutting/applications/:id/reject",
-  requireAuthentication,
-  requireAuthorization("APPLICATION_ADMIN"),
-  requireAppAdminServices([3]),
-  validate(remarks),
-  rejectTreeCuttingApplication,
 );
 
 export default router;

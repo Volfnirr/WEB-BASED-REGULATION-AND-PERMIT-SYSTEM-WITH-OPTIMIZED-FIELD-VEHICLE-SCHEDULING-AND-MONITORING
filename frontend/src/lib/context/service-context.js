@@ -4,6 +4,12 @@ import { getMyServices } from "@/lib/api/services";
 
 const ServicesContext = createContext(null);
 
+const defaultServicesContext = {
+  assignedServices: [],
+  loading: false,
+  error: null,
+};
+
 export function ServicesProvider({ children }) {
   const [assignedServices, setAssignedServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,5 +37,6 @@ export function ServicesProvider({ children }) {
 }
 
 export function useServices() {
-  return useContext(ServicesContext);
+  const ctx = useContext(ServicesContext);
+  return ctx ?? defaultServicesContext;
 }

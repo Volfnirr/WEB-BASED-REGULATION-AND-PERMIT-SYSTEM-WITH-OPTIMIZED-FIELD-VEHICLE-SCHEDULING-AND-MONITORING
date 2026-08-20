@@ -1,5 +1,7 @@
 import { error } from "better-auth/api";
 import * as userApplicationStatus from "../../services/applications/application.service.js";
+
+// user my applications
 export async function getUserApplicationStatus(req, res) {
   try {
     const application = await userApplicationStatus.getUserApplicationStatus(
@@ -7,8 +9,7 @@ export async function getUserApplicationStatus(req, res) {
     );
 
     if (application.length === 0) {
-      // No content return 204
-      return res.status(204).json({
+      return res.status(200).json({
         message: "Please create an application first to retrieve its status.",
         application: [],
       });

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Menu,
   X,
@@ -13,6 +13,9 @@ import {
   Trees,
   LayoutDashboard,
   FileText,
+  ClockFading,
+  CircleCheck,
+  CircleX,
 } from "lucide-react";
 import { useServices } from "@/lib/context/service-context";
 
@@ -44,7 +47,28 @@ const ALL_SERVICES = [
     id: 4,
     icon: <Trees />,
     name: "Chainsaw Registration",
-    href: "/application-admin/tree-cutting",
+    href: "/application-admin/chainsaw",
+  },
+];
+
+const APPLICATIONS = [
+  {
+    id: 1,
+    icon: <ClockFading absoluteStrokeWidth color="#00FF88" />,
+    name: "Pending",
+    href: "/application-admin/pending",
+  },
+  {
+    id: 2,
+    icon: <CircleCheck absoluteStrokeWidth color="#22C55E" />,
+    name: "Approved",
+    href: "/application-admin/approved",
+  },
+  {
+    id: 3,
+    icon: <CircleX absoluteStrokeWidth color="#EF4444" />,
+    name: "Rejected",
+    href: "/application-admin/rejected",
   },
 ];
 // 1 = Agricultural Free Patent,
@@ -62,8 +86,6 @@ export default function ApplicationAdminSidebar({}) {
   const [isOpen, setIsOpen] = useState(true);
 
   const { assignedServices, loading, error } = useServices();
-
-  // console.log(assignedServices);
 
   const currentUser = {
     name: assignedServices.name ? toTitleCase(assignedServices.name) : "",
@@ -160,6 +182,31 @@ export default function ApplicationAdminSidebar({}) {
                   );
                 })
               )}
+
+              <div className="flex flex-col gap-1 pt-1">
+                <div className="px-3 mb-2 text-xs font-semibold text-green-300 uppercase tracking-wider">
+                  <h2>Assigned Applications</h2>
+                </div>
+                {APPLICATIONS.map((app) => {
+                  const isActive = pathname.startsWith(app.href);
+                  return (
+                    <Link
+                      key={app.href}
+                      href={app.href}
+                      onClick={close}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        isActive
+                          ? "bg-white text-[#005221] font-bold shadow-md"
+                          : "text-green-100 hover:bg-green-800"
+                      }`}
+                    >
+                      {app.icon}
+                      {app.name}
+                    </Link>
+                  );
+                })}
+              </div>
+
               <div className="flex flex-col gap-1 pt-1">
                 <div className="px-3 mb-2 text-xs font-semibold text-green-300 uppercase tracking-wider">
                   <h2>Trip</h2>
@@ -184,7 +231,7 @@ export default function ApplicationAdminSidebar({}) {
           <div className="p-4 border-t border-green-800">
             <button
               onClick={() => logout(router)}
-              className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium bg-red-700 hover:bg-red-800 text-white rounded-lg transition-colors shadow"
+              className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium bg-red-700 hover:bg-red-800 text-white rounded-lg transition-colors shadow cursor-pointer"
             >
               Logout
             </button>

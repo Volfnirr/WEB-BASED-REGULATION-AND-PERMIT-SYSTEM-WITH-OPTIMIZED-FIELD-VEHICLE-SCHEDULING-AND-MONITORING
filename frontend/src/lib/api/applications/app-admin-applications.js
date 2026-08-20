@@ -1,10 +1,9 @@
 import { cookies } from "next/headers";
-
-export async function userApplicationsStatus() {
+export async function appAdminApplicationsByStatus(status) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/status`,
+    `${process.env.API_URL}/api/v1/applications?status=${status}`,
     {
       method: "GET",
 
@@ -14,10 +13,11 @@ export async function userApplicationsStatus() {
       cache: "no-store",
     },
   );
+
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.message || "Failed to get application.");
+    throw new Error(result.message || "Failed to retrieve applications.");
   }
 
   return result;

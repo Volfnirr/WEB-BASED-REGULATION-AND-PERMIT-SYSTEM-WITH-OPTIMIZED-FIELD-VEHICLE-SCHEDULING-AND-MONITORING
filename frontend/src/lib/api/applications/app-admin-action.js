@@ -1,28 +1,27 @@
-export async function submitTreeCuttingForm(data) {
+export async function assignUserToApplication(applicationId) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/tree-cutting`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/${applicationId}/assign`,
     {
-      method: "POST",
+      method: "PATCH",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
     },
   );
 
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.message || "Failed to submit application.");
+    throw new Error(result.message || "Failed to assign to application.");
   }
 
   return result;
 }
 
-export async function approveTreeCuttingApplication({ id, remarks }) {
+export async function approveApplication({ id, remarks }) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/tree-cutting/applications/${id}/approve`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/${id}/approve`,
     {
       method: "PATCH",
       credentials: "include",
@@ -36,13 +35,13 @@ export async function approveTreeCuttingApplication({ id, remarks }) {
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.message || "Failed to approve form.");
+    throw new Error(result.message || "Failed to approve application form.");
   }
 }
 
-export async function rejectTreeCuttingApplication({ id, remarks }) {
+export async function rejectApplication({ id, remarks }) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/tree-cutting/applications/${id}/reject`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/${id}/reject`,
     {
       method: "PATCH",
       credentials: "include",
@@ -56,6 +55,6 @@ export async function rejectTreeCuttingApplication({ id, remarks }) {
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.message || "Failed to reject form.");
+    throw new Error(result.message || "Failed to reject application form.");
   }
 }

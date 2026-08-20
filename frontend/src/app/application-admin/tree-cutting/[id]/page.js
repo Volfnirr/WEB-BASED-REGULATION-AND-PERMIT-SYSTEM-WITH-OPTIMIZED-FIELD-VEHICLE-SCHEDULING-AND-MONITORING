@@ -1,7 +1,7 @@
-import TreeCuttingReview from "@/components/review/tree-cutting/tree-cutting-review";
+import ReviewTreeCutting from "@/components/review/tree-cutting/tree-cutting-review";
 import AssignedServices from "@/components/route-protection/check-service";
 import { notFound } from "next/navigation";
-import { getTreeCuttingFormDataById } from "@/lib/api/applications/tree-cutting-server";
+import { getTreeCuttingFormDataById } from "@/lib/api/applications/tree-cutting/tree-cutting-server";
 export default async function ResidentialFormReview({ params }) {
   const { id } = await params;
   const { treeCuttingFormData } = await getTreeCuttingFormDataById(id);
@@ -12,7 +12,7 @@ export default async function ResidentialFormReview({ params }) {
   return (
     <div>
       <AssignedServices reqServices={[3]}>
-        <TreeCuttingReview data={treeCuttingFormData} params={id} />
+        <ReviewTreeCutting data={treeCuttingFormData} params={id} />
       </AssignedServices>
     </div>
   );

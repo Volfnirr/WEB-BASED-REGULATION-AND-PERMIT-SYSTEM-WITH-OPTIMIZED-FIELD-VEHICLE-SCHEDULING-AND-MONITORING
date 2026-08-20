@@ -69,13 +69,21 @@ export const residentialFormSchema = z
   })
   .refine(
     (data) => {
-      if (data.civilStatus === "MARRIED") {
-        return !!data.spouseName?.trim();
-      }
+      if (data.civilStatus === "MARRIED") return !!data.spouseName?.trim();
       return true;
     },
     {
       path: ["spouseName"],
       message: "Spouse name is required for married applicants",
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.civilStatus !== "MARRIED") return !data.spouseName?.trim();
+      return true;
+    },
+    {
+      path: ["spouseName"],
+      message: "Spouse name should only be set if civil status is Married",
     },
   );

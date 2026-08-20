@@ -24,7 +24,7 @@ export function requireAppAdminServices(services) {
           message: "Unauthorized access: You are not assigned to this service",
         });
       }
-
+      req.user.assignedServices = assignedServices;
       next();
     } catch (error) {
       console.log(error);

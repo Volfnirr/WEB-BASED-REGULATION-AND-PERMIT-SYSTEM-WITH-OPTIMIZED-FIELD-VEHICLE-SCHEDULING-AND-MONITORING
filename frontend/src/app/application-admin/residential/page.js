@@ -3,8 +3,10 @@ import ResidentialInfo from "@/components/application-admin/residential/resident
 import ResidentialTable from "@/components/application-admin/residential/residential-table";
 import AssignedServices from "@/components/route-protection/check-service";
 import Title from "@/components/ui/title";
+import { residentialApplications } from "@/lib/api/applications/residential/residential-server";
 
-export default function ResidentialApplicationReview() {
+export default async function ResidentialApplicationReview() {
+  const { applications } = await residentialApplications();
   return (
     <div>
       <AssignedServices reqServices={[2]}>
@@ -15,7 +17,7 @@ export default function ResidentialApplicationReview() {
           description="View and manage all Residential Applications."
         />
         <ResidentialInfo />
-        <ResidentialTable />
+        <ResidentialTable initialData={applications} />
         <ScheduleCardValue />
       </AssignedServices>
     </div>

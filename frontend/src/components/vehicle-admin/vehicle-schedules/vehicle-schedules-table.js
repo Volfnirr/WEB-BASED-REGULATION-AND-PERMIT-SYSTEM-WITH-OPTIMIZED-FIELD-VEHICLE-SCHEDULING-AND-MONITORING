@@ -33,15 +33,15 @@ export default function VehicleSchedulesTable() {
       vehicle_schedules: [
         {
           date: "2026-07-02",
-          status: "Available",
+          status: "AVAILABLE",
         },
         {
           date: "2026-07-03",
-          status: "Available",
+          status: "AVAILABLE",
         },
         {
           date: "2026-07-04",
-          status: "Maintenance",
+          status: "MAINTENANCE",
         },
       ],
     },
@@ -51,11 +51,11 @@ export default function VehicleSchedulesTable() {
       vehicle_schedules: [
         {
           date: "2026-07-02",
-          status: "Available",
+          status: "AVAILABLE",
         },
         {
           date: "2026-07-03",
-          status: "Available",
+          status: "AVAILABLE",
         },
       ],
     },
@@ -65,15 +65,15 @@ export default function VehicleSchedulesTable() {
       vehicle_schedules: [
         {
           date: "2026-07-02",
-          status: "Available",
+          status: "AVAILABLE",
         },
         {
           date: "2026-07-03",
-          status: "Available",
+          status: "AVAILABLE",
         },
         {
           date: "2026-07-04",
-          status: "Maintenance",
+          status: "MAINTENANCE",
         },
       ],
     },

@@ -1,17 +1,18 @@
+import { prisma } from "../../lib/prisma.js";
 import { getApplicationNumber } from "../../services/applications/application.service.js";
 import * as treeCuttingService from "../../services/applications/tree-cutting.service.js";
 import * as AssignService from "../../services/applications/assign-user.service.js";
 import { createAuditLog } from "../../services/audit.service.js";
-import { prisma } from "../../lib/prisma.js";
+import { SERVICE_ID, SERVICE_PREFIX } from "../../lib/services.js";
 
 // Submit tree cutting application
 export async function submitTreeCuttingForm(req, res) {
   try {
-    const lastId = await getApplicationNumber();
-    const nextId = lastId + 1;
-    const year = new Date().getFullYear();
-    const refNo = `TCPF-${year}-${String(nextId).padStart(5, "0")}`;
-    console.log("userId being sent:", req.user.id);
+    // const lastId = await getApplicationNumber();
+    // const nextId = lastId + 1;
+    // const year = new Date().getFullYear();
+    // const refNo = `TCPF-${year}-${String(nextId).padStart(5, "0")}`;
+    // console.log("userId being sent:", req.user.id);
 
     // apply interactive transaction of prisma uhmmmmmmmmmm
     // two types of  transaction 1. Sequential 2. Interactive
@@ -19,6 +20,19 @@ export async function submitTreeCuttingForm(req, res) {
     // if one faill all fail no insert lol
     // wahhhhhhh guide sleep
     const application = await prisma.$transaction(async (tx) => {
+      // use
+      const year = new Date().getFullYear();
+      const serviceId = SERVICE_ID.TREE_CUTTING;
+
+      const incrementRow = await tx.service_increment.upsert({
+        where: {
+          serviceId_year: { serviceId, year },
+        },
+        create: { serviceId, year, count: 1 },
+        update: { count: { increment: 1 } },
+      });
+
+      const refNo = `${SERVICE_PREFIX[serviceId]}-${year}-${String(incrementRow.count).padStart(5, "0")}`;
       // if i forgot to explain
       // parameters in order when you use them in the services sleepppppppppppppppppppppppppp
       const newApplication = await treeCuttingService.submitTreeCuttingForm(
@@ -38,7 +52,7 @@ export async function submitTreeCuttingForm(req, res) {
           actorRole: req.user.role,
           action: "Submit Form Application",
           target: "Tree Cutting Permit",
-          details: `Submitted Tree Cutting Permit application (${refNo})`,
+          details: `Submitted Tree Cutting Permit application (${newApplication.referenceNo})`,
         },
         tx,
         // this thing is here because i do ({}),
@@ -59,7 +73,7 @@ export async function submitTreeCuttingForm(req, res) {
   }
 }
 
-// List PENDING tree cutting permit applications
+// List all tree-cutting applications with PENDING status and no ASSIGNED admin
 export async function listTreeCuttingApplications(req, res) {
   try {
     const treeCuttingApplications =
@@ -74,63 +88,12 @@ export async function listTreeCuttingApplications(req, res) {
       serviceName: app.service.name,
       userAccName: app.user_application_userIdTouser.name,
       userAccEmail: app.user_application_userIdTouser.email,
-      action: app.assignedToId === null ? "Assign" : "View",
+      action: "SELF_ASSIGN",
     }));
 
     return res.status(200).json({
       message: "Tree cutting application list",
       applications,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-}
-
-// Allow Application Admins assigned to Tree Cutting Services to self-assign to applications
-export async function selfAssignTreeCuttingApplication(req, res) {
-  try {
-    const applicationData =
-      await treeCuttingService.listAssignedToTreeCuttingApplications(
-        req.params.id,
-      );
-
-    if (applicationData.status !== "PENDING") {
-      return res
-        .status(400)
-        .json({ message: "You can only be assigned to PENDING applications" });
-    }
-
-    if (applicationData.assignedToId !== null) {
-      return res.status(409).json({
-        message: `This application is already assigned to ${applicationData.user_application_assignedToIdTouser.name}`,
-      });
-    }
-    console.log("REQ PARAMS ID IS =", req.params.id);
-    console.log("USER ID FOR THIS APPLICATION =", req.user.id);
-    const application = await prisma.$transaction(async (tx) => {
-      const assignedUserTo = await AssignService.assignUserToApplication(
-        req.params.id,
-        req.user.id,
-        tx,
-      );
-      await createAuditLog(
-        {
-          actorId: req.user.id,
-          actorName: req.user.name,
-          actorRole: req.user.role,
-          action: "Self-Assign",
-          target: `Tree Cutting Application ${applicationData.referenceNo}`,
-          details: `Assigned self to Tree Cutting Permit application with Ref No of  ${applicationData.referenceNo}`,
-        },
-        tx,
-      );
-
-      return assignedUserTo;
-    });
-    return res.status(200).json({
-      message: `Successfully assigned yourself to the tree application with the ID of ${applicationData.id} and Ref No. of ${applicationData.referenceNo} `,
-      application,
     });
   } catch (error) {
     console.log(error);
@@ -157,125 +120,6 @@ export async function viewTreeCuttingFormById(req, res) {
     return res.status(200).json({
       message: "Successfully get the Form data",
       treeCuttingFormData,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-}
-
-// Approve a tree cutting application
-export async function approveTreeCuttingApplication(req, res) {
-  try {
-    const applicationData =
-      await treeCuttingService.listAssignedToTreeCuttingApplications(
-        req.params.id,
-      );
-
-    if (applicationData.assignedToId === null) {
-      return res.status(409).json({
-        message: "You can't approve an application that is not assigned",
-      });
-    }
-
-    if (applicationData.assignedToId !== req.user.id) {
-      return res.status(409).json({
-        message: "You can't approve an application that doesn't belong to you",
-      });
-    }
-
-    if (applicationData.status !== "PENDING") {
-      return res.status(409).json({
-        message: "You can only approve applications that are pending",
-      });
-    }
-
-    const application = await prisma.$transaction(async (tx) => {
-      const approveApplication =
-        await treeCuttingService.approveTreeCuttingApplication(
-          req.params.id,
-          req.validatedData.remarks,
-          req.user.id,
-          tx,
-        );
-
-      await createAuditLog(
-        {
-          actorId: req.user.id,
-          actorName: req.user.name,
-          actorRole: req.user.role,
-          action: "Approve",
-          target: `Tree Cutting Application ${applicationData.referenceNo}`,
-          details: `Approved a Tree Cutting Permit application with Ref No of  ${applicationData.referenceNo}`,
-        },
-        tx,
-      );
-
-      return approveApplication;
-    });
-    return res.status(200).json({
-      message: `Successfully approved a tree application with the ID of ${applicationData.id} and Ref No. of ${applicationData.referenceNo} `,
-      application,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-}
-
-// Reject a tree cutting application
-export async function rejectTreeCuttingApplication(req, res) {
-  console.log(req.validatedData.remarks);
-  try {
-    const applicationData =
-      await treeCuttingService.listAssignedToTreeCuttingApplications(
-        req.params.id,
-      );
-
-    if (applicationData.assignedToId === null) {
-      return res.status(409).json({
-        message: "You can't reject an application that is not assigned",
-      });
-    }
-
-    if (applicationData.assignedToId !== req.user.id) {
-      return res.status(409).json({
-        message: "You can't reject an application that doesn't belong to you",
-      });
-    }
-
-    if (applicationData.status !== "PENDING") {
-      return res
-        .status(409)
-        .json({ message: "You can only reject applications that are pending" });
-    }
-
-    const application = await prisma.$transaction(async (tx) => {
-      const approveApplication =
-        await treeCuttingService.rejectTreeCuttingApplication(
-          req.params.id,
-          req.validatedData.remarks,
-          req.user.id,
-          tx,
-        );
-
-      await createAuditLog(
-        {
-          actorId: req.user.id,
-          actorName: req.user.name,
-          actorRole: req.user.role,
-          action: "Reject",
-          target: `Tree Cutting Application ${applicationData.referenceNo}`,
-          details: `Rejected a Tree Cutting Permit application with Ref No of ${applicationData.referenceNo}`,
-        },
-        tx,
-      );
-
-      return approveApplication;
-    });
-    return res.status(200).json({
-      message: `Successfully rejected a tree application with the ID of ${applicationData.id} and Ref No. of ${applicationData.referenceNo} `,
-      application,
     });
   } catch (error) {
     console.log(error);

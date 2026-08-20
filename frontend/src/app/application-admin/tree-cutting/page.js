@@ -2,7 +2,7 @@ import TreeCuttingInfo from "@/components/application-admin/tree-cutting/tree-cu
 import TreeCuttingTable from "@/components/application-admin/tree-cutting/tree-cutting-table";
 import AssignedServices from "@/components/route-protection/check-service";
 import Title from "@/components/ui/title";
-import { treeCuttingApplications } from "@/lib/api/applications/tree-cutting-server";
+import { treeCuttingApplications } from "@/lib/api/applications/tree-cutting/tree-cutting-server";
 
 export default async function TreeCuttingApplicationReview() {
   const { applications } = await treeCuttingApplications();

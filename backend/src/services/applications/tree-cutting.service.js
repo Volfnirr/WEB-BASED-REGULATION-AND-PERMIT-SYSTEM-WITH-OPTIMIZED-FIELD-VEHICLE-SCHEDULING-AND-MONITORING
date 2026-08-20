@@ -30,12 +30,13 @@ export async function submitTreeCuttingForm(refNo, userId, data, db = prisma) {
     },
   });
 }
-// List all tree-cutting application with PENDING status
+// List all tree-cutting applications with PENDING status and no ASSIGNED admin
 export async function listTreeCuttingApplications() {
   return await prisma.application.findMany({
     where: {
       serviceId: 3,
       status: "PENDING",
+      assignedToId: null,
     },
     orderBy: { submittedAt: "desc" },
     select: {
@@ -60,7 +61,9 @@ export async function listTreeCuttingApplications() {
   });
 }
 
-//list selected tree cutting application
+//List selected tree cutting application for view
+// used with get id
+
 export async function listAssignedToTreeCuttingApplications(applicationId) {
   return await prisma.application.findUnique({
     where: {
@@ -88,7 +91,7 @@ export async function listAssignedToTreeCuttingApplications(applicationId) {
   });
 }
 
-// view an application by the selected id
+// View an application by the selected id
 export async function viewTreeCuttingFormById(formId) {
   return await prisma.tree_cutting_permit_form.findUnique({
     where: {
@@ -100,50 +103,9 @@ export async function viewTreeCuttingFormById(formId) {
           referenceNo: true,
           submittedAt: true,
           status: true,
+          remarks: true,
         },
       },
-    },
-  });
-}
-
-// Approve tree cutting application
-export async function approveTreeCuttingApplication(
-  id,
-  remarks,
-  reviewerId,
-  db = prisma,
-) {
-  return await db.application.update({
-    where: {
-      id: Number(id),
-    },
-    data: {
-      status: "APPROVED",
-      remarks: remarks,
-      reviewedAt: new Date(),
-      reviewedById: reviewerId,
-      updatedAt: new Date(),
-    },
-  });
-}
-
-// Reject tree cutting application
-export async function rejectTreeCuttingApplication(
-  id,
-  remarks,
-  reviewerId,
-  db = prisma,
-) {
-  return await db.application.update({
-    where: {
-      id: Number(id),
-    },
-    data: {
-      status: "REJECTED",
-      remarks: remarks,
-      reviewedAt: new Date(),
-      reviewedById: reviewerId,
-      updatedAt: new Date(),
     },
   });
 }

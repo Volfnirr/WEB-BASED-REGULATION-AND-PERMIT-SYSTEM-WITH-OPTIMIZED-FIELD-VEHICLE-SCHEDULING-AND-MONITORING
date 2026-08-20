@@ -1,10 +1,9 @@
 import { cookies } from "next/headers";
-export async function treeCuttingApplications() {
+export async function residentialApplications() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
-  console.log("COOKIE HEADER:", cookieHeader);
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/tree-cutting/applications`,
+    `${process.env.API_URL}/api/v1/applications/residential`,
     {
       method: "GET",
 
@@ -16,22 +15,21 @@ export async function treeCuttingApplications() {
   );
 
   const result = await response.json();
-
   if (!response.ok) {
     throw new Error(
-      result.message || "Failed to retrieve tree cutting applications.",
+      result.message || "Failed to retrieve residential applications.",
     );
   }
 
   return result;
 }
 
-export async function getTreeCuttingFormDataById(id) {
+export async function getResidentialFormDataById(id) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/tree-cutting/applications/${id}`,
+    `${process.env.API_URL}/api/v1/applications/residential/${id}`,
     {
       method: "GET",
       headers: {
@@ -45,8 +43,7 @@ export async function getTreeCuttingFormDataById(id) {
 
   if (!response.ok) {
     throw new Error(
-      result.message ||
-        "Failed to retrieve tree cutting application form data.",
+      result.message || "Failed to retrieve residential application form data.",
     );
   }
 
