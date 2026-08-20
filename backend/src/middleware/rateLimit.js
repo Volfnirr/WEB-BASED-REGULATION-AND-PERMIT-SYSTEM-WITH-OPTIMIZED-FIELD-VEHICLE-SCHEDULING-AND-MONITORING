@@ -8,7 +8,7 @@ export const rateLimiter = rateLimit({
 
 export const formSubmitLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 1,
+  max: 500, //1
   message: {
     message:
       "You can only submit this form once per minute. Please wait a moment and try again.",

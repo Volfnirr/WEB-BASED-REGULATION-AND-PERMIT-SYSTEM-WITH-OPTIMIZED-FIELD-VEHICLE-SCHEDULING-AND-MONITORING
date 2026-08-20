@@ -26,7 +26,7 @@ export async function submitResidentialForm(refNo, userId, data, db = prisma) {
           barangay: data.barangay,
           specificLocation: data.specificLocation,
           lotNo: data.lotNo,
-          landAreaSqm: data.landAreaSqm,
+          landAreaSqm: parseFloat(data.area),
           affidavitProvince: data.affidavitProvince,
           affidavitCity: data.affidavitCity,
           affiantName: data.affiantName,

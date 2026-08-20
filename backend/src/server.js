@@ -25,6 +25,8 @@ import treeCuttingRoutes from "./routes/applications/tree-cutting.routes.js";
 import residentialRoutes from "./routes/applications/residential.routes.js";
 import userApplicationStatus from "./routes/applications/application-status.routes.js";
 import applicationAdminRoutes from "./routes/applications/admin.routes.js";
+import chainsawRoutes from "./routes/applications/chainsaw.routes.js";
+import agriculturalRoutes from "./routes/applications/agricultural.routes.js";
 
 const app = express();
 
@@ -49,7 +51,11 @@ app.use(express.json());
 
 app.use("/api/v1", serviceRoutes);
 
+app.use("/api/v1/applications", chainsawRoutes);
+
 app.use("/api/v1/applications", treeCuttingRoutes);
+
+app.use("/api/v1/applications", agriculturalRoutes);
 
 app.use("/api/v1/applications", residentialRoutes);
 
