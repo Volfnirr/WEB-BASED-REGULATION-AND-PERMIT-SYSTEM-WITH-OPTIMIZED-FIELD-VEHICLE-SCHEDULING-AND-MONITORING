@@ -4,7 +4,7 @@ export async function userApplicationsStatus() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/status`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/status`,
     {
       method: "GET",
 

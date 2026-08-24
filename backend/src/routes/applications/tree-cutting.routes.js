@@ -11,6 +11,7 @@ import {
   submitTreeCuttingForm,
   listTreeCuttingApplications,
   viewTreeCuttingFormById,
+  listTreeCuttingAppStatus,
 } from "../../controller/applications/tree-cutting.controller.js";
 // /api/v1/applications
 // User submits a tree-cutting application
@@ -31,6 +32,15 @@ router.get(
   requireAuthorization("APPLICATION_ADMIN"),
   requireAppAdminServices([3]),
   listTreeCuttingApplications,
+);
+
+// Get tree cutting application status
+router.get(
+  "/tree-cutting/status",
+  requireAuthentication,
+  requireAuthorization("APPLICATION_ADMIN"),
+  requireAppAdminServices([3]),
+  listTreeCuttingAppStatus,
 );
 
 // Get Tree Cutting Form by ID

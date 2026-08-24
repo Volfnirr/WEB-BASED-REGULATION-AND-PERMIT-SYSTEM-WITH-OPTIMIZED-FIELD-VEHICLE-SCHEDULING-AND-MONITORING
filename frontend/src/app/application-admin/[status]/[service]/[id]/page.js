@@ -7,18 +7,18 @@ import ReviewTreeCutting from "@/components/review/tree-cutting/tree-cutting-rev
 import ReviewChainsawApp from "@/components/review/chainsaw/chainsaw-review";
 
 import { getTreeCuttingFormDataById } from "@/lib/api/applications/tree-cutting/tree-cutting-server";
-
+import { getResidentialFormDataById } from "@/lib/api/applications/residential/residential-server";
 const serviceConfig = {
   //   agricultural: {
   //     reqServices: [1],
   //     fetchFormData: getAgriculturalFormDataById,
   //     Component: ReviewAgricultural,
   //   },
-  //   residential: {
-  //     reqServices: [2],
-  //     fetchFormData: getResidentialFormDataById,
-  //     Component: ReviewResidential,
-  //   },
+  residential: {
+    reqServices: [2],
+    fetchFormData: getResidentialFormDataById,
+    Component: ReviewResidential,
+  },
   "tree-cutting": {
     reqServices: [3],
     fetchFormData: getTreeCuttingFormDataById,

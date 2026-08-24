@@ -6,7 +6,7 @@ import Link from "next/link";
 import AssignApplication from "@/components/ui/modal/applications/assign-confirm-modal";
 import { useUser } from "@/lib/context/account-info-context";
 import { useServices } from "@/lib/context/service-context";
-import { FileExclamationPoint } from "lucide-react";
+import { FileSearchCorner } from "lucide-react";
 
 export default function TableUI({ columns, rows }) {
   const [selectedRow, setSelectedRow] = useState(null);
@@ -21,7 +21,7 @@ export default function TableUI({ columns, rows }) {
               return (
                 <th
                   key={column.head}
-                  className="border-b px-4 py-3 text-left text-sm font-bold text-green-700"
+                  className="border-b px-4 py-3 text-left text-sm font-bold text-green-700 whitespace-nowrap"
                 >
                   {column.head}
                 </th>
@@ -37,8 +37,8 @@ export default function TableUI({ columns, rows }) {
                 className="px-4 py-10 text-center text-sm text-gray-400"
               >
                 <div className="flex flex-col items-center justify-center gap-2">
-                  <FileExclamationPoint size={60} />
-                  No available applications
+                  <FileSearchCorner size={60} />
+                  No applications found
                 </div>
               </td>
             </tr>
@@ -51,7 +51,7 @@ export default function TableUI({ columns, rows }) {
                 {columns.map((column) => (
                   <td
                     key={column.data}
-                    className="border-b px-4 py-2 text-sm text-gray-900"
+                    className="border-b px-4 py-2 text-sm text-gray-900 whitespace-nowrap"
                   >
                     {column.data === "status" ? (
                       <span
@@ -71,7 +71,7 @@ export default function TableUI({ columns, rows }) {
                     ) : row[column.data] === "SELF_ASSIGN" ? (
                       <button
                         onClick={() => setSelectedRow(row)}
-                        className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-2.5 items-center justify-center rounded-md px-3 text-sm  cursor-pointer  transition-colors`}
+                        className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5  items-center justify-center rounded-md px-3 text-sm  cursor-pointer  transition-colors`}
                       >
                         SELF ASSIGN
                       </button>

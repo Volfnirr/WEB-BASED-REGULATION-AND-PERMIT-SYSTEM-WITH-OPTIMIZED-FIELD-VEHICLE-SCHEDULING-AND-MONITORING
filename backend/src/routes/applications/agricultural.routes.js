@@ -5,7 +5,7 @@ import { formSubmitLimiter } from "../../middleware/rateLimit.js";
 import { requireAuthorization } from "../../middleware/requireAuthorization.js";
 import { requireAuthentication } from "../../middleware/requireAuthentication.js";
 import { validate } from "../../middleware/validate.js";
-import { agriculturalFormSchema } from "../../validation/AgriculturalData.js";
+import { agriculturalFormSchema } from "../../validation/agriculturalData.js";
 import { submitAgriculturalFormMW } from "../../controller/applications/agricultural.controller.js";
 
 router.post(

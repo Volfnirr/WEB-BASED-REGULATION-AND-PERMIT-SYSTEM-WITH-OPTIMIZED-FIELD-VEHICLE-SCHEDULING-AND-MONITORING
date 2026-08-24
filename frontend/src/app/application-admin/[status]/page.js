@@ -2,7 +2,7 @@ import PendingInfo from "@/components/application-admin/status/pending-info";
 import PendingTable from "@/components/application-admin/status/pending-table";
 import AssignedServices from "@/components/route-protection/check-service";
 import Title from "@/components/ui/title";
-import { appAdminApplicationsByStatus } from "@/lib/api/applications/app-admin-applications";
+import { appAdminApplicationsByStatus } from "@/lib/api/applications/app-admin-applications-server";
 import { notFound } from "next/navigation";
 
 const VALID_STATUSES = ["pending", "approved", "rejected"];

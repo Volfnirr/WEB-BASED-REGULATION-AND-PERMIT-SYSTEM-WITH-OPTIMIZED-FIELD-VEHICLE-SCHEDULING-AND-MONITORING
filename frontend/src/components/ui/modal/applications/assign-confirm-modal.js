@@ -84,7 +84,7 @@ export default function AssignApplication({
             </p>
             <div className="flex flex-col gap-1.5 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Account REF-NO</span>
+                <span className="text-gray-500">REF-NO</span>
                 <span className="font-medium text-gray-900">
                   {refNo || "—"}
                 </span>

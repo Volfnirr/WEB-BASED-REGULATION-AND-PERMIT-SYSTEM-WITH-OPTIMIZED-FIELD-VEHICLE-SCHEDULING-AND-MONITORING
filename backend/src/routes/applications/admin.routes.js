@@ -9,6 +9,7 @@ import { validate } from "../../middleware/validate.js";
 
 import {
   listAppAdminAssignedApplications,
+  listAllApplicationsStatus,
   selfAssignApplication,
   approveApplication,
   rejectApplication,
@@ -20,6 +21,14 @@ router.get(
   requireAuthorization("APPLICATION_ADMIN"),
   requireAppAdminServices([1, 2, 3, 4]),
   listAppAdminAssignedApplications,
+);
+
+router.get(
+  "/status",
+  requireAuthentication,
+  requireAuthorization("APPLICATION_ADMIN"),
+  requireAppAdminServices([1, 2, 3, 4]),
+  listAllApplicationsStatus,
 );
 
 router.patch(

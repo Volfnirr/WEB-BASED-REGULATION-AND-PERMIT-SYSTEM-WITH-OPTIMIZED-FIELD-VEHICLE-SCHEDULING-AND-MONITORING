@@ -59,7 +59,7 @@ app.use("/api/v1/applications", agriculturalRoutes);
 
 app.use("/api/v1/applications", residentialRoutes);
 
-app.use("/api/v1/applications", userApplicationStatus);
+app.use("/api/v1", userApplicationStatus);
 
 app.use("/api/v1/applications", applicationAdminRoutes);
 

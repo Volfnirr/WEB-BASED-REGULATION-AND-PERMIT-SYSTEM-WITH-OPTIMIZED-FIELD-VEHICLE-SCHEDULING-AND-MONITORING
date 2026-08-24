@@ -107,3 +107,17 @@ export async function viewResidentialFormById(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
+// List residential application status
+export async function listResidentialAppStatus(req, res) {
+  try {
+    const status = await residentialService.listResidentialAppStatus();
+    return res.status(200).json({
+      message: "Successfully get the residential application status",
+      status,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}

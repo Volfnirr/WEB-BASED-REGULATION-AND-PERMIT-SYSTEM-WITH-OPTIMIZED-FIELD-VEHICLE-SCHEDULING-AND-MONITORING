@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma.js";
+import { getLast7DaysRange, getTodayRange } from "../../lib/date/get-week.js";
 // using interactive transaction :<
 // use in all services maybe? ahhhhhhhhhhhhh uhmmmmmmmmmmmmmm wahhhhhhhhhhhhh
 // used db = prisma if use with tx  ,tx
@@ -108,4 +109,98 @@ export async function viewTreeCuttingFormById(formId) {
       },
     },
   });
+}
+
+// List tree cutting status (This week (Approved,Rejected))
+// Today (New Applications, Awaiting Assignment,Pending Review, Rejected, Approved))
+export async function listTreeCuttingAppStatus() {
+  const SERVICE_ID = 3;
+  const { start: todayStart, end: todayEnd } = getTodayRange();
+  const { start: weekStart, end: weekEnd } = getLast7DaysRange();
+
+  const [
+    newApplications,
+    awaitingAssignment,
+    pendingReview,
+    approvedToday,
+    rejectedToday,
+    weeklyPending,
+    weeklyApproved,
+    weeklyRejected,
+  ] = await Promise.all([
+    // Today: New Applications
+    prisma.application.count({
+      where: {
+        serviceId: SERVICE_ID,
+        submittedAt: { gte: todayStart, lt: todayEnd },
+      },
+    }),
+    // All: Awaiting Assignment
+    prisma.application.count({
+      where: { serviceId: SERVICE_ID, status: "PENDING", assignedToId: null },
+    }),
+    // All: Pending Review
+    prisma.application.count({
+      where: {
+        serviceId: SERVICE_ID,
+        status: "PENDING",
+        assignedToId: { not: null },
+      },
+    }),
+    // Today: Approved
+    prisma.application.count({
+      where: {
+        serviceId: SERVICE_ID,
+        status: "APPROVED",
+        reviewedAt: { gte: todayStart, lt: todayEnd },
+      },
+    }),
+    // Today: Rejected
+    prisma.application.count({
+      where: {
+        serviceId: SERVICE_ID,
+        status: "REJECTED",
+        reviewedAt: { gte: todayStart, lt: todayEnd },
+      },
+    }),
+    // This week: Pending
+    prisma.application.count({
+      where: {
+        serviceId: SERVICE_ID,
+        status: "PENDING",
+        submittedAt: { gte: weekStart, lt: weekEnd },
+      },
+    }),
+    // This week: Approved
+    prisma.application.count({
+      where: {
+        serviceId: SERVICE_ID,
+        status: "APPROVED",
+        reviewedAt: { gte: weekStart, lt: weekEnd },
+      },
+    }),
+    // This week: Rejected
+    prisma.application.count({
+      where: {
+        serviceId: SERVICE_ID,
+        status: "REJECTED",
+        reviewedAt: { gte: weekStart, lt: weekEnd },
+      },
+    }),
+  ]);
+
+  return {
+    today: {
+      newApplications,
+      awaitingAssignment,
+      pendingReview,
+      approved: approvedToday,
+      rejected: rejectedToday,
+    },
+    thisWeek: {
+      pending: weeklyPending,
+      approved: weeklyApproved,
+      rejected: weeklyRejected,
+    },
+  };
 }

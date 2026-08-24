@@ -4,6 +4,7 @@ import * as treeCuttingService from "../../services/applications/tree-cutting.se
 import * as AssignService from "../../services/applications/assign-user.service.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import { SERVICE_ID, SERVICE_PREFIX } from "../../lib/services.js";
+import { promise } from "zod";
 
 // Submit tree cutting application
 export async function submitTreeCuttingForm(req, res) {
@@ -120,6 +121,19 @@ export async function viewTreeCuttingFormById(req, res) {
     return res.status(200).json({
       message: "Successfully get the Form data",
       treeCuttingFormData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function listTreeCuttingAppStatus(req, res) {
+  try {
+    const status = await treeCuttingService.listTreeCuttingAppStatus();
+    return res.status(200).json({
+      message: "Successfully get the tree cutting application status",
+      status,
     });
   } catch (error) {
     console.log(error);

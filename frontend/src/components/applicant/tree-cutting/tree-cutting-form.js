@@ -19,7 +19,10 @@ const treeCuttingFormSchema = z.object({
     .string()
     .trim()
     .min(1, "Tree Cutting Address is required"),
-  noTreesToBeRemoved: z.coerce.number().min(1, "Must remove at least one tree"),
+  noTreesToBeRemoved: z.coerce
+    .number()
+    .min(1, "Must remove at least one tree")
+    .max(1000, "Number of trees cannot exceed 1,000"),
   signatureName: z.string().trim().min(1, "Signature name is required"),
   privacyConsent: z.literal(true, "Please check this box to proceed"),
   contactNo: z

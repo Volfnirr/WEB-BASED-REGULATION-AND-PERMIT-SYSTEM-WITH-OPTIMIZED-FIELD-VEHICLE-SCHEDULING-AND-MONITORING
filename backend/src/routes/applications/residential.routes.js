@@ -12,6 +12,7 @@ import {
   submitResidentialForm,
   listResidentialApplications,
   viewResidentialFormById,
+  listResidentialAppStatus,
 } from "../../controller/applications/residential.controller.js";
 
 // User submits a residential application
@@ -34,6 +35,14 @@ router.get(
   listResidentialApplications,
 );
 
+// Get residential application status
+router.get(
+  "/residential/status",
+  requireAuthentication,
+  requireAuthorization("APPLICATION_ADMIN"),
+  requireAppAdminServices([2]),
+  listResidentialAppStatus,
+);
 // Get Residential Form by ID
 router.get(
   "/residential/:id",
@@ -42,4 +51,5 @@ router.get(
   requireAppAdminServices([2]),
   viewResidentialFormById,
 );
+
 export default router;

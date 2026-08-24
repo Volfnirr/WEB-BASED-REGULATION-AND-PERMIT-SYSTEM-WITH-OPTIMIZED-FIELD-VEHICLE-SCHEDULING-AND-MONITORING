@@ -252,3 +252,16 @@ export async function rejectApplication(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
+export async function listAllApplicationsStatus(req, res) {
+  try {
+    const status = await appAdmin.listAllApplicationsStatus();
+    return res.status(200).json({
+      message: "Successfully get all application status",
+      status,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
