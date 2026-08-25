@@ -14,3 +14,12 @@ export const formSubmitLimiter = rateLimit({
       "You can only submit this form once per minute. Please wait a moment and try again.",
   },
 });
+
+export const vehicleAction = rateLimit({
+  windowMs: 60 * 1000,
+  max: 500, //1
+  message: {
+    message:
+      "You can only submit once per minute. Please wait a moment and try again.",
+  },
+});

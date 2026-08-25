@@ -51,8 +51,8 @@ export default function ManageVehicleUI() {
       id: "1",
       brand: "Ford",
       model: "Ranger",
-      link: "/vehicles/ford_ranger.png",
-      plateNo: "ABCD-1234",
+      imageUrl: "/vehicles/ford_ranger.png",
+      plateNumber: "ABCD-1234",
       fuelType: "Diesel",
       seatCapacity: "6",
       lastMaintenance: "2025-06-06",
@@ -61,8 +61,8 @@ export default function ManageVehicleUI() {
       id: "2",
       brand: "Mitsubishi",
       model: "Triton",
-      link: "/vehicles/mitsubishi_triton.png",
-      plateNo: "ABCD-5678",
+      imageUrl: "/vehicles/mitsubishi_triton.png",
+      plateNumber: "ABCD-5678",
       fuelType: "Diesel",
       seatCapacity: "6",
       lastMaintenance: "2025-06-07",
@@ -71,8 +71,8 @@ export default function ManageVehicleUI() {
       id: "3",
       brand: "Toyota",
       model: "Hiace",
-      link: "/vehicles/toyota_hiace.png",
-      plateNo: "ABCD-8976",
+      imageUrl: "/vehicles/toyota_hiace.png",
+      plateNumber: "ABCD-8976",
       fuelType: "Diesel",
       seatCapacity: "6",
       lastMaintenance: "2025-06-08",
@@ -111,7 +111,13 @@ export default function ManageVehicleUI() {
     itemsPerPage,
   } = useDataTable({
     data,
-    searchableFields: ["brand", "model", "seatCapacity", "fuelType", "plateNo"],
+    searchableFields: [
+      "brand",
+      "model",
+      "seatCapacity",
+      "fuelType",
+      "plateNumber",
+    ],
     itemsPerPage: 8,
   });
 
@@ -187,7 +193,7 @@ export default function ManageVehicleUI() {
               >
                 <div className="flex justify-center w-full h-56">
                   <Image
-                    src={d.link}
+                    src={d.imageUrl}
                     alt="Ford Ranger"
                     width={280}
                     height={250}
@@ -201,7 +207,7 @@ export default function ManageVehicleUI() {
                   <div className="flex flex-row flex-wrap items-center justify-center gap-2 px-0.5 py-2.5 rounded-md mb-2 bg-green-50 border border-green-200 shadow-sm text-sm font-medium text-green-900">
                     <span className="flex flex-row gap-1.5 items-center pr-2 border-r-3 border-green-300  text-xs md:text-sm">
                       <IdCard className="w-4 h-4 text-green-700" />
-                      {d.plateNo}
+                      {d.plateNumber}
                     </span>
                     <span className="flex flex-row gap-1.5 items-center pr-2 border-r-3 border-green-300 text-xs md:text-sm">
                       <Fuel className="w-4 h-4 text-green-700" /> {d.fuelType}
