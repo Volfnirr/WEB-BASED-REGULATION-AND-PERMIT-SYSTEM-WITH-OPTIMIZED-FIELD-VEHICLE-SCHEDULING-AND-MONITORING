@@ -1,19 +1,15 @@
 import ManageVehicleUI from "@/components/vehicle-admin/manage-vehicles/manage-vehicles-ui";
-import InfoCard from "@/components/ui/infocard";
-import InfoCardContainer from "@/components/ui/infocardcontainer";
 import {
-  Route,
-  CirclePlus,
-  CarFront,
-  Wrench,
-  CalendarCheck,
-  CircleCheck,
-} from "lucide-react";
+  listAllVehicles,
+  vehiclesStatus,
+} from "@/lib/api/vehicle/vehicle-server";
 
-export default function ManageVehicles() {
+export default async function ManageVehicles() {
+  const { vehicles } = await listAllVehicles();
+  const { vehiclesInfo } = await vehiclesStatus();
   return (
     <div>
-      <ManageVehicleUI />
+      <ManageVehicleUI initialData={vehicles} vehiclesData={vehiclesInfo} />
     </div>
   );
 }

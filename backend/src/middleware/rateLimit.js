@@ -20,6 +20,6 @@ export const vehicleAction = rateLimit({
   max: 500, //1
   message: {
     message:
-      "You can only submit once per minute. Please wait a moment and try again.",
+      "You can only add or update vehicle once per minute. Please wait a moment and try again.",
   },
 });

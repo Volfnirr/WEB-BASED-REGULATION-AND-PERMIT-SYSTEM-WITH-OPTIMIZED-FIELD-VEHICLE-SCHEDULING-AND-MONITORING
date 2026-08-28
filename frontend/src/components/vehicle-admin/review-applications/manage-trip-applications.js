@@ -19,7 +19,7 @@ export default function ManageTripApplication() {
         />
         <button
           onClick={() => setShowTripTicket(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-[#4DAA74] px-4 py-2.5 text-white font-medium cursor-pointer hover:bg-[#428f63] transition-colors duration-200"
+          className="flex items-center gap-1.5 rounded-lg text-md bg-[#4DAA74] px-4 py-2.5 text-white font-medium cursor-pointer whitespace-nowrap hover:bg-[#428f63] transition-colors duration-200 "
         >
           <Plus className="h-4 w-4" />
           New Trip Ticket

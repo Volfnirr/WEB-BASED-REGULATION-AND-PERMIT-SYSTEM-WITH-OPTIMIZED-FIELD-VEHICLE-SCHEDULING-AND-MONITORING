@@ -2,7 +2,11 @@ import { z } from "zod";
 export const vehicleSchema = z.object({
   brand: z.string().trim().min(1, "Brand name is required"),
   model: z.string().trim().min(1, "Modela name is required"),
-  plateNumber: z.string().trim().min(1, "Plate Number is required"),
+  plateNumber: z
+    .string()
+    .trim()
+    .min(1, "Plate Number is required")
+    .transform((value) => value.toUpperCase()),
   fuelType: z.enum(
     ["DIESEL", "GASOLINE", "ELECTRIC"],
     "Please select a fuel type",
@@ -12,9 +16,9 @@ export const vehicleSchema = z.object({
   isUsable: z
     .preprocess((val) => val === "true" || val === true, z.boolean())
     .optional(),
-  lastMaintenanceDate: z.date().optional(),
-  lastRegistrationDate: z.date().optional(),
-  registrationExpiration: z.date().optional(),
+  lastMaintenanceDate: z.coerce.date().optional(),
+  lastRegistrationDate: z.coerce.date().optional(),
+  registrationExpiration: z.coerce.date().optional(),
   imageUrl: z
     .object({
       buffer: z.instanceof(Buffer),
@@ -24,3 +28,5 @@ export const vehicleSchema = z.object({
     })
     .optional(),
 });
+
+export const updateVehicleSchema = vehicleSchema.partial();
