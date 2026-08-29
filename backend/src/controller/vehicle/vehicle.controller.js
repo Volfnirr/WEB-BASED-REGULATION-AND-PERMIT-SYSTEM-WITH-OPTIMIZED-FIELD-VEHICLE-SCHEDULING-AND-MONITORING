@@ -8,6 +8,14 @@ export async function createVehicle(req, res) {
     const createVehicle = await prisma.$transaction(async (tx) => {
       const { imageUrl, ...vehicleData } = req.validatedData;
 
+      if (vehicleData.plateNumber) {
+        await vehicleAdmin.checkVehiclePlateIfExist(
+          vehicleData.plateNumber,
+          req.params.id,
+          tx,
+        );
+      }
+
       let filePath = null;
 
       if (imageUrl) {
@@ -57,6 +65,13 @@ export async function createVehicle(req, res) {
     });
   } catch (error) {
     console.log(error);
+
+    if (error.message === "PLATE_NUMBER_EXISTS") {
+      return res.status(409).json({
+        message: "Plate number is already in use",
+      });
+    }
+
     if (error.message === "UPLOAD_FAILED") {
       return res
         .status(500)

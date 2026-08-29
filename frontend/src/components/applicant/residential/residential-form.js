@@ -180,11 +180,7 @@ export default function ResidentialForm() {
         </h1>
         <hr className="border-gray-200 mb-8" />
 
-        <form
-          className="space-y-8"
-          onSubmit={handleSubmit(onSubmit)}
-          disabled={isSubmitting}
-        >
+        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
           {/* Section: Applicant Information */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">

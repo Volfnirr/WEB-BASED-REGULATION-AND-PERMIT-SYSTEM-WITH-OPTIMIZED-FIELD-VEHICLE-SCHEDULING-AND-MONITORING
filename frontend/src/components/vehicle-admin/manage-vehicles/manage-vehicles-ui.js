@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InfoCard from "@/components/ui/infocard";
 import InfoCardContainer from "@/components/ui/infocardcontainer";
 import FilterDropdown from "@/components/ui/tables/tools/dropdown";
@@ -35,6 +35,9 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
   const [isDeleteOpen, setisDeleteOpen] = useState(false);
   const [isAddEditVehicleOpen, setisAddEditVehicleOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
 
   function openVehicle(id) {
     const vehicle = data.find((d) => d.id === id);
@@ -144,10 +147,7 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
 
   const roleOptions = ["DIESEL", "GASOLINE", "ELECTRIC"];
 
-  const sortOptions = [
-    { label: "Brand", key: "brand" },
-    { label: "Last Maintenance", key: "lastMaintenanceDate" },
-  ];
+  const sortOptions = [{ label: "Brand", key: "brand" }];
 
   return (
     <div className="mb-4">
@@ -212,8 +212,8 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
         {paginatedData.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <CarFront className="w-10 h-10 text-gray-300 mb-3" />
-            <p className="text-green-500 font-medium">No vehicles available</p>
-            <p className="text-green-400 text-sm">
+            <p className="text-gray-500 font-medium">No vehicles available</p>
+            <p className="text-gray-400 text-sm">
               Try adjusting your search or filters.
             </p>
           </div>
@@ -221,12 +221,12 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {paginatedData.map((d) => (
               <div
-                key={d.id}
+                key={d?.id}
                 className="flex flex-col w-full rounded-lg pb-1 bg-[#4DAA74]"
               >
                 <div className="flex justify-center w-full h-56">
                   <Image
-                    src={d.imageUrl}
+                    src={d?.imageUrl}
                     alt="Ford Ranger"
                     width={280}
                     height={250}
@@ -235,19 +235,19 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
                 </div>
                 <div className="px-2 py-2 flex-col justify-center">
                   <span className="flex justify-center font-bold text-lg px-2 py-1 text-white">
-                    {d.brand} {d.model}
+                    {d?.brand} {d?.model}
                   </span>
                   <div className="flex flex-row flex-wrap items-center justify-center gap-2 px-0.5 py-2.5 rounded-md mb-2 bg-green-50 border border-green-200 shadow-sm text-sm font-medium text-green-900">
                     <span className="flex flex-row gap-1.5 items-center pr-2 border-r-3 border-green-300  text-xs md:text-sm">
                       <IdCard className="w-4 h-4 text-green-700" />
-                      {d.plateNumber}
+                      {d?.plateNumber}
                     </span>
                     <span className="flex flex-row gap-1.5 items-center pr-2 border-r-3 border-green-300 text-xs md:text-sm">
-                      <Fuel className="w-4 h-4 text-green-700" /> {d.fuelType}
+                      <Fuel className="w-4 h-4 text-green-700" /> {d?.fuelType}
                     </span>
                     <span className="flex flex-row gap-1.5 items-center  text-xs md:text-sm">
                       <Users className="w-4 h-4 text-green-700" />{" "}
-                      {d.seatCapacity}
+                      {d?.seatCapacity}
                     </span>
                   </div>
 
@@ -259,8 +259,8 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
                       </div>
 
                       <span className="ml-auto whitespace-nowrap">
-                        {d.lastMaintenanceDate
-                          ? localDateTime(d.lastMaintenanceDate)
+                        {d?.lastMaintenanceDate
+                          ? localDateTime(d?.lastMaintenanceDate)
                           : "-"}
                       </span>
                     </div>
@@ -272,8 +272,8 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
                       </div>
 
                       <span className="ml-auto whitespace-nowrap">
-                        {d.lastRegistrationDate
-                          ? localDateTime(d.lastRegistrationDate)
+                        {d?.lastRegistrationDate
+                          ? localDateTime(d?.lastRegistrationDate)
                           : "-"}
                       </span>
                     </div>
@@ -285,8 +285,8 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
                       </div>
 
                       <span className="ml-auto whitespace-nowrap">
-                        {d.registrationExpiration
-                          ? localDateTime(d.registrationExpiration)
+                        {d?.registrationExpiration
+                          ? localDateTime(d?.registrationExpiration)
                           : "-"}
                       </span>
                     </div>

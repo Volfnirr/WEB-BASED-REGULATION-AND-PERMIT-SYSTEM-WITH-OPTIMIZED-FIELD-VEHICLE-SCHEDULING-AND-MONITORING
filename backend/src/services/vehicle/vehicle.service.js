@@ -32,9 +32,13 @@ export async function checkVehiclePlateIfExist(
   const existingVehicle = await db.vehicle.findFirst({
     where: {
       plateNumber,
-      NOT: {
-        id: Number(vehicleId),
-      },
+      ...(vehicleId
+        ? {
+            NOT: {
+              id: Number(vehicleId),
+            },
+          }
+        : {}),
     },
   });
 

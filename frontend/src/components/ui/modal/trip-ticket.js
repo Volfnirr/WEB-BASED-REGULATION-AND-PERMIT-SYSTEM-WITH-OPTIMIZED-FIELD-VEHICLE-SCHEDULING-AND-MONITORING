@@ -1,27 +1,81 @@
 "use client";
-import React, { useState } from "react";
 
-export default function TripTicketModal({ isOpen, onClose }) {
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { useForm, Controller } from "react-hook-form";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Spinner } from "@/components/ui/spinner";
+import { useState } from "react";
+import VehiclesList from "@/components/vehicle-admin/review-applications/vehicle-list";
+
+const tripTicketFormSchema = z.object({
+  tripTicketNo: z.string().trim().min(1, "Trip Ticket is Required"),
+  scheduleDate: z.object(
+    {
+      from: z.coerce.date({ message: "Departure date is required" }),
+      to: z.coerce.date().optional(),
+    },
+    { message: "Departure date is required" },
+  ),
+  driverName: z.string().trim().min(1, "Driver name is Required"),
+  authorizedPassengers: z
+    .string()
+    .trim()
+    .min(1, "Authorized Passengers is Required"),
+  placesToVisit: z.string().trim().min(1, "Place to visit is Required"),
+  purpose: z.string().trim().min(1, "Purpose is Required"),
+  vehicleId: z.coerce
+    .number({ message: "Plate Number is Required" })
+    .positive(), //2. Government vehicle to be used, Plate No.
+});
+
+export default function TripTicketModal({ vehicles, isOpen, onClose }) {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
+  const errorClass = "text-red-600 text-xs font-medium";
 
-  const today = new Date().toISOString().split("T")[0];
+  const [showVehicles, setShowVehicles] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(tripTicketFormSchema),
+  });
 
-  const [passengers, setPassengers] = useState([""]);
-
-  const handlePassengerChange = (index, value) => {
-    const updated = [...passengers];
-    updated[index] = value;
-    setPassengers(updated);
-  };
-
-  const addPassenger = () => {
-    setPassengers([...passengers, ""]);
-  };
-
-  const removePassenger = (index) => {
-    if (passengers.length === 1) return;
-    setPassengers(passengers.filter((_, i) => i !== index));
+  const onSubmit = async (data) => {
+    const { scheduleDate, ...rest } = data;
+    const formData = {
+      ...rest,
+      startDate: format(data.scheduleDate.from, "yyyy-MM-dd"),
+      endDate: format(
+        data.scheduleDate.to ?? data.scheduleDate.from,
+        "yyyy-MM-dd",
+      ),
+    };
+    console.log(formData);
+    // try {
+    //   await submitResidentialForm(data);
+    //   reset();
+    //   setShowModal(true);
+    // } catch (err) {
+    //   toast.error("Something went wrong submitting your application.", {
+    //     position: "top-center",
+    //   });
+    // }
   };
 
   if (!isOpen) return null;
@@ -35,10 +89,16 @@ export default function TripTicketModal({ isOpen, onClose }) {
         className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl p-6 md:p-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-start mb-4">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Trip Ticket
-          </h1>
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+              Trip Ticket
+            </h1>
+            <p className="text-gray-500 text-sm">
+              A. To be filled by the Admistrative Official Authorizing Official
+              Travel
+            </p>
+          </div>
           <button
             type="button"
             onClick={onClose}
@@ -50,161 +110,209 @@ export default function TripTicketModal({ isOpen, onClose }) {
         </div>
         <hr className="border-gray-200 mb-8" />
 
-        <form
-          action="/submit_trip_ticket.php"
-          method="POST"
-          className="space-y-8"
-        >
+        <form className="space-y-2" onSubmit={handleSubmit(onSubmit)}>
           <div>
-            <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
+            <h2 className="text-sm font-bold text-gray-800 uppercase mb-2">
               Trip Details
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Trip Ticket No.*
-                </label>
-                <input
-                  type="text"
-                  name="tripTicketNo"
-                  placeholder="*TRIP TICKET NO."
-                  className={inputClass}
-                  required
-                />
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Trip Ticket No.*
+                  </label>
+                  <input
+                    {...register("tripTicketNo")}
+                    type="text"
+                    placeholder="*Trip Ticket No"
+                    className={inputClass}
+                  />
+                  {errors.tripTicketNo && (
+                    <div className={errorClass}>
+                      {errors.tripTicketNo.message}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Date*
+                  Departure Date*
                 </label>
-                <input
-                  type="date"
-                  name="date"
-                  max={today}
-                  className={inputClass}
-                  required
+                <Controller
+                  name="scheduleDate"
+                  control={control}
+                  render={({ field }) => {
+                    const range = field.value;
+                    const isSingleDay =
+                      range?.from &&
+                      (!range.to ||
+                        range.to.getTime() === range.from.getTime());
+
+                    return (
+                      <Popover>
+                        <PopoverTrigger
+                          render={
+                            <button
+                              type="button"
+                              id="scheduleDate"
+                              className={`${inputClass} flex items-center justify-between`}
+                            >
+                              <span
+                                className={
+                                  range?.from
+                                    ? "text-gray-800"
+                                    : "text-gray-400"
+                                }
+                              >
+                                {range?.from ? (
+                                  isSingleDay ? (
+                                    format(range.from, "LLL dd, y")
+                                  ) : (
+                                    <>
+                                      {format(range.from, "LLL dd, y")} -{" "}
+                                      {format(range.to, "LLL dd, y")}
+                                    </>
+                                  )
+                                ) : (
+                                  "Pick a date"
+                                )}
+                              </span>
+                              <CalendarIcon className="w-4 h-4 text-gray-400 shrink-0" />
+                            </button>
+                          }
+                        />
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="range"
+                            defaultMonth={range?.from}
+                            selected={range}
+                            onSelect={field.onChange}
+                            numberOfMonths={2}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  }}
                 />
+                {errors.scheduleDate && (
+                  <div className={errorClass}>
+                    {errors.scheduleDate.from?.message ||
+                      errors.scheduleDate.message}
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           <div>
-            <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
+            <h2 className="text-sm font-bold text-gray-800 uppercase mb-2">
               Vehicle Information
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
+            <div className="grid grid-cols-1 gap-2 mb-2">
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1">
                   Name of Driver of the Vehicle*
                 </label>
                 <input
+                  {...register("driverName")}
                   type="text"
-                  name="driverName"
                   placeholder="*NAME OF DRIVER"
                   className={inputClass}
-                  required
                 />
+                {errors.driverName && (
+                  <div className={errorClass}>{errors.driverName.message}</div>
+                )}
               </div>
-              <div>
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Government Vehicle to Be Used*
+                  Government Vehicle to Be Used, Plate no*
                 </label>
-                <input
-                  type="text"
-                  name="vehicleUsed"
-                  placeholder="*e.g. TOYOTA HILUX"
+                <button
+                  type="button"
+                  onClick={() => setShowVehicles(true)}
                   className={inputClass}
-                  required
-                />
-              </div>
-            </div>
+                >
+                  {selectedVehicle
+                    ? `Plate number: ${selectedVehicle?.plateNumber}`
+                    : "Select a vehicle"}
+                </button>
 
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Plate No.*
-                </label>
-                <input
-                  type="text"
-                  name="plateNo"
-                  placeholder="*PLATE NO."
-                  className={inputClass}
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
-              Name of Authorized Passenger/s
-            </h2>
-
-            <div className="space-y-3">
-              {passengers.map((passenger, index) => (
-                <div key={index} className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    name={`passenger_${index}`}
-                    placeholder={`*PASSENGER ${index + 1} FULL NAME`}
-                    value={passenger}
-                    onChange={(e) =>
-                      handlePassengerChange(index, e.target.value)
-                    }
-                    className={inputClass}
-                    required
+                {errors.vehicleId && (
+                  <div className={errorClass}>{errors.vehicleId.message}</div>
+                )}
+                {showVehicles && (
+                  <VehiclesList
+                    vehicles={vehicles}
+                    onAssign={(vehicle) => {
+                      setSelectedVehicle(vehicle);
+                      setValue("vehicleId", vehicle?.id, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                      setShowVehicles(false);
+                    }}
                   />
-                  <button
-                    type="button"
-                    onClick={() => removePassenger(index)}
-                    disabled={passengers.length === 1}
-                    className="shrink-0 px-3 py-2 text-sm font-semibold text-red-600 border border-red-200 rounded-md hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
+                )}
+              </div>
             </div>
-
-            <button
-              type="button"
-              onClick={addPassenger}
-              className="mt-3 px-4 py-2 text-sm font-semibold text-[#1a5632] border border-[#1a5632] rounded-md hover:bg-green-50 transition-colors"
-            >
-              + Add Passenger
-            </button>
           </div>
 
           <div>
-            <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
-              Purpose of Travel
-            </h2>
+            <div className="flex flex-col gap-1 text-left">
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                Name of Authorized Passenger/s
+              </label>
+              <input
+                {...register("authorizedPassengers")}
+                type="text"
+                placeholder="*Select a vehicle"
+                className={inputClass}
+              />
+              {errors.authorizedPassengers && (
+                <div className={errorClass}>
+                  {errors.authorizedPassengers.message}
+                </div>
+              )}
+            </div>
+          </div>
 
-            <div className="grid grid-cols-1 gap-4 mb-4">
+          <div>
+            <div className="grid grid-cols-1 gap-2 mb-2">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Place or Places to Be Visited/Inspected*
-                </label>
-                <textarea
-                  name="placesVisited"
-                  rows="3"
-                  placeholder="*e.g. Barangay San Jose, City of San Fernando"
-                  className={inputClass}
-                  required
-                />
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Place or Places to Be Visited/Inspected*
+                  </label>
+                  <input
+                    {...register("placesToVisit")}
+                    type="text"
+                    placeholder="*e.g. ANGELES,ARAYAT & STA. RITA, PAMPANGA"
+                    className={inputClass}
+                  />
+                  {errors.placesToVisit && (
+                    <div className={errorClass}>
+                      {errors.placesToVisit.message}
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Purpose*
-                </label>
-                <textarea
-                  name="purpose"
-                  rows="3"
-                  placeholder="*PURPOSE OF THE TRIP"
-                  className={inputClass}
-                  required
-                />
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Purpose*
+                  </label>
+                  <textarea
+                    {...register("purpose")}
+                    type="text"
+                    placeholder="*PURPOSE OF THE TRIP"
+                    className={inputClass}
+                  />
+                  {errors.purpose && (
+                    <div className={errorClass}>{errors.purpose.message}</div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -217,11 +325,19 @@ export default function TripTicketModal({ isOpen, onClose }) {
             >
               Cancel
             </button>
+
             <button
               type="submit"
-              className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] transition-colors"
+              disabled={isSubmitting}
+              className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              Submit Trip Ticket
+              {isSubmitting ? (
+                <>
+                  <Spinner data-icon />
+                </>
+              ) : (
+                " Submit Trip Ticket"
+              )}
             </button>
           </div>
         </form>

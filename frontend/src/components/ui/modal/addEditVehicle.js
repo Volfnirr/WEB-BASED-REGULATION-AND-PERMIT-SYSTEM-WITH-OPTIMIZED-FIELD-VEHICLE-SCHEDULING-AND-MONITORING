@@ -26,6 +26,7 @@ import {
   createVehicle,
   updateVehicle,
 } from "@/lib/api/vehicle/manage-vehicles";
+import { useRouter } from "next/navigation";
 
 const vehicleSchema = z.object({
   brand: z.string().trim().min(1, "Brand name is required"),
@@ -77,6 +78,7 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
   const [isDragActive, setIsDragActive] = useState(false);
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
+  const router = useRouter();
 
   const {
     register,
@@ -129,7 +131,7 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
   }, [vehicle?.id, open]);
 
   const onSubmit = async (data) => {
-    if (!vehicle && !newImageFile) {
+    if (!vehicle?.id && !newImageFile) {
       toast.error("Please add a vehicle image", {
         position: "top-center",
       });
@@ -137,7 +139,6 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
     }
     const formData = new FormData();
     if (vehicle?.id) {
-      // Edit
       if (data.brand !== vehicle.brand) formData.append("brand", data.brand);
       if (data.model !== vehicle.model) formData.append("model", data.model);
       if (data.plateNumber !== vehicle.plateNumber)
@@ -178,7 +179,6 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
 
       if (newImageFile) formData.append("imageUrl", newImageFile);
     } else {
-      //Add
       formData.append("brand", data.brand);
       formData.append("model", data.model);
       formData.append("plateNumber", data.plateNumber);
@@ -220,6 +220,8 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
           position: "top-center",
         });
       }
+
+      router.refresh();
       onClose();
     } catch (err) {
       toast.error(
