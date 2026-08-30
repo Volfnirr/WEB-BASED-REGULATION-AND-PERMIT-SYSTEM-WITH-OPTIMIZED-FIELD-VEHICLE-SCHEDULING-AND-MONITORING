@@ -27,7 +27,6 @@ export async function treeCuttingApplications() {
 export async function getTreeCuttingFormDataById(id) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
-
   const response = await fetch(
     `${process.env.API_URL}/api/v1/applications/tree-cutting/${id}`,
     {

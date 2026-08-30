@@ -6,7 +6,7 @@ import Title from "@/components/ui/title";
 import { Plus } from "lucide-react";
 import TripApplicationInfo from "./trip-application-info";
 
-export default function ManageTripApplication({ vehicles }) {
+export default function ManageTripApplication() {
   const [showTripTicket, setShowTripTicket] = useState(false);
 
   return (
@@ -26,7 +26,6 @@ export default function ManageTripApplication({ vehicles }) {
         </button>
         <TripTicketModal
           isOpen={showTripTicket}
-          vehicles={vehicles}
           onClose={() => setShowTripTicket(false)}
         />
       </div>

@@ -1,7 +1,11 @@
 import express from "express";
 const router = express.Router();
 
-import { vehicleAction } from "../../middleware/rateLimit.js";
+import {
+  vehicleAction,
+  fetchLimit,
+  vehicleSubmitTicketLimit,
+} from "../../middleware/rateLimit.js";
 import { requireAuthentication } from "../../middleware/requireAuthentication.js";
 import { requireAuthorization } from "../../middleware/requireAuthorization.js";
 import { validate } from "../../middleware/validate.js";
@@ -11,11 +15,14 @@ import {
   vehicleSchema,
   updateVehicleSchema,
 } from "../../validation/vehicle/vehicleData.js";
+import { tripTicketFormSchema } from "../../validation/vehicle/tripTicketData.js";
 import {
   createVehicle,
   listAllVehicles,
   updateVehicle,
   vehicleStatus,
+  availableVehicles,
+  submitTripAndSchedule,
 } from "../../controller/vehicle/vehicle.controller.js";
 
 // Create a new vehicle
@@ -55,4 +62,22 @@ router.get(
   requireAuthorization("VEHICLE_ADMIN"),
   vehicleStatus,
 );
+
+router.get(
+  "/schedules/available",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  availableVehicles,
+);
+
+router.post(
+  "/trip-ticket",
+  vehicleSubmitTicketLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(tripTicketFormSchema),
+  submitTripAndSchedule,
+);
+
 export default router;

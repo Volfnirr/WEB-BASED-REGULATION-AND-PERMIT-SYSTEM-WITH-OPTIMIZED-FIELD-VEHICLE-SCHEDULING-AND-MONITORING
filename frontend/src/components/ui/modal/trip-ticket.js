@@ -15,6 +15,10 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useState } from "react";
 import VehiclesList from "@/components/vehicle-admin/review-applications/vehicle-list";
+import {
+  listAvailableVehicles,
+  submitTripAndSchedule,
+} from "@/lib/api/vehicle/manage-vehicles";
 
 const tripTicketFormSchema = z.object({
   tripTicketNo: z.string().trim().min(1, "Trip Ticket is Required"),
@@ -37,24 +41,65 @@ const tripTicketFormSchema = z.object({
     .positive(), //2. Government vehicle to be used, Plate No.
 });
 
-export default function TripTicketModal({ vehicles, isOpen, onClose }) {
+export default function TripTicketModal({ isOpen, onClose }) {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-xs font-medium";
-
+  const [vehicles, setVehicles] = useState();
   const [showVehicles, setShowVehicles] = useState(false);
+  const [loadingVehicles, setLoadingVehicles] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const {
     register,
     handleSubmit,
     control,
-    reset,
-    watch,
     setValue,
+    getValues,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(tripTicketFormSchema),
   });
+
+  const availableVehiclesButton = async () => {
+    const scheduleDate = getValues("scheduleDate");
+
+    if (!scheduleDate?.from) {
+      toast.error("Please select a departure date", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    const startDate = format(scheduleDate.from, "yyyy-MM-dd");
+    const endDate = format(scheduleDate.to ?? scheduleDate.from, "yyyy-MM-dd");
+
+    try {
+      setLoadingVehicles(true);
+      setShowVehicles(true);
+
+      const { availableVehicles } = await listAvailableVehicles({
+        startDate,
+        endDate,
+      });
+
+      setVehicles(availableVehicles ?? []);
+    } catch (error) {
+      console.error("Failed to load available vehicles:", error);
+
+      toast.error(
+        `Unable to load available vehicles. ${error?.message || ""}`,
+        {
+          position: "top-center",
+        },
+      );
+
+      setVehicles([]);
+      setShowVehicles(false);
+    } finally {
+      setLoadingVehicles(false);
+    }
+  };
 
   const onSubmit = async (data) => {
     const { scheduleDate, ...rest } = data;
@@ -67,15 +112,20 @@ export default function TripTicketModal({ vehicles, isOpen, onClose }) {
       ),
     };
     console.log(formData);
-    // try {
-    //   await submitResidentialForm(data);
-    //   reset();
-    //   setShowModal(true);
-    // } catch (err) {
-    //   toast.error("Something went wrong submitting your application.", {
-    //     position: "top-center",
-    //   });
-    // }
+    try {
+      const { message } = await submitTripAndSchedule(formData);
+      reset();
+      toast.success(message, {
+        position: "top-center",
+      });
+    } catch (err) {
+      toast.error(
+        err.message || "Something went wrong submitting your application.",
+        {
+          position: "top-center",
+        },
+      );
+    }
   };
 
   if (!isOpen) return null;
@@ -102,7 +152,6 @@ export default function TripTicketModal({ vehicles, isOpen, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
             className="text-gray-400 hover:text-gray-700 text-2xl leading-none px-2"
           >
             &times;
@@ -231,7 +280,7 @@ export default function TripTicketModal({ vehicles, isOpen, onClose }) {
                 </label>
                 <button
                   type="button"
-                  onClick={() => setShowVehicles(true)}
+                  onClick={availableVehiclesButton}
                   className={inputClass}
                 >
                   {selectedVehicle
@@ -243,17 +292,27 @@ export default function TripTicketModal({ vehicles, isOpen, onClose }) {
                   <div className={errorClass}>{errors.vehicleId.message}</div>
                 )}
                 {showVehicles && (
-                  <VehiclesList
-                    vehicles={vehicles}
-                    onAssign={(vehicle) => {
-                      setSelectedVehicle(vehicle);
-                      setValue("vehicleId", vehicle?.id, {
-                        shouldValidate: true,
-                        shouldDirty: true,
-                      });
-                      setShowVehicles(false);
-                    }}
-                  />
+                  <>
+                    {loadingVehicles ? (
+                      <div className="flex justify-center py-4">
+                        <Spinner data-icon />
+                      </div>
+                    ) : (
+                      <VehiclesList
+                        vehicles={vehicles}
+                        onAssign={(vehicle) => {
+                          setSelectedVehicle(vehicle);
+
+                          setValue("vehicleId", vehicle?.id, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+
+                          setShowVehicles(false);
+                        }}
+                      />
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -267,7 +326,7 @@ export default function TripTicketModal({ vehicles, isOpen, onClose }) {
               <input
                 {...register("authorizedPassengers")}
                 type="text"
-                placeholder="*Select a vehicle"
+                placeholder="*Name of Authorized Passenger/s"
                 className={inputClass}
               />
               {errors.authorizedPassengers && (

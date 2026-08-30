@@ -229,3 +229,101 @@ export async function vehicleStatus(req, res) {
     });
   }
 }
+
+export async function availableVehicles(req, res) {
+  try {
+    const availableVehiclesList = await vehicleAdmin.availableVehicles(
+      req.query.startDate,
+      req.query.endDate,
+    );
+
+    const vehicleDataWithImages = await Promise.all(
+      availableVehiclesList.map(async (vehicle) => {
+        console.log("lol 1.2");
+        const { data, error } = await supabase.storage
+          .from("vehicle-photos")
+          .createSignedUrl(vehicle.imageUrl, 120);
+        if (error) {
+          console.log("lol 2");
+
+          console.error(
+            `Failed to sign URL for ${vehicle.imageUrl}:`,
+            error.message,
+          );
+          console.log("lol 2.4");
+          return { ...vehicle, imageUrl: null };
+        }
+
+        console.log("lol 3");
+        return { ...vehicle, imageUrl: data.signedUrl };
+      }),
+    );
+    console.log("list vehicle success");
+    return res.status(200).json({
+      message: "Successfully retrieved available vehicles.",
+      availableVehicles: vehicleDataWithImages,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
+
+export async function submitTripAndSchedule(req, res) {
+  try {
+    const submitTripAndAssignVehicle = await prisma.$transaction(async (tx) => {
+      const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
+        req.validatedData,
+        tx,
+      );
+      if (!verifyStatus.available) {
+        throw new Error(verifyStatus.reason);
+      }
+      const createTicket = await vehicleAdmin.createTripTicket(
+        req.validatedData,
+        req.user.id,
+        tx,
+      );
+      const scheduleVehicle = await vehicleAdmin.scheduleVehicle(
+        req.validatedData,
+        createTicket.id,
+        tx,
+      );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Create Trip Ticket and Schedule Vehicle",
+          target: "Trip Ticket",
+          details: `Created Trip Ticket (Trip Ticket No: ${createTicket.tripTicketNo}, ID: ${createTicket.id}), Vehicle (Plate No: ${verifyStatus.vehicle.plateNumber}, ID: ${verifyStatus.vehicle.id}), Schedule (ID: ${scheduleVehicle.id}, Start: ${scheduleVehicle.startDate.toISOString()}, End: ${scheduleVehicle.endDate.toISOString()})`,
+        },
+        tx,
+      );
+
+      return { createTicket, scheduleVehicle };
+    });
+    return res.status(200).json({
+      message: "Trip ticket created and vehicle scheduled successfully.",
+      trip: submitTripAndAssignVehicle,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error.message === "VEHICLE_NOT_FOUND") {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+    if (error.message === "VEHICLE_NOT_USABLE") {
+      return res.status(400).json({ message: "Vehicle is not usable" });
+    }
+    if (error.message === "SCHEDULE_CONFLICT") {
+      return res.status(409).json({
+        message: "This vehicle is already scheduled for the date(s) provided",
+      });
+    }
+
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}

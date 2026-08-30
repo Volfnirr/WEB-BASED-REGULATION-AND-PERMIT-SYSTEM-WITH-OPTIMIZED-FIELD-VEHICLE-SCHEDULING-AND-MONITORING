@@ -73,3 +73,69 @@ export async function listVehicleStatus() {
     newVehicles,
   };
 }
+
+export async function availableVehicles(
+  startSchedDate,
+  endSchedDate,
+  db = prisma,
+) {
+  return await db.vehicle.findMany({
+    where: {
+      isUsable: true,
+      vehicle_schedule: {
+        none: {
+          AND: [
+            { startDate: { lte: new Date(endSchedDate) } },
+            { endDate: { gte: new Date(startSchedDate) } },
+          ],
+        },
+      },
+    },
+  });
+}
+
+export async function verifyScheduleStatus(data, db = prisma) {
+  const vehicle = await db.vehicle.findUnique({
+    where: { id: Number(data.vehicleId) },
+  });
+
+  if (!vehicle) throw new Error("VEHICLE_NOT_FOUND");
+  if (!vehicle.isUsable) throw new Error("VEHICLE_NOT_USABLE");
+
+  const existingSchedule = await db.vehicle_schedule.findFirst({
+    where: {
+      vehicleId: vehicle.id,
+      startDate: { lte: new Date(data.endDate) },
+      endDate: { gte: new Date(data.startDate) },
+    },
+  });
+
+  if (existingSchedule) throw new Error("SCHEDULE_CONFLICT");
+  return { available: true, vehicle };
+}
+
+export async function createTripTicket(data, userId, db = prisma) {
+  return await db.trip_ticket.create({
+    data: {
+      tripTicketNo: data.tripTicketNo,
+      vehicleId: Number(data.vehicleId),
+      driverName: data.driverName,
+      authorizedPassengers: data.authorizedPassengers,
+      placesToVisit: data.placesToVisit,
+      purpose: data.purpose,
+      createdById: userId,
+    },
+  });
+}
+
+export async function scheduleVehicle(data, tripTicketId, db = prisma) {
+  return await db.vehicle_schedule.create({
+    data: {
+      vehicleId: Number(data.vehicleId),
+      tripTicketId: tripTicketId,
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate),
+      status: "RESERVED",
+    },
+  });
+}

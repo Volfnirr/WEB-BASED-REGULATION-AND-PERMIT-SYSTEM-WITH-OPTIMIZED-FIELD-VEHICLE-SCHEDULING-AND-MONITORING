@@ -23,3 +23,19 @@ export const vehicleAction = rateLimit({
       "You can only add or update vehicle once per minute. Please wait a moment and try again.",
   },
 });
+
+export const fetchLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  message: {
+    message: "Please wait a moment and try again.",
+  },
+});
+
+export const vehicleSubmitTicketLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  message: {
+    message: "Please wait a moment and try again.",
+  },
+});
