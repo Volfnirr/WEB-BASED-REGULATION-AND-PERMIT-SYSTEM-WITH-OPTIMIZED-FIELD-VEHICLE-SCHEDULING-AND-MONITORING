@@ -84,7 +84,7 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
       setSelectedVehicle({ plateNumber: tripTicket.plateNumber ?? null });
     }
   }, [tripTicket?.id, isOpen]);
-  console.log("VEHICLE SHIT PLATE NUMBERT", selectedVehicle);
+  console.log("VEHICLE PLATE NUMBERT", selectedVehicle);
   const availableVehiclesButton = async () => {
     const scheduleDate = getValues("scheduleDate");
 
