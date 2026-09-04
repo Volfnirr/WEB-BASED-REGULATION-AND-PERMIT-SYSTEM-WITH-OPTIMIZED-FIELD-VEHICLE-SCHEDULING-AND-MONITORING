@@ -13,12 +13,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import VehiclesList from "@/components/vehicle-admin/review-applications/vehicle-list";
 import {
   listAvailableVehicles,
   submitTripAndSchedule,
+  updateTripAndSchedule,
 } from "@/lib/api/vehicle/manage-vehicles";
+import { X } from "lucide-react";
 
 const tripTicketFormSchema = z.object({
   tripTicketNo: z.string().trim().min(1, "Trip Ticket is Required"),
@@ -41,7 +43,7 @@ const tripTicketFormSchema = z.object({
     .positive(), //2. Government vehicle to be used, Plate No.
 });
 
-export default function TripTicketModal({ isOpen, onClose }) {
+export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-xs font-medium";
@@ -61,6 +63,28 @@ export default function TripTicketModal({ isOpen, onClose }) {
     resolver: zodResolver(tripTicketFormSchema),
   });
 
+  useEffect(() => {
+    console.log("use effect running");
+    if (!isOpen) return;
+
+    if (tripTicket?.id) {
+      const from = new Date(tripTicket.startDate);
+      const to = tripTicket.endDate ? new Date(tripTicket.endDate) : from;
+
+      reset({
+        tripTicketNo: tripTicket.tripTicketNo,
+        scheduleDate: { from, to },
+        driverName: tripTicket.driverName,
+        authorizedPassengers: tripTicket.authorizedPassengers,
+        placesToVisit: tripTicket.placesToVisit,
+        purpose: tripTicket.purpose,
+        vehicleId: tripTicket.vehicleId,
+      });
+
+      setSelectedVehicle({ plateNumber: tripTicket.plateNumber ?? null });
+    }
+  }, [tripTicket?.id, isOpen]);
+  console.log("VEHICLE SHIT PLATE NUMBERT", selectedVehicle);
   const availableVehiclesButton = async () => {
     const scheduleDate = getValues("scheduleDate");
 
@@ -102,22 +126,74 @@ export default function TripTicketModal({ isOpen, onClose }) {
   };
 
   const onSubmit = async (data) => {
-    const { scheduleDate, ...rest } = data;
-    const formData = {
-      ...rest,
-      startDate: format(data.scheduleDate.from, "yyyy-MM-dd"),
-      endDate: format(
+    console.log("Data", data);
+    console.log("TRIP TICKET DATA", tripTicket);
+
+    const tripData = {};
+
+    if (tripTicket) {
+      if (data.authorizedPassengers !== tripTicket.authorizedPassengers)
+        tripData.authorizedPassengers = data.authorizedPassengers;
+      if (data.driverName !== tripTicket.driverName)
+        tripData.driverName = data.driverName;
+      if (data.purpose !== tripTicket.purpose) tripData.purpose = data.purpose;
+      if (data.placesToVisit !== tripTicket.placesToVisit)
+        tripData.placesToVisit = data.placesToVisit;
+      if (data.tripTicketNo !== tripTicket.tripTicketNo)
+        tripData.tripTicketNo = data.tripTicketNo;
+      if (data.vehicleId !== tripTicket.vehicleId)
+        tripData.vehicleId = data.vehicleId;
+      if (data.scheduleDate.from.toISOString() !== tripTicket.startDate)
+        tripData.startDate = format(data.scheduleDate.from, "yyyy-MM-dd");
+      if (
+        (data.scheduleDate.to.toISOString() ??
+          data.scheduleDate.from.toISOString()) !== tripTicket.endDate
+      )
+        tripData.endDate = format(
+          data.scheduleDate.to ?? data.scheduleDate.from,
+          "yyyy-MM-dd",
+        );
+    } else {
+      tripData.authorizedPassengers = data.authorizedPassengers;
+      tripData.driverName = data.driverName;
+      tripData.purpose = data.purpose;
+      tripData.placesToVisit = data.placesToVisit;
+      tripData.tripTicketNo = data.tripTicketNo;
+      tripData.vehicleId = data.vehicleId;
+      tripData.startDate = format(data.scheduleDate.from, "yyyy-MM-dd");
+      tripData.endDate = format(
         data.scheduleDate.to ?? data.scheduleDate.from,
         "yyyy-MM-dd",
-      ),
-    };
-    console.log(formData);
+      );
+    }
+
     try {
-      const { message } = await submitTripAndSchedule(formData);
+      if (tripTicket?.id) {
+        if (Object.keys(tripData).length === 0) {
+          toast.error("Please make your changes before submitting the form.", {
+            position: "top-center",
+          });
+          return;
+        }
+        console.log("Update Details", tripData, tripTicket.id);
+        const { message } = await updateTripAndSchedule({
+          id: tripTicket.id,
+          data: tripData,
+        });
+        toast.success(message ?? "Trip ticket updated", {
+          position: "top-center",
+        });
+      } else {
+        console.log("Submit Details", tripData);
+
+        const { message } = await submitTripAndSchedule(tripData);
+        toast.success(message, {
+          position: "top-center",
+        });
+      }
+
       reset();
-      toast.success(message, {
-        position: "top-center",
-      });
+      onClose();
     } catch (err) {
       toast.error(
         err.message || "Something went wrong submitting your application.",
@@ -142,7 +218,7 @@ export default function TripTicketModal({ isOpen, onClose }) {
         <div className="flex justify-between items-start mb-2">
           <div className="flex flex-col gap-2">
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-              Trip Ticket
+              {tripTicket ? "Edit Trip Ticket" : " Create Trip Ticket"}
             </h1>
             <p className="text-gray-500 text-sm">
               A. To be filled by the Admistrative Official Authorizing Official
@@ -154,7 +230,7 @@ export default function TripTicketModal({ isOpen, onClose }) {
             onClick={onClose}
             className="text-gray-400 hover:text-gray-700 text-2xl leading-none px-2"
           >
-            &times;
+            <X />
           </button>
         </div>
         <hr className="border-gray-200 mb-8" />
@@ -394,8 +470,10 @@ export default function TripTicketModal({ isOpen, onClose }) {
                 <>
                   <Spinner data-icon />
                 </>
+              ) : tripTicket?.id ? (
+                "Update"
               ) : (
-                " Submit Trip Ticket"
+                "Submit Trip Ticket"
               )}
             </button>
           </div>

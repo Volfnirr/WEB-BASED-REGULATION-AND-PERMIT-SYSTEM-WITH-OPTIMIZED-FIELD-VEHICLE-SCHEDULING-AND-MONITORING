@@ -26,7 +26,7 @@ export const vehicleAction = rateLimit({
 
 export const fetchLimit = rateLimit({
   windowMs: 60 * 1000,
-  max: 3,
+  max: 999, //80
   message: {
     message: "Please wait a moment and try again.",
   },

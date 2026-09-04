@@ -1,4 +1,7 @@
-import { getLast7DaysRange } from "../../lib/date/get-week.js";
+import {
+  getLast7DaysRange,
+  getLast30DaysRange,
+} from "../../lib/date/get-week.js";
 import { prisma } from "../../lib/prisma.js";
 
 export async function createVehicle(data, db = prisma) {
@@ -48,7 +51,7 @@ export async function checkVehiclePlateIfExist(
 }
 
 export async function updateVehicle(id, data, db = prisma) {
-  return db.vehicle.update({
+  return await db.vehicle.update({
     where: {
       id: Number(id),
     },
@@ -74,6 +77,8 @@ export async function listVehicleStatus() {
   };
 }
 
+// UNDER TRIP TICKET - SUBMIT TRIP TICKET
+// GROUP 1
 export async function availableVehicles(
   startSchedDate,
   endSchedDate,
@@ -94,6 +99,19 @@ export async function availableVehicles(
   });
 }
 
+// UNDER TRIP TICKET - SUBMIT TRIP TICKET
+// GROUP 1
+export async function verifyTripTicketTaken(tripTicketNo, db = prisma) {
+  const existing = await db.trip_ticket.findUnique({
+    where: { tripTicketNo },
+  });
+
+  if (existing) throw new Error("TRIP_TICKET_NO_TAKEN");
+  return { available: true };
+}
+
+// UNDER TRIP TICKET - SUBMIT TRIP TICKET
+// GROUP 1
 export async function verifyScheduleStatus(data, db = prisma) {
   const vehicle = await db.vehicle.findUnique({
     where: { id: Number(data.vehicleId) },
@@ -105,8 +123,12 @@ export async function verifyScheduleStatus(data, db = prisma) {
   const existingSchedule = await db.vehicle_schedule.findFirst({
     where: {
       vehicleId: vehicle.id,
-      startDate: { lte: new Date(data.endDate) },
-      endDate: { gte: new Date(data.startDate) },
+      startDate: {
+        lte: new Date(data.endDate),
+      },
+      endDate: {
+        gte: new Date(data.startDate),
+      },
     },
   });
 
@@ -114,6 +136,8 @@ export async function verifyScheduleStatus(data, db = prisma) {
   return { available: true, vehicle };
 }
 
+// UNDER TRIP TICKET - SUBMIT TRIP TICKET
+// GROUP 1
 export async function createTripTicket(data, userId, db = prisma) {
   return await db.trip_ticket.create({
     data: {
@@ -127,7 +151,8 @@ export async function createTripTicket(data, userId, db = prisma) {
     },
   });
 }
-
+// UNDER TRIP TICKET - SUBMIT TRIP TICKET
+// GROUP 1
 export async function scheduleVehicle(data, tripTicketId, db = prisma) {
   return await db.vehicle_schedule.create({
     data: {
@@ -137,5 +162,95 @@ export async function scheduleVehicle(data, tripTicketId, db = prisma) {
       endDate: new Date(data.endDate),
       status: "RESERVED",
     },
+  });
+}
+
+// UNDER TRIP TICKET - VIEW TRIP TICKET
+export async function tripTicketList() {
+  return await prisma.trip_ticket.findMany({
+    include: {
+      vehicle: {
+        select: {
+          plateNumber: true,
+        },
+      },
+      vehicle_schedule: {
+        select: {
+          startDate: true,
+          endDate: true,
+        },
+      },
+    },
+  });
+}
+// UNDER TRIP TICKET - TRIP TICKET STATUS
+export async function tripTicketStatus() {
+  const { start: weekStart, end: weekEnd } = getLast7DaysRange();
+  const { start: monthStart, end: monthEnd } = getLast30DaysRange();
+
+  const [totalTrips, newTrips, monthlyTrips] = await Promise.all([
+    prisma.trip_ticket.count(),
+    prisma.trip_ticket.count({
+      where: {
+        createdAt: { gte: weekStart, lt: weekEnd },
+      },
+    }),
+    prisma.trip_ticket.count({
+      where: {
+        createdAt: { gte: monthStart, lt: monthEnd },
+      },
+    }),
+  ]);
+  return {
+    totalTrips,
+    newTrips,
+    monthlyTrips,
+  };
+}
+
+// UNDER MANAGE VEHICLES
+// LIST ALL VEHICLE SCHEDULES
+export async function vehicleSchedules(startDate, endDate) {
+  return prisma.vehicle.findMany({
+    select: {
+      id: true,
+      brand: true,
+      model: true,
+      isUsable: true,
+      plateNumber: true,
+      vehicle_schedule: {
+        where: {
+          startDate: { gte: new Date(startDate) },
+          endDate: { lte: new Date(endDate) },
+        },
+        select: {
+          id: true,
+          startDate: true,
+          endDate: true,
+          status: true,
+        },
+      },
+    },
+  });
+}
+
+// UNDER TRIP TICKET - UPDATE TRIP TICKET
+// GROUP - 2
+export async function updateTripTicket(data, tripTicketId, db = prisma) {
+  return await db.trip_ticket.update({
+    where: {
+      id: Number(tripTicketId),
+    },
+    data,
+  });
+}
+// UNDER TRIP TICKET - UPDATE TRIP TICKET
+// GROUP - 2
+export async function updateScheduleVehicle(data, tripTicketId, db = prisma) {
+  return await db.vehicle_schedule.update({
+    where: {
+      tripTicketId: Number(tripTicketId),
+    },
+    data,
   });
 }

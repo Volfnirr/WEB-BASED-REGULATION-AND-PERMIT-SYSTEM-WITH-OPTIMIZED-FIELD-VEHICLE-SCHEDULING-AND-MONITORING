@@ -54,7 +54,7 @@ export async function listAvailableVehicles({ startDate, endDate }) {
   return result;
 }
 
-export async function submitTripAndSchedule(formData) {
+export async function submitTripAndSchedule(data) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/trip-ticket`,
     {
@@ -63,7 +63,7 @@ export async function submitTripAndSchedule(formData) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(data),
     },
   );
 
@@ -71,6 +71,48 @@ export async function submitTripAndSchedule(formData) {
 
   if (!response.ok) {
     throw new Error(result.message || "Failed to submit trip ticket.");
+  }
+
+  return result;
+}
+
+export async function listVehiclesSchedules({ startDate, endDate }) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/schedules?startDate=${startDate}&endDate=${endDate}`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Failed to retrieve vehicle schedule data.",
+    );
+  }
+
+  return result;
+}
+
+export async function updateTripAndSchedule({ id, data }) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/trip-ticket/${id}`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to update vehicle.");
   }
 
   return result;

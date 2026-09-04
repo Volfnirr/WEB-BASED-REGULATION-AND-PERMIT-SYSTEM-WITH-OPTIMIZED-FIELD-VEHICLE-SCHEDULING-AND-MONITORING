@@ -15,7 +15,10 @@ import {
   vehicleSchema,
   updateVehicleSchema,
 } from "../../validation/vehicle/vehicleData.js";
-import { tripTicketFormSchema } from "../../validation/vehicle/tripTicketData.js";
+import {
+  tripTicketFormSchema,
+  updatetripTicketFormSchema,
+} from "../../validation/vehicle/tripTicketData.js";
 import {
   createVehicle,
   listAllVehicles,
@@ -23,6 +26,10 @@ import {
   vehicleStatus,
   availableVehicles,
   submitTripAndSchedule,
+  vehicleSchedules,
+  tripTicketList,
+  tripTicketStatus,
+  updateTripTicket,
 } from "../../controller/vehicle/vehicle.controller.js";
 
 // Create a new vehicle
@@ -78,6 +85,39 @@ router.post(
   requireAuthorization("VEHICLE_ADMIN"),
   validate(tripTicketFormSchema),
   submitTripAndSchedule,
+);
+
+router.get(
+  "/trip-ticket",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  tripTicketList,
+);
+
+router.patch(
+  "/trip-ticket/:id",
+  vehicleAction,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(updatetripTicketFormSchema),
+  updateTripTicket,
+);
+
+router.get(
+  "/trip-ticket/status",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  tripTicketStatus,
+);
+
+router.get(
+  "/schedules",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  vehicleSchedules,
 );
 
 export default router;

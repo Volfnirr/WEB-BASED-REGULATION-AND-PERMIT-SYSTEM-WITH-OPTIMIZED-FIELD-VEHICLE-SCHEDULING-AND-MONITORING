@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { localDateTime } from "@/lib/local-date";
+import { localDateTime, localDateFormat } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
 import Link from "next/link";
 import AssignApplication from "@/components/ui/modal/applications/assign-confirm-modal";
@@ -8,8 +8,11 @@ import { useUser } from "@/lib/context/account-info-context";
 import { useServices } from "@/lib/context/service-context";
 import { FileSearchCorner } from "lucide-react";
 
-export default function TableUI({ columns, rows }) {
+export default function TableUI({ columns, rows, ViewTicket, EditTicket }) {
   const [selectedRow, setSelectedRow] = useState(null);
+  const [viewingTrip, setViewingTrip] = useState(null);
+  const [editingTrip, setEditingTrip] = useState(null);
+
   const { user } = useUser();
   const { assignedServices } = useServices();
   return (
@@ -51,7 +54,7 @@ export default function TableUI({ columns, rows }) {
                 {columns.map((column) => (
                   <td
                     key={column.data}
-                    className="border-b px-4 py-2 text-sm text-gray-900 whitespace-nowrap"
+                    className="border-b px-4 py-2 text-sm text-gray-900 align-top"
                   >
                     {column.data === "status" ? (
                       <span
@@ -61,13 +64,43 @@ export default function TableUI({ columns, rows }) {
                       </span>
                     ) : column.data === "submittedAt" ? (
                       localDateTime(row[column.data])
+                    ) : column.data === "startDate" ||
+                      column.data === "endDate" ? (
+                      <div className="whitespace-nowrap">
+                        {localDateFormat(row[column.data])}
+                      </div>
                     ) : row[column.data] === "VIEW" ? (
-                      <Link
-                        href={`${row.page}`}
-                        className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
-                      >
-                        {row[column.data]}
-                      </Link>
+                      ViewTicket ? (
+                        <button
+                          onClick={() => setViewingTrip(row)}
+                          className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm cursor-pointer transition-colors`}
+                        >
+                          VIEW
+                        </button>
+                      ) : (
+                        <Link
+                          href={`${row.page}`}
+                          className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm transition-colors`}
+                        >
+                          VIEW
+                        </Link>
+                      )
+                    ) : row[column.data] === "EDIT" ? (
+                      EditTicket ? (
+                        <button
+                          onClick={() => setEditingTrip(row)}
+                          className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm cursor-pointer transition-colors`}
+                        >
+                          EDIT
+                        </button>
+                      ) : (
+                        <Link
+                          href={`${row.page}`}
+                          className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                        >
+                          {row[column.data]}
+                        </Link>
+                      )
                     ) : row[column.data] === "SELF_ASSIGN" ? (
                       <button
                         onClick={() => setSelectedRow(row)}
@@ -76,7 +109,9 @@ export default function TableUI({ columns, rows }) {
                         SELF ASSIGN
                       </button>
                     ) : (
-                      row[column.data]
+                      <span className="block max-w-23 truncate">
+                        {row[column.data]}
+                      </span>
                     )}
                   </td>
                 ))}
@@ -99,6 +134,20 @@ export default function TableUI({ columns, rows }) {
               (s) => s.service.name === selectedRow.serviceName,
             )?.service?.name
           }
+        />
+      )}
+      {viewingTrip && ViewTicket && (
+        <ViewTicket
+          isOpen={!!viewingTrip}
+          onClose={() => setViewingTrip(null)}
+          data={viewingTrip}
+        />
+      )}
+      {editingTrip && EditTicket && (
+        <EditTicket
+          isOpen={!!editingTrip}
+          onClose={() => setEditingTrip(null)}
+          tripTicket={editingTrip}
         />
       )}
     </div>

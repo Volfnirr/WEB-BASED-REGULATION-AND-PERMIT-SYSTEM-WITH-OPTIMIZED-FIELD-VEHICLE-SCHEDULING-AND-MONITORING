@@ -30,7 +30,7 @@ import AddEditVehicleModal from "@/components/ui/modal/addEditVehicle";
 import Title from "@/components/ui/title";
 import { localDateTime } from "@/lib/local-date";
 
-export default function ManageVehicleUI({ initialData, vehiclesData }) {
+export default function ManageVehicleUI({ children, initialData }) {
   const [data, setData] = useState(initialData);
   const [isDeleteOpen, setisDeleteOpen] = useState(false);
   const [isAddEditVehicleOpen, setisAddEditVehicleOpen] = useState(false);
@@ -101,24 +101,24 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
   //       mainBg: "bg-amber-100",
   //       tooltip: "Applications awaiting assignment (all time)",
   //     },
-  const vehiclesInfo = [
-    {
-      icon: <CarFront />,
-      label: "All Vehicle",
-      total: vehiclesData?.allVehicles ?? "-",
-      bg: "bg-blue-100 text-blue-600",
-      mainBg: "bg-blue-100",
-      tooltip: "All Vehicles",
-    },
-    {
-      icon: <CircleCheck />,
-      label: "New Vehicles",
-      total: vehiclesData?.newVehicles ?? "-",
-      bg: "bg-green-100 text-green-600",
-      mainBg: "bg-green-100",
-      tooltip: "New vehicles in the past 7 days",
-    },
-  ];
+  // const vehiclesInfo = [
+  //   {
+  //     label: "All Vehicle",
+  //     total: vehiclesData?.allVehicles ?? "-",
+  //     icon: <CarFront />,
+  //     bg: "bg-blue-100 text-blue-600",
+  //     mainBg: "bg-blue-100",
+  //     tooltip: "All Vehicles",
+  //   },
+  //   {
+  //     label: "New Vehicles",
+  //     total: vehiclesData?.newVehicles ?? "-",
+  //     icon: <CircleCheck />,
+  //     bg: "bg-green-100 text-green-600",
+  //     mainBg: "bg-green-100",
+  //     tooltip: "New vehicles in the past 7 days",
+  //   },
+  // ];
 
   const {
     search,
@@ -150,7 +150,7 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
   const sortOptions = [{ label: "Brand", key: "brand" }];
 
   return (
-    <div className="mb-4">
+    <div className="">
       <div className="flex justify-between items-center">
         <Title
           title="Manage"
@@ -165,30 +165,7 @@ export default function ManageVehicleUI({ initialData, vehiclesData }) {
           Add Vehicle
         </button>
       </div>
-
-      <InfoCardContainer title="Vehicles">
-        {vehiclesInfo.map((d) => {
-          return (
-            <Tooltip key={d.label}>
-              <TooltipTrigger
-                render={
-                  <InfoCard
-                    key={d.label}
-                    mainBg={d.mainBg}
-                    icon={d.icon}
-                    label={d.label}
-                    total={d.total}
-                    bg={d.bg}
-                  />
-                }
-              ></TooltipTrigger>
-              <TooltipContent>
-                <p>{d.tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </InfoCardContainer>
+      {children}
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-col sm:flex-row gap-3 mb-4">

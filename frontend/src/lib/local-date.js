@@ -15,3 +15,12 @@ export function localDateTime(date) {
     hour12: true,
   });
 }
+
+export function localDateFormat(date) {
+  return new Date(date).toLocaleDateString("en-PH", {
+    timeZone: "Asia/Manila",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}

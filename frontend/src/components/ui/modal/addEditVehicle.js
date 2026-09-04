@@ -34,8 +34,8 @@ const vehicleSchema = z.object({
   plateNumber: z
     .string()
     .trim()
-    .min(1, "Plate Number is required")
-    .transform((value) => value.toUpperCase()),
+    .toUpperCase()
+    .regex(/^[A-Z]{3}\s?\d{3,4}$/, "Invalid Philippine plate number"),
   fuelType: z.enum(
     ["DIESEL", "GASOLINE", "ELECTRIC"],
     "Please select a fuel type",

@@ -274,10 +274,16 @@ export async function availableVehicles(req, res) {
 export async function submitTripAndSchedule(req, res) {
   try {
     const submitTripAndAssignVehicle = await prisma.$transaction(async (tx) => {
+      await vehicleAdmin.verifyTripTicketTaken(
+        req.validatedData.tripTicketNo,
+        tx,
+      );
+
       const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
         req.validatedData,
         tx,
       );
+
       if (!verifyStatus.available) {
         throw new Error(verifyStatus.reason);
       }
@@ -312,6 +318,11 @@ export async function submitTripAndSchedule(req, res) {
     });
   } catch (error) {
     console.log(error);
+    if (error.message === "TRIP_TICKET_NO_TAKEN" || error.code === "P2002") {
+      return res.status(409).json({
+        message: "This trip ticket number is already in use",
+      });
+    }
     if (error.message === "VEHICLE_NOT_FOUND") {
       return res.status(404).json({ message: "Vehicle not found" });
     }
@@ -324,6 +335,150 @@ export async function submitTripAndSchedule(req, res) {
       });
     }
 
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function updateTripTicket(req, res) {
+  try {
+    const updateTripAndAssignVehicle = await prisma.$transaction(async (tx) => {
+      if (req.validatedData.tripTicketNo) {
+        await vehicleAdmin.verifyTripTicketTaken(
+          req.validatedData.tripTicketNo,
+          tx,
+        );
+      }
+
+      if (req.validatedData.startDate) {
+        const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
+          req.validatedData,
+          tx,
+        );
+        if (!verifyStatus.available) {
+          throw new Error(verifyStatus.reason);
+        }
+      }
+
+      const { endDate, startDate, vehicleId, ...rest } = req.validatedData;
+
+      const updateTicket = await vehicleAdmin.updateTripTicket(
+        {
+          ...rest,
+          vehicleId: vehicleId != null ? Number(vehicleId) : undefined,
+        },
+        req.params.id,
+        tx,
+      );
+      const updateScheduleVehicle = await vehicleAdmin.updateScheduleVehicle(
+        {
+          vehicleId: vehicleId != null ? Number(vehicleId) : undefined,
+          startDate: startDate != null ? new Date(startDate) : undefined,
+          endDate:
+            endDate != null
+              ? new Date(endDate)
+              : startDate != null
+                ? new Date(startDate)
+                : undefined,
+        },
+        req.params.id,
+        tx,
+      );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Update Trip Ticket and Schedule Vehicle",
+          target: "Trip Ticket",
+          details: `Updated Trip Ticket (Trip Ticket No: ${updateTicket.tripTicketNo}, ID: ${updateTicket.id})`,
+        },
+        tx,
+      );
+
+      return { updateTicket, updateScheduleVehicle };
+    });
+    return res.status(200).json({
+      message: "Updated Trip ticket successfully.",
+      trip: updateTripAndAssignVehicle,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error.message === "TRIP_TICKET_NO_TAKEN" || error.code === "P2002") {
+      return res.status(409).json({
+        message: "This trip ticket number is already in use",
+      });
+    }
+    if (error.message === "VEHICLE_NOT_FOUND") {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+    if (error.message === "VEHICLE_NOT_USABLE") {
+      return res.status(400).json({ message: "Vehicle is not usable" });
+    }
+    if (error.message === "SCHEDULE_CONFLICT") {
+      return res.status(409).json({
+        message: "This vehicle is already scheduled for the date(s) provided",
+      });
+    }
+
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function vehicleSchedules(req, res) {
+  try {
+    const vehicleDate = await vehicleAdmin.vehicleSchedules(
+      req.query.startDate,
+      req.query.endDate,
+    );
+    res.status(200).json({
+      message: "Successfuly retrieved vehicle schedules",
+      schedules: vehicleDate,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function tripTicketList(req, res) {
+  try {
+    const tripticket = await vehicleAdmin.tripTicketList();
+    const tripticketflat = tripticket.map((trip) => ({
+      id: trip.id,
+      tripTicketNo: trip.tripTicketNo,
+      vehicleId: trip.vehicleId,
+      driverName: trip.driverName,
+      authorizedPassengers: trip.authorizedPassengers,
+      placesToVisit: trip.placesToVisit,
+      purpose: trip.purpose,
+      status: trip.status,
+      createdById: trip.createdById,
+      createdAt: trip.createdAt,
+      updatedAt: trip.updatedAt,
+      plateNumber: trip.vehicle.plateNumber,
+      startDate: trip.vehicle_schedule.startDate,
+      endDate: trip.vehicle_schedule.endDate,
+      view: "VIEW",
+      edit: "EDIT",
+    }));
+    res.status(200).json({
+      message: "Successfuly retrieved trip ticket list",
+      tripticketlist: tripticketflat,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function tripTicketStatus(req, res) {
+  try {
+    const status = await vehicleAdmin.tripTicketStatus();
+    res.status(200).json({
+      message: "Successfuly retrieved trip ticket status",
+      status,
+    });
+  } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
   }
 }
