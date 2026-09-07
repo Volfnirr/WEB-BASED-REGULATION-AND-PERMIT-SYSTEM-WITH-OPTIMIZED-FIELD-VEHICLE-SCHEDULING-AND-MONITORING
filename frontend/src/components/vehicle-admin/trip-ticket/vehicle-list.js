@@ -1,7 +1,6 @@
 "use client";
 import FilterDropdown from "@/components/ui/tables/tools/dropdown";
 import SearchInput from "@/components/ui/tables/tools/search-input";
-import SortDropdown from "@/components/ui/tables/tools/sort-dropdown";
 import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
 import Image from "next/image";
@@ -38,8 +37,6 @@ export default function VehiclesList({ vehicles, onAssign }) {
 
   const roleOptions = ["DIESEL", "GASOLINE", "ELECTRIC"];
 
-  const sortOptions = [{ label: "Brand", key: "brand" }];
-
   return (
     <div className="flex flex-col gap-2 border-3 border-green-800 rounded-md px-2 py-2">
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -53,11 +50,6 @@ export default function VehiclesList({ vehicles, onAssign }) {
           onChange={(value) => updateFilter("fuelType", value)}
           options={roleOptions}
           label="Fuel Type"
-        />
-        <SortDropdown
-          sortConfig={sortConfig}
-          onSort={updateSort}
-          options={sortOptions}
         />
       </div>
       {paginatedData.length === 0 ? (

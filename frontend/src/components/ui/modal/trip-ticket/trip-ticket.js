@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
 import { useEffect, useState } from "react";
-import VehiclesList from "@/components/vehicle-admin/review-applications/vehicle-list";
+import VehiclesList from "@/components/vehicle-admin/trip-ticket/vehicle-list";
 import {
   listAvailableVehicles,
   submitTripAndSchedule,
@@ -331,10 +331,6 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
           </div>
 
           <div>
-            <h2 className="text-sm font-bold text-gray-800 uppercase mb-2">
-              Vehicle Information
-            </h2>
-
             <div className="grid grid-cols-1 gap-2 mb-2">
               <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1">

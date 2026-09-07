@@ -17,7 +17,7 @@ export default function TripApplicationInfo({ status }) {
       tooltip: "All trips",
     },
     {
-      label: "Monthly Trips",
+      label: "New Trips (30 Days)",
       total: status.monthlyTrips ?? "-",
       icon: <CalendarDays />,
       mainBg: "bg-green-100",
@@ -25,7 +25,7 @@ export default function TripApplicationInfo({ status }) {
       tooltip: "New trips this past 30 days",
     },
     {
-      label: "New Trips",
+      label: "New Trips (7 Days)",
       total: status.newTrips ?? "-",
       icon: <CirclePlus />,
       mainBg: "bg-green-100",

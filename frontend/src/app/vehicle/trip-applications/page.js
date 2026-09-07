@@ -1,6 +1,6 @@
-import ManageTripApplication from "@/components/vehicle-admin/review-applications/manage-trip-applications";
-import TripApplicationInfo from "@/components/vehicle-admin/review-applications/trip-application-info";
-import TripApplicationTable from "@/components/vehicle-admin/review-applications/trip-applications-table";
+import ManageTripApplication from "@/components/vehicle-admin/trip-ticket/manage-trip-applications";
+import TripApplicationInfo from "@/components/vehicle-admin/trip-ticket/trip-application-info";
+import TripApplicationTable from "@/components/vehicle-admin/trip-ticket/trip-applications-table";
 import {
   tripTicketList,
   tripTicketStatus,

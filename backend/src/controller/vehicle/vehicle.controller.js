@@ -3,6 +3,8 @@ import { supabase } from "../../lib/supabase.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import * as vehicleAdmin from "../../services/vehicle/vehicle.service.js";
 
+// VEHICLE START
+
 export async function createVehicle(req, res) {
   try {
     const createVehicle = await prisma.$transaction(async (tx) => {
@@ -230,6 +232,10 @@ export async function vehicleStatus(req, res) {
   }
 }
 
+// VEHICLE END
+
+// TRIP TICKET START
+
 export async function availableVehicles(req, res) {
   try {
     const availableVehiclesList = await vehicleAdmin.availableVehicles(
@@ -425,21 +431,6 @@ export async function updateTripTicket(req, res) {
   }
 }
 
-export async function vehicleSchedules(req, res) {
-  try {
-    const vehicleDate = await vehicleAdmin.vehicleSchedules(
-      req.query.startDate,
-      req.query.endDate,
-    );
-    res.status(200).json({
-      message: "Successfuly retrieved vehicle schedules",
-      schedules: vehicleDate,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
-  }
-}
-
 export async function tripTicketList(req, res) {
   try {
     const tripticket = await vehicleAdmin.tripTicketList();
@@ -479,6 +470,56 @@ export async function tripTicketStatus(req, res) {
       status,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 }
+
+// TRIP TICKET END
+
+// DASHBOARD START
+
+export async function dashboardStatus(req, res) {
+  try {
+    const status = await vehicleAdmin.dashboardStatus();
+    res.status(200).json({
+      message: "Successfuly retrieved dashboard status",
+      status,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// DASHBOARD END
+
+// VEHICLE SCHEDULES START
+
+export async function vehicleSchedules(req, res) {
+  try {
+    const vehicleDate = await vehicleAdmin.vehicleSchedules(
+      req.query.startDate,
+      req.query.endDate,
+    );
+    res.status(200).json({
+      message: "Successfuly retrieved vehicle schedules",
+      schedules: vehicleDate,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function vehiclesSchdulesStatus(req, res) {
+  try {
+    const status = await vehicleAdmin.vehiclesSchdulesStatus();
+    res.status(200).json({
+      message: "Successfuly retrieved vehicle schedules status",
+      status,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// VEHICLE SCHEDULES END

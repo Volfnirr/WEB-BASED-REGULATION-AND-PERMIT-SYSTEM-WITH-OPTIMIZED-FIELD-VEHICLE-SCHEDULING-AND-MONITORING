@@ -1,8 +1,12 @@
 import {
-  getLast7DaysRange,
-  getLast30DaysRange,
+  getLast7DaysRange, // Timestamptz
+  getLast30DaysRange, // Timestamptz
+  getTodayDateOnlyRange, // Date
+  getNext7DaysDateOnlyRange, // Date
 } from "../../lib/date/get-week.js";
 import { prisma } from "../../lib/prisma.js";
+
+// MANAGE VEHICLE START
 
 export async function createVehicle(data, db = prisma) {
   return await db.vehicle.create({
@@ -76,6 +80,10 @@ export async function listVehicleStatus() {
     newVehicles,
   };
 }
+
+// MANAGE VEHICLE END
+
+// TRIP TICKET START
 
 // UNDER TRIP TICKET - SUBMIT TRIP TICKET
 // GROUP 1
@@ -208,32 +216,6 @@ export async function tripTicketStatus() {
   };
 }
 
-// UNDER MANAGE VEHICLES
-// LIST ALL VEHICLE SCHEDULES
-export async function vehicleSchedules(startDate, endDate) {
-  return prisma.vehicle.findMany({
-    select: {
-      id: true,
-      brand: true,
-      model: true,
-      isUsable: true,
-      plateNumber: true,
-      vehicle_schedule: {
-        where: {
-          startDate: { gte: new Date(startDate) },
-          endDate: { lte: new Date(endDate) },
-        },
-        select: {
-          id: true,
-          startDate: true,
-          endDate: true,
-          status: true,
-        },
-      },
-    },
-  });
-}
-
 // UNDER TRIP TICKET - UPDATE TRIP TICKET
 // GROUP - 2
 export async function updateTripTicket(data, tripTicketId, db = prisma) {
@@ -253,4 +235,158 @@ export async function updateScheduleVehicle(data, tripTicketId, db = prisma) {
     },
     data,
   });
+}
+
+// TRIP TICKET END
+
+// VEHICLE DASHBOARD START
+export async function dashboardStatus() {
+  const { start: pastWeekStart, end: pastWeekEnd } = getLast7DaysRange();
+  const { start: pastMonthStart, end: pastMonthEnd } = getLast30DaysRange();
+  const { start, end } = getTodayDateOnlyRange();
+
+  const [
+    totalTrips,
+    newTrips,
+    monthlyTrips,
+    allVehicle,
+    underMaintenance,
+    scheduled,
+    available,
+  ] = await Promise.all([
+    prisma.trip_ticket.count(),
+
+    prisma.trip_ticket.count({
+      where: {
+        createdAt: { gte: pastWeekStart, lt: pastWeekEnd },
+      },
+    }),
+
+    prisma.trip_ticket.count({
+      where: {
+        createdAt: { gte: pastMonthStart, lt: pastMonthEnd },
+      },
+    }),
+
+    prisma.vehicle.count(),
+
+    prisma.vehicle_schedule.count({
+      where: {
+        status: "MAINTENANCE",
+        startDate: {
+          lt: end,
+        },
+        endDate: {
+          gte: start,
+        },
+      },
+    }),
+
+    prisma.vehicle_schedule.count({
+      where: {
+        status: "RESERVED",
+        startDate: {
+          lt: end,
+        },
+        endDate: {
+          gte: start,
+        },
+      },
+    }),
+
+    prisma.vehicle.count({
+      where: {
+        isUsable: true,
+        vehicle_schedule: {
+          none: {
+            startDate: { lt: end },
+            endDate: { gte: start },
+          },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    tripticketStatus: {
+      totalTrips: totalTrips,
+      newTrips: newTrips,
+      monthlyTrips: monthlyTrips,
+    },
+    vehicleStatus: {
+      allVehicles: allVehicle,
+      underMaintenance: underMaintenance,
+      scheduled: scheduled,
+      available: available,
+    },
+  };
+}
+// VEHICLE DASHBOARD END
+
+// UNDER VEHILE SCHEDULES
+// LIST ALL VEHICLE SCHEDULES
+export async function vehicleSchedules(startDate, endDate) {
+  return prisma.vehicle.findMany({
+    select: {
+      id: true,
+      brand: true,
+      model: true,
+      isUsable: true,
+      plateNumber: true,
+      vehicle_schedule: {
+        where: {
+          startDate: { lte: new Date(endDate) },
+          endDate: { gte: new Date(startDate) },
+        },
+        select: {
+          id: true,
+          startDate: true,
+          endDate: true,
+          status: true,
+        },
+      },
+    },
+  });
+}
+
+export async function vehiclesSchdulesStatus() {
+  const { start, end } = getTodayDateOnlyRange();
+
+  const [underMaintenance, scheduled, available] = await Promise.all([
+    prisma.vehicle_schedule.count({
+      where: {
+        status: "MAINTENANCE",
+        startDate: { lt: end },
+        endDate: { gte: start },
+      },
+    }),
+
+    prisma.vehicle_schedule.count({
+      where: {
+        status: "RESERVED",
+        startDate: { lt: end },
+        endDate: { gte: start },
+      },
+    }),
+
+    prisma.vehicle.count({
+      where: {
+        isUsable: true,
+        vehicle_schedule: {
+          none: {
+            startDate: { lt: end },
+            endDate: { gte: start },
+          },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    vehicle: {
+      underMaintenance: underMaintenance,
+      scheduled: scheduled,
+      available: available,
+    },
+  };
 }

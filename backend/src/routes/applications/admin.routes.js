@@ -13,6 +13,7 @@ import {
   selfAssignApplication,
   approveApplication,
   rejectApplication,
+  assignApplicationsStatus,
 } from "../../controller/applications/admin.controller.js";
 
 router.get(
@@ -23,12 +24,21 @@ router.get(
   listAppAdminAssignedApplications,
 );
 
+// Dashboard All Services Status
+router.get(
+  "/dashboard/status",
+  requireAuthentication,
+  requireAuthorization("APPLICATION_ADMIN"),
+  requireAppAdminServices([1, 2, 3, 4]),
+  listAllApplicationsStatus,
+);
+
 router.get(
   "/status",
   requireAuthentication,
   requireAuthorization("APPLICATION_ADMIN"),
   requireAppAdminServices([1, 2, 3, 4]),
-  listAllApplicationsStatus,
+  assignApplicationsStatus,
 );
 
 router.patch(

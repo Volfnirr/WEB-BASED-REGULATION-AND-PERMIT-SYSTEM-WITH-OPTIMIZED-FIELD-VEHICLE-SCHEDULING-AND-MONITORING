@@ -108,10 +108,20 @@ export default function TableUI({ columns, rows, ViewTicket, EditTicket }) {
                       >
                         SELF ASSIGN
                       </button>
-                    ) : (
-                      <span className="block max-w-23 truncate">
+                    ) : column.data === "purpose" ||
+                      column.data === "placesToVisit" ||
+                      column.data === "tripTicketNo" ||
+                      column.data === "driverName" ? (
+                      <span className="block max-w-25 truncate">
                         {row[column.data]}
                       </span>
+                    ) : column.data === "userAccName" ||
+                      column.data === "userAccEmail" ? (
+                      <span className="block max-w-40 truncate">
+                        {row[column.data]}
+                      </span>
+                    ) : (
+                      <span>{row[column.data]}</span>
                     )}
                   </td>
                 ))}

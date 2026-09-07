@@ -30,10 +30,15 @@ import {
   tripTicketList,
   tripTicketStatus,
   updateTripTicket,
+  dashboardStatus,
+  vehiclesSchdulesStatus,
 } from "../../controller/vehicle/vehicle.controller.js";
 
 // Create a new vehicle
-// Sarap tulugan HAHAHAHA 2:00 AM 12 hours na taenaaa
+// Sarap tulugan HAHAHAHA 2:00 AM 12 hours na
+
+// VEHICLE START
+
 router.post(
   "/",
   vehicleAction,
@@ -78,6 +83,10 @@ router.get(
   availableVehicles,
 );
 
+// VEHICLE END
+
+// TRIP TICKET START
+
 router.post(
   "/trip-ticket",
   vehicleSubmitTicketLimit,
@@ -112,6 +121,10 @@ router.get(
   tripTicketStatus,
 );
 
+// TRIP TICKET END
+
+// VEHICLE SCHEDULES START
+
 router.get(
   "/schedules",
   fetchLimit,
@@ -120,4 +133,21 @@ router.get(
   vehicleSchedules,
 );
 
+router.get(
+  "/schedules/status",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  vehiclesSchdulesStatus,
+);
+
+// VEHICLE SCHEDULES END
+
+router.get(
+  "/dashboard",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  dashboardStatus,
+);
 export default router;
