@@ -28,6 +28,7 @@ import applicationAdminRoutes from "./routes/applications/admin.routes.js";
 import chainsawRoutes from "./routes/applications/chainsaw.routes.js";
 import agriculturalRoutes from "./routes/applications/agricultural.routes.js";
 import vehicleRoutes from "./routes/vehicle/vehicle.routes.js";
+import superAdmin from "./routes/admin/admin.routes.js";
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -64,6 +65,8 @@ app.use("/api/v1", userApplicationStatus);
 app.use("/api/v1/applications", applicationAdminRoutes);
 
 app.use("/api/v1/vehicles", vehicleRoutes);
+
+app.use("/api/v1/super-admin", superAdmin);
 
 app.listen(PORT, () => {
   console.log(`Server started PORT ${PORT}`);

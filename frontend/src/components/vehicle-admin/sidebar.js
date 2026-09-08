@@ -11,13 +11,10 @@ import { FileText } from "lucide-react";
 import { CalendarCog } from "lucide-react";
 import { UsersRound } from "lucide-react";
 import { Car } from "lucide-react";
+import { useUser } from "@/lib/context/account-info-context";
+
 import { logout } from "@/lib/api/logout";
 const links = [
-  {
-    icon: <FileText />,
-    name: "Trip Applications",
-    href: "/vehicle/trip-applications",
-  },
   {
     icon: <CalendarCog />,
     name: "Vehicle Schedules",
@@ -30,6 +27,19 @@ const links = [
   },
 ];
 
+const trip = [
+  {
+    icon: <FileText />,
+    name: "Trip Ticket",
+    href: "/vehicle/trip-applications",
+  },
+  {
+    icon: <FileText />,
+    name: "Complete Trip Ticket",
+    href: "/vehicle/complete-trip-applications",
+  },
+];
+
 export default function VehicleAdminSiderbar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -39,6 +49,8 @@ export default function VehicleAdminSiderbar() {
       setIsOpen(false);
     }
   };
+  const { user } = useUser();
+
   return (
     <>
       {!isOpen && (
@@ -66,7 +78,7 @@ export default function VehicleAdminSiderbar() {
                     PENRO Portal
                   </h2>
                   <p className="text-sm font-semibold truncate max-w-37.5">
-                    Juan Dela Cruz
+                    {user ? user.name : "Failed to load username"}
                   </p>
                 </div>
               </div>
@@ -92,8 +104,31 @@ export default function VehicleAdminSiderbar() {
                 <LayoutDashboard />
                 Dashboard
               </Link>
+
               <div className="px-3 mb-2 text-xs font-semibold text-green-300 uppercase tracking-wider">
-                <p>Available Services</p>
+                <p>Trip Ticket</p>
+              </div>
+              {trip.map((service) => {
+                const isActive = pathname.startsWith(service.href);
+                return (
+                  <Link
+                    key={service.href}
+                    href={service.href}
+                    onClick={close}
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? "bg-white text-[#005221] font-bold shadow-md"
+                        : "text-green-100 hover:bg-green-800"
+                    }`}
+                  >
+                    {service.icon}
+                    {service.name}
+                  </Link>
+                );
+              })}
+
+              <div className="px-3 mb-2 text-xs font-semibold text-green-300 uppercase tracking-wider">
+                <p>Vehicles</p>
               </div>
 
               {links.map((service) => {

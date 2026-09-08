@@ -11,6 +11,8 @@ import {
   UserCog2,
   ClipboardList,
 } from "lucide-react";
+import { useUser } from "@/lib/context/account-info-context";
+
 import { logout } from "@/lib/api/logout";
 const links = [
   {
@@ -43,6 +45,8 @@ export default function SuperAdminSiderbar() {
     const isDesktop = window.matchMedia("(min-width: 768px)").matches;
     setIsOpen(isDesktop);
   }, []);
+  const { user } = useUser();
+
   return (
     <>
       {!isOpen && (
@@ -70,7 +74,7 @@ export default function SuperAdminSiderbar() {
                     PENRO Portal
                   </h2>
                   <p className="text-sm font-semibold truncate max-w-37.5">
-                    Juan Dela Cruz
+                    {user ? user.name : "Failed to load username"}
                   </p>
                 </div>
               </div>

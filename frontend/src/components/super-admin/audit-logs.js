@@ -5,30 +5,22 @@ import Title from "../ui/title";
 import FilterDropdown from "../ui/tables/tools/dropdown";
 import Pagination from "../ui/tables/tools/pagination";
 import { useDataTable } from "../ui/tables/tools/data-table";
-import SortDropdown from "../ui/tables/tools/sort-dropdown";
 import SearchInput from "../ui/tables/tools/search-input";
-
-export default function AuditLogsUI() {
+import SuperAdminTable from "../ui/tables/super-admin/audit-logs/super-admin-table";
+import AuditLogsView from "@/components/ui/modal/super-admin/view-audit-logs";
+export default function AuditLogsUI({ data }) {
   const column = [
     {
-      head: "Log ID",
-      data: "id",
-    },
-    {
-      head: "Date",
-      data: "date",
-    },
-    {
       head: "Actor",
-      data: "actor",
+      data: "actorName",
     },
     {
       head: "Role",
-      data: "role",
+      data: "actorRole",
     },
     {
-      head: "Action",
-      data: "actions",
+      head: "User Action",
+      data: "action",
     },
     {
       head: "Target",
@@ -38,55 +30,63 @@ export default function AuditLogsUI() {
       head: "Details",
       data: "details",
     },
+    {
+      head: "Date",
+      data: "logDate",
+    },
+    {
+      head: "Action",
+      data: "VIEW",
+    },
   ];
 
-  const data = [
-    {
-      id: "1",
-      date: "2026-07-01 09:15 AM",
-      actor: "John Doe",
-      role: "Applicant",
-      actions: "Submitted",
-      target: "AP-0001-2026",
-      details: "Submitted a new application.",
-    },
-    {
-      id: "2",
-      date: "2026-07-02 11:20 AM",
-      actor: "Jane Smith",
-      role: "ApplicationAdmin",
-      actions: "Reviewed",
-      target: "AP-0001-2026",
-      details: "Reviewed the submitted application.",
-    },
-    {
-      id: "3",
-      date: "2026-07-03 11:25 AM",
-      actor: "Jane Smith",
-      role: "ApplicationAdmin",
-      actions: "Rejected",
-      target: "AP-0001-2026",
-      details: "Rejected the submitted application.",
-    },
-    {
-      id: "4",
-      date: "2026-07-04 08:45 AM",
-      actor: "Michael Brown",
-      role: "VehicleAdmin",
-      actions: "Updated",
-      target: "VHC-0001-2026",
-      details: "Updated vehicle information.",
-    },
-    {
-      id: "5",
-      date: "2026-07-05 03:30 PM",
-      actor: "Emily Davis",
-      role: "SuperAdmin",
-      actions: "Created",
-      target: "NU-0001-2026",
-      details: "Created a new user account.",
-    },
-  ];
+  // const data = [
+  //   {
+  //     id: "1",
+  //     date: "2026-07-01 09:15 AM",
+  //     actor: "John Doe",
+  //     role: "Applicant",
+  //     actions: "Submitted",
+  //     target: "AP-0001-2026",
+  //     details: "Submitted a new application.",
+  //   },
+  //   {
+  //     id: "2",
+  //     date: "2026-07-02 11:20 AM",
+  //     actor: "Jane Smith",
+  //     role: "ApplicationAdmin",
+  //     actions: "Reviewed",
+  //     target: "AP-0001-2026",
+  //     details: "Reviewed the submitted application.",
+  //   },
+  //   {
+  //     id: "3",
+  //     date: "2026-07-03 11:25 AM",
+  //     actor: "Jane Smith",
+  //     role: "ApplicationAdmin",
+  //     actions: "Rejected",
+  //     target: "AP-0001-2026",
+  //     details: "Rejected the submitted application.",
+  //   },
+  //   {
+  //     id: "4",
+  //     date: "2026-07-04 08:45 AM",
+  //     actor: "Michael Brown",
+  //     role: "VehicleAdmin",
+  //     actions: "Updated",
+  //     target: "VHC-0001-2026",
+  //     details: "Updated vehicle information.",
+  //   },
+  //   {
+  //     id: "5",
+  //     date: "2026-07-05 03:30 PM",
+  //     actor: "Emily Davis",
+  //     role: "SuperAdmin",
+  //     actions: "Created",
+  //     target: "NU-0001-2026",
+  //     details: "Created a new user account.",
+  //   },
+  // ];
   const {
     search,
     updateSearch,
@@ -102,20 +102,15 @@ export default function AuditLogsUI() {
     itemsPerPage,
   } = useDataTable({
     data,
-    searchableFields: ["actor", "target"],
+    searchableFields: ["action", "actorRole", "actorName", "target"],
     itemsPerPage: 8,
   });
 
   const roleOptions = [
-    "Applicant",
-    "ApplicantAdmin",
-    "VehicleAdmin",
-    "SuperAdmin",
-  ];
-
-  const sortOptions = [
-    { label: "Actor", key: "actor" },
-    { label: "Date Created", key: "date" },
+    "USER",
+    "APPLICATION_ADMIN",
+    "VEHICLE_ADMIN",
+    "SUPER_ADMIN",
   ];
 
   return (
@@ -129,22 +124,22 @@ export default function AuditLogsUI() {
         <SearchInput
           value={search}
           onChange={updateSearch}
-          placeholder="Search by actor or target..."
+          placeholder="Search by actor, action or target..."
         />
         <FilterDropdown
-          value={filters.role}
-          onChange={(value) => updateFilter("role", value)}
+          value={filters.data}
+          onChange={(value) => updateFilter("actorRole", value)}
           options={roleOptions}
           label="Roles"
         />
-        <SortDropdown
-          sortConfig={sortConfig}
-          onSort={updateSort}
-          options={sortOptions}
-        />
       </div>
       <div>
-        <TableUI columns={column} rows={paginatedData} />
+        {/* <TableUI columns={column} rows={paginatedData} /> */}
+        <SuperAdminTable
+          columns={column}
+          rows={paginatedData}
+          View={AuditLogsView}
+        />
       </div>
       <Pagination
         currentPage={currentPage}
