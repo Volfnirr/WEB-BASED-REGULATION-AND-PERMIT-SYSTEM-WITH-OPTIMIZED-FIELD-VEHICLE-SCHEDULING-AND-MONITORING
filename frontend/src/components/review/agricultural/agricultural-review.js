@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { localDate } from "@/lib/local-date";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
@@ -101,9 +101,7 @@ export default function ReviewAgricultural({ data, params }) {
             <p className="text-sm text-gray-600">
               Date Submitted:{" "}
               <span className="font-medium text-gray-900">
-                {agricultural?.application?.submittedAt
-                  ? new Date(agricultural.application.submittedAt).toLocaleDateString()
-                  : ""}
+                {localDate(agricultural?.application?.submittedAt)}
               </span>
             </p>
           </div>
