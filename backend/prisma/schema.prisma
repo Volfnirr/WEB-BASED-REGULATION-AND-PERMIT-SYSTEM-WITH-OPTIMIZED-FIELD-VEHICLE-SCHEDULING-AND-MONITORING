@@ -252,7 +252,7 @@ model trip_ticket {
   updatedAt            DateTime           @default(now()) @db.Timestamptz(6)
   user                 user               @relation(fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
   vehicle              vehicle            @relation(fields: [vehicleId], references: [id], onUpdate: NoAction)
-  vehicle_schedule     vehicle_schedule[]
+  vehicle_schedule     vehicle_schedule?
 }
 
 model vehicle {
@@ -280,7 +280,7 @@ model vehicle {
 model vehicle_schedule {
   id           Int            @id @default(autoincrement())
   vehicleId    Int
-  tripTicketId Int?
+  tripTicketId Int?           @unique
   startDate    DateTime       @db.Date
   endDate      DateTime       @db.Date
   status       vehicle_status

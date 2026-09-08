@@ -26,11 +26,16 @@ import {
   createVehicle,
   updateVehicle,
 } from "@/lib/api/vehicle/manage-vehicles";
+import { useRouter } from "next/navigation";
 
 const vehicleSchema = z.object({
   brand: z.string().trim().min(1, "Brand name is required"),
   model: z.string().trim().min(1, "Modela name is required"),
-  plateNumber: z.string().trim().min(1, "Plate Number is required"),
+  plateNumber: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{3}\s?\d{3,4}$/, "Invalid Philippine plate number"),
   fuelType: z.enum(
     ["DIESEL", "GASOLINE", "ELECTRIC"],
     "Please select a fuel type",
@@ -40,9 +45,9 @@ const vehicleSchema = z.object({
   isUsable: z
     .preprocess((val) => val === "true" || val === true, z.boolean())
     .optional(),
-  lastMaintenanceDate: z.date().optional(),
-  lastRegistrationDate: z.date().optional(),
-  registrationExpiration: z.date().optional(),
+  lastMaintenanceDate: z.coerce.date().optional(),
+  lastRegistrationDate: z.coerce.date().optional(),
+  registrationExpiration: z.coerce.date().optional(),
   imageUrl: z
     .instanceof(File)
     .refine(
@@ -73,6 +78,7 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
   const [isDragActive, setIsDragActive] = useState(false);
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
+  const router = useRouter();
 
   const {
     register,
@@ -100,7 +106,7 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
   useEffect(() => {
     if (!open) return;
 
-    if (vehicle) {
+    if (vehicle?.id) {
       reset({
         brand: vehicle.brand,
         model: vehicle.model,
@@ -122,54 +128,108 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
       setExistingImageLink(vehicle.imageUrl);
       setNewImageFile(null);
     }
-  }, [vehicle, open, reset]);
+  }, [vehicle?.id, open]);
 
   const onSubmit = async (data) => {
-    if (!vehicle && !newImageFile) {
+    if (!vehicle?.id && !newImageFile) {
       toast.error("Please add a vehicle image", {
         position: "top-center",
       });
       return;
     }
     const formData = new FormData();
-    formData.append("brand", data.brand);
-    formData.append("model", data.model);
-    formData.append("plateNumber", data.plateNumber);
-    formData.append("fuelType", data.fuelType);
-    formData.append("seatCapacity", data.seatCapacity);
-    formData.append("color", data.color ?? "");
-    formData.append("isUsable", data.isUsable);
-    if (data.lastMaintenanceDate)
-      formData.append(
-        "lastMaintenanceDate",
-        data.lastMaintenanceDate.toISOString(),
-      );
-    if (data.lastRegistrationDate)
-      formData.append(
-        "lastRegistrationDate",
-        data.lastRegistrationDate.toISOString(),
-      );
-    if (data.registrationExpiration)
-      formData.append(
-        "registrationExpiration",
-        data.registrationExpiration.toISOString(),
-      );
-    if (newImageFile) formData.append("imageUrl", newImageFile);
+    if (vehicle?.id) {
+      if (data.brand !== vehicle.brand) formData.append("brand", data.brand);
+      if (data.model !== vehicle.model) formData.append("model", data.model);
+      if (data.plateNumber !== vehicle.plateNumber)
+        formData.append("plateNumber", data.plateNumber);
+      if (data.fuelType !== vehicle.fuelType)
+        formData.append("fuelType", data.fuelType);
+      if (data.color !== vehicle.color)
+        formData.append("color", data.color ?? "");
+      if (data.isUsable !== vehicle.isUsable)
+        formData.append("isUsable", data.isUsable);
+      if (data.seatCapacity !== vehicle.seatCapacity) {
+        formData.append("seatCapacity", data.seatCapacity);
+      }
+
+      const newMaintenance = data.lastMaintenanceDate?.toISOString();
+      const oldMaintenance = vehicle.lastMaintenanceDate
+        ? new Date(vehicle.lastMaintenanceDate).toISOString()
+        : undefined;
+      if (newMaintenance && newMaintenance !== oldMaintenance) {
+        formData.append("lastMaintenanceDate", newMaintenance);
+      }
+
+      const newRegistration = data.lastRegistrationDate?.toISOString();
+      const oldRegistration = vehicle.lastRegistrationDate
+        ? new Date(vehicle.lastRegistrationDate).toISOString()
+        : undefined;
+      if (newRegistration && newRegistration !== oldRegistration) {
+        formData.append("lastRegistrationDate", newRegistration);
+      }
+
+      const newExpiration = data.registrationExpiration?.toISOString();
+      const oldExpiration = vehicle.registrationExpiration
+        ? new Date(vehicle.registrationExpiration).toISOString()
+        : undefined;
+      if (newExpiration && newExpiration !== oldExpiration) {
+        formData.append("registrationExpiration", newExpiration);
+      }
+
+      if (newImageFile) formData.append("imageUrl", newImageFile);
+    } else {
+      formData.append("brand", data.brand);
+      formData.append("model", data.model);
+      formData.append("plateNumber", data.plateNumber);
+      formData.append("fuelType", data.fuelType);
+      formData.append("seatCapacity", data.seatCapacity);
+      formData.append("color", data.color ?? "");
+      formData.append("isUsable", data.isUsable);
+      if (data.lastMaintenanceDate)
+        formData.append(
+          "lastMaintenanceDate",
+          data.lastMaintenanceDate.toISOString(),
+        );
+      if (data.lastRegistrationDate)
+        formData.append(
+          "lastRegistrationDate",
+          data.lastRegistrationDate.toISOString(),
+        );
+      if (data.registrationExpiration)
+        formData.append(
+          "registrationExpiration",
+          data.registrationExpiration.toISOString(),
+        );
+      if (newImageFile) formData.append("imageUrl", newImageFile);
+    }
+
     console.log("Data", formData);
+    console.log("Step two", Object.fromEntries(formData.entries()));
 
     try {
-      if (vehicle) {
+      if (vehicle?.id) {
+        console.log("Step three", Object.fromEntries(formData.entries()));
         await updateVehicle({ id: vehicle.id, formData });
-        toast.success("Vehicle updated");
+        toast.success("Vehicle updated", {
+          position: "top-center",
+        });
       } else {
         await createVehicle(formData);
-        toast.success("Vehicle added");
+        toast.success("Vehicle added", {
+          position: "top-center",
+        });
       }
+
+      router.refresh();
       onClose();
     } catch (err) {
-      toast.error("Something went wrong. Please try again later.", {
-        position: "top-center",
-      });
+      toast.error(
+        err?.message || "Something went wrong. Please try again later",
+        {
+          position: "top-center",
+        },
+      );
     }
   };
 

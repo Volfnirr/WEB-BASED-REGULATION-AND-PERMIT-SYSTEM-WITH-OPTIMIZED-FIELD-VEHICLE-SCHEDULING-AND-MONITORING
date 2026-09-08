@@ -3,10 +3,20 @@ import { supabase } from "../../lib/supabase.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import * as vehicleAdmin from "../../services/vehicle/vehicle.service.js";
 
-export const createVehicle = async (req, res) => {
+// VEHICLE START
+
+export async function createVehicle(req, res) {
   try {
     const createVehicle = await prisma.$transaction(async (tx) => {
       const { imageUrl, ...vehicleData } = req.validatedData;
+
+      if (vehicleData.plateNumber) {
+        await vehicleAdmin.checkVehiclePlateIfExist(
+          vehicleData.plateNumber,
+          req.params.id,
+          tx,
+        );
+      }
 
       let filePath = null;
 
@@ -31,6 +41,7 @@ export const createVehicle = async (req, res) => {
         {
           ...vehicleData,
           imageUrl: filePath,
+          addedById: req.user.id,
         },
         tx,
       );
@@ -42,7 +53,7 @@ export const createVehicle = async (req, res) => {
           actorRole: req.user.role,
           action: "Create Vehicle",
           target: "Vehicle",
-          details: `Created a new Vehicle with plate no of ${vehicle.plateNumber}`,
+          details: `Created vehicle (Plate No: ${vehicle.plateNumber}, ID: ${vehicle.id})`,
         },
         tx,
       );
@@ -50,9 +61,19 @@ export const createVehicle = async (req, res) => {
       return vehicle;
     });
 
-    res.status(201).json(createVehicle);
+    return res.status(201).json({
+      message: "Vehicle created successfully.",
+      createVehicle,
+    });
   } catch (error) {
     console.log(error);
+
+    if (error.message === "PLATE_NUMBER_EXISTS") {
+      return res.status(409).json({
+        message: "Plate number is already in use",
+      });
+    }
+
     if (error.message === "UPLOAD_FAILED") {
       return res
         .status(500)
@@ -60,4 +81,445 @@ export const createVehicle = async (req, res) => {
     }
     res.status(500).json({ message: "Internal server error" });
   }
-};
+}
+
+export async function listAllVehicles(req, res) {
+  try {
+    console.log("lol 0");
+
+    const vehicleData = await vehicleAdmin.listAllVehicles();
+    console.log("lol 1");
+
+    const vehicleDataWithImages = await Promise.all(
+      vehicleData.map(async (vehicle) => {
+        console.log("lol 1.2");
+        const { data, error } = await supabase.storage
+          .from("vehicle-photos")
+          .createSignedUrl(vehicle.imageUrl, 120);
+        if (error) {
+          console.log("lol 2");
+
+          console.error(
+            `Failed to sign URL for ${vehicle.imageUrl}:`,
+            error.message,
+          );
+          console.log("lol 2.4");
+          return { ...vehicle, imageUrl: null };
+        }
+
+        console.log("lol 3");
+        return { ...vehicle, imageUrl: data.signedUrl };
+      }),
+    );
+
+    console.log("lol 4");
+
+    return res.status(200).json({
+      message: "Vehicle List",
+      vehicles: vehicleDataWithImages,
+    });
+  } catch (error) {
+    console.error("listAllVehicles crashed:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function updateVehicle(req, res) {
+  try {
+    const updateVehicle = await prisma.$transaction(async (tx) => {
+      const { imageUrl, ...vehicleData } = req.validatedData;
+      if (vehicleData.plateNumber) {
+        await vehicleAdmin.checkVehiclePlateIfExist(
+          vehicleData.plateNumber,
+          req.params.id,
+          tx,
+        );
+      }
+
+      const imageData = await vehicleAdmin.vehicleImageData(req.params.id);
+
+      if (imageUrl) {
+        if (imageData.imageUrl) {
+          const { error } = await supabase.storage
+            .from("vehicle-photos")
+            .update(imageData.imageUrl, imageUrl.buffer, {
+              contentType: imageUrl.mimetype,
+            });
+
+          if (error) {
+            throw new Error("UPLOAD_FAILED");
+          }
+        } else {
+          const brand = vehicleData.brand.replace(/\s+/g, "-");
+          const model = vehicleData.model.replace(/\s+/g, "-");
+
+          const filePath = `vehicle-${brand}-${model}-${vehicleData.plateNumber}-${Date.now()}.${imageUrl.mimetype.split("/")[1]}`;
+
+          const { error } = await supabase.storage
+            .from("vehicle-photos")
+            .upload(filePath, imageUrl.buffer, {
+              contentType: imageUrl.mimetype,
+            });
+
+          if (error) {
+            throw new Error("UPLOAD_FAILED");
+          }
+
+          vehicleData.imageUrl = filePath;
+        }
+      }
+
+      const vehicle = await vehicleAdmin.updateVehicle(
+        req.params.id,
+        {
+          ...vehicleData,
+          updatedAt: new Date(),
+        },
+        tx,
+      );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Update Vehicle",
+          target: "Vehicle",
+          details: `Updated vehicle (Plate No: ${vehicle.plateNumber}, ID: ${vehicle.id})`,
+        },
+        tx,
+      );
+
+      return vehicle;
+    });
+
+    return res.status(200).json({
+      message: "Vehicle updated successfully.",
+      updateVehicle,
+    });
+  } catch (error) {
+    console.log(error);
+
+    if (error.message === "PLATE_NUMBER_EXISTS") {
+      return res.status(409).json({
+        message: "Plate number is already in use",
+      });
+    }
+
+    if (error.message === "UPLOAD_FAILED") {
+      return res
+        .status(500)
+        .json({ message: "Failed to upload vehicle photo" });
+    }
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
+
+export async function vehicleStatus(req, res) {
+  try {
+    const vehiclesInfo = await vehicleAdmin.listVehicleStatus();
+    return res.status(200).json({
+      message: "Successfully retrieved vehicle status.",
+      vehiclesInfo,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
+
+// VEHICLE END
+
+// TRIP TICKET START
+
+export async function availableVehicles(req, res) {
+  try {
+    const availableVehiclesList = await vehicleAdmin.availableVehicles(
+      req.query.startDate,
+      req.query.endDate,
+    );
+
+    const vehicleDataWithImages = await Promise.all(
+      availableVehiclesList.map(async (vehicle) => {
+        console.log("lol 1.2");
+        const { data, error } = await supabase.storage
+          .from("vehicle-photos")
+          .createSignedUrl(vehicle.imageUrl, 120);
+        if (error) {
+          console.log("lol 2");
+
+          console.error(
+            `Failed to sign URL for ${vehicle.imageUrl}:`,
+            error.message,
+          );
+          console.log("lol 2.4");
+          return { ...vehicle, imageUrl: null };
+        }
+
+        console.log("lol 3");
+        return { ...vehicle, imageUrl: data.signedUrl };
+      }),
+    );
+    console.log("list vehicle success");
+    return res.status(200).json({
+      message: "Successfully retrieved available vehicles.",
+      availableVehicles: vehicleDataWithImages,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
+
+export async function submitTripAndSchedule(req, res) {
+  try {
+    const submitTripAndAssignVehicle = await prisma.$transaction(async (tx) => {
+      await vehicleAdmin.verifyTripTicketTaken(
+        req.validatedData.tripTicketNo,
+        tx,
+      );
+
+      const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
+        req.validatedData,
+        tx,
+      );
+
+      if (!verifyStatus.available) {
+        throw new Error(verifyStatus.reason);
+      }
+      const createTicket = await vehicleAdmin.createTripTicket(
+        req.validatedData,
+        req.user.id,
+        tx,
+      );
+      const scheduleVehicle = await vehicleAdmin.scheduleVehicle(
+        req.validatedData,
+        createTicket.id,
+        tx,
+      );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Create Trip Ticket and Schedule Vehicle",
+          target: "Trip Ticket",
+          details: `Created Trip Ticket (Trip Ticket No: ${createTicket.tripTicketNo}, ID: ${createTicket.id}), Vehicle (Plate No: ${verifyStatus.vehicle.plateNumber}, ID: ${verifyStatus.vehicle.id}), Schedule (ID: ${scheduleVehicle.id}, Start: ${scheduleVehicle.startDate.toISOString()}, End: ${scheduleVehicle.endDate.toISOString()})`,
+        },
+        tx,
+      );
+
+      return { createTicket, scheduleVehicle };
+    });
+    return res.status(200).json({
+      message: "Trip ticket created and vehicle scheduled successfully.",
+      trip: submitTripAndAssignVehicle,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error.message === "TRIP_TICKET_NO_TAKEN" || error.code === "P2002") {
+      return res.status(409).json({
+        message: "This trip ticket number is already in use",
+      });
+    }
+    if (error.message === "VEHICLE_NOT_FOUND") {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+    if (error.message === "VEHICLE_NOT_USABLE") {
+      return res.status(400).json({ message: "Vehicle is not usable" });
+    }
+    if (error.message === "SCHEDULE_CONFLICT") {
+      return res.status(409).json({
+        message: "This vehicle is already scheduled for the date(s) provided",
+      });
+    }
+
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function updateTripTicket(req, res) {
+  try {
+    const updateTripAndAssignVehicle = await prisma.$transaction(async (tx) => {
+      if (req.validatedData.tripTicketNo) {
+        await vehicleAdmin.verifyTripTicketTaken(
+          req.validatedData.tripTicketNo,
+          tx,
+        );
+      }
+
+      if (req.validatedData.startDate) {
+        const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
+          req.validatedData,
+          tx,
+        );
+        if (!verifyStatus.available) {
+          throw new Error(verifyStatus.reason);
+        }
+      }
+
+      const { endDate, startDate, vehicleId, ...rest } = req.validatedData;
+
+      const updateTicket = await vehicleAdmin.updateTripTicket(
+        {
+          ...rest,
+          vehicleId: vehicleId != null ? Number(vehicleId) : undefined,
+        },
+        req.params.id,
+        tx,
+      );
+      const updateScheduleVehicle = await vehicleAdmin.updateScheduleVehicle(
+        {
+          vehicleId: vehicleId != null ? Number(vehicleId) : undefined,
+          startDate: startDate != null ? new Date(startDate) : undefined,
+          endDate:
+            endDate != null
+              ? new Date(endDate)
+              : startDate != null
+                ? new Date(startDate)
+                : undefined,
+        },
+        req.params.id,
+        tx,
+      );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Update Trip Ticket and Schedule Vehicle",
+          target: "Trip Ticket",
+          details: `Updated Trip Ticket (Trip Ticket No: ${updateTicket.tripTicketNo}, ID: ${updateTicket.id})`,
+        },
+        tx,
+      );
+
+      return { updateTicket, updateScheduleVehicle };
+    });
+    return res.status(200).json({
+      message: "Updated Trip ticket successfully.",
+      trip: updateTripAndAssignVehicle,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error.message === "TRIP_TICKET_NO_TAKEN" || error.code === "P2002") {
+      return res.status(409).json({
+        message: "This trip ticket number is already in use",
+      });
+    }
+    if (error.message === "VEHICLE_NOT_FOUND") {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+    if (error.message === "VEHICLE_NOT_USABLE") {
+      return res.status(400).json({ message: "Vehicle is not usable" });
+    }
+    if (error.message === "SCHEDULE_CONFLICT") {
+      return res.status(409).json({
+        message: "This vehicle is already scheduled for the date(s) provided",
+      });
+    }
+
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function tripTicketList(req, res) {
+  try {
+    const tripticket = await vehicleAdmin.tripTicketList();
+    const tripticketflat = tripticket.map((trip) => ({
+      id: trip.id,
+      tripTicketNo: trip.tripTicketNo,
+      vehicleId: trip.vehicleId,
+      driverName: trip.driverName,
+      authorizedPassengers: trip.authorizedPassengers,
+      placesToVisit: trip.placesToVisit,
+      purpose: trip.purpose,
+      status: trip.status,
+      createdById: trip.createdById,
+      createdAt: trip.createdAt,
+      updatedAt: trip.updatedAt,
+      plateNumber: trip.vehicle.plateNumber,
+      startDate: trip.vehicle_schedule.startDate,
+      endDate: trip.vehicle_schedule.endDate,
+      view: "VIEW",
+      edit: "EDIT",
+    }));
+    res.status(200).json({
+      message: "Successfuly retrieved trip ticket list",
+      tripticketlist: tripticketflat,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function tripTicketStatus(req, res) {
+  try {
+    const status = await vehicleAdmin.tripTicketStatus();
+    res.status(200).json({
+      message: "Successfuly retrieved trip ticket status",
+      status,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// TRIP TICKET END
+
+// DASHBOARD START
+
+export async function dashboardStatus(req, res) {
+  try {
+    const status = await vehicleAdmin.dashboardStatus();
+    res.status(200).json({
+      message: "Successfuly retrieved dashboard status",
+      status,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// DASHBOARD END
+
+// VEHICLE SCHEDULES START
+
+export async function vehicleSchedules(req, res) {
+  try {
+    const vehicleDate = await vehicleAdmin.vehicleSchedules(
+      req.query.startDate,
+      req.query.endDate,
+    );
+    res.status(200).json({
+      message: "Successfuly retrieved vehicle schedules",
+      schedules: vehicleDate,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function vehiclesSchdulesStatus(req, res) {
+  try {
+    const status = await vehicleAdmin.vehiclesSchdulesStatus();
+    res.status(200).json({
+      message: "Successfuly retrieved vehicle schedules status",
+      status,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// VEHICLE SCHEDULES END

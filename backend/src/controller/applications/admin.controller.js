@@ -265,3 +265,16 @@ export async function listAllApplicationsStatus(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
+export async function assignApplicationsStatus(req, res) {
+  try {
+    const status = await appAdmin.assignApplicationsStatus(req.user.id);
+    return res.status(200).json({
+      message: "Successfully retrieved assigned applications status",
+      assignedStatus: status,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}

@@ -329,3 +329,33 @@ export async function listAllApplicationsStatus() {
     },
   };
 }
+
+// Assingned Application Status
+
+export async function assignApplicationsStatus(id) {
+  const [approved, rejected, pending] = await Promise.all([
+    prisma.application.count({
+      where: {
+        assignedToId: id,
+        status: "APPROVED",
+      },
+    }),
+    prisma.application.count({
+      where: {
+        assignedToId: id,
+        status: "REJECTED",
+      },
+    }),
+    prisma.application.count({
+      where: {
+        assignedToId: id,
+        status: "PENDING",
+      },
+    }),
+  ]);
+  return {
+    approved: approved,
+    rejected: rejected,
+    pending: pending,
+  };
+}

@@ -1,19 +1,21 @@
 import ManageVehicleUI from "@/components/vehicle-admin/manage-vehicles/manage-vehicles-ui";
-import InfoCard from "@/components/ui/infocard";
-import InfoCardContainer from "@/components/ui/infocardcontainer";
+import ManageVehicleInfo from "@/components/vehicle-admin/manage-vehicles/mange-vehicles-info";
 import {
-  Route,
-  CirclePlus,
-  CarFront,
-  Wrench,
-  CalendarCheck,
-  CircleCheck,
-} from "lucide-react";
+  listAllVehicles,
+  vehiclesStatus,
+} from "@/lib/api/vehicle/vehicle-server";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
-export default function ManageVehicles() {
+export default async function ManageVehicles() {
+  const { vehicles } = await listAllVehicles();
+  const { vehiclesInfo } = await vehiclesStatus();
   return (
-    <div>
-      <ManageVehicleUI />
-    </div>
+    <TooltipProvider>
+      <div>
+        <ManageVehicleUI initialData={vehicles} vehiclesData={vehiclesInfo}>
+          <ManageVehicleInfo vehiclesData={vehiclesInfo} />
+        </ManageVehicleUI>
+      </div>
+    </TooltipProvider>
   );
 }

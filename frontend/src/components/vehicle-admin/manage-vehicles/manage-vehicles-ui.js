@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InfoCard from "@/components/ui/infocard";
 import InfoCardContainer from "@/components/ui/infocardcontainer";
 import FilterDropdown from "@/components/ui/tables/tools/dropdown";
@@ -17,21 +17,27 @@ import {
   CalendarDays,
   Pencil,
   Trash,
-  Route,
-  CirclePlus,
   CarFront,
-  Wrench,
-  CalendarCheck,
   CircleCheck,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import DeleteModal from "@/components/ui/modal/delete";
 import AddEditVehicleModal from "@/components/ui/modal/addEditVehicle";
 import Title from "@/components/ui/title";
+import { localDateTime } from "@/lib/local-date";
 
-export default function ManageVehicleUI() {
+export default function ManageVehicleUI({ children, initialData }) {
+  const [data, setData] = useState(initialData);
   const [isDeleteOpen, setisDeleteOpen] = useState(false);
   const [isAddEditVehicleOpen, setisAddEditVehicleOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
 
   function openVehicle(id) {
     const vehicle = data.find((d) => d.id === id);
@@ -46,55 +52,73 @@ export default function ManageVehicleUI() {
     setisAddEditVehicleOpen(true);
   }
 
-  const data = [
-    {
-      id: "1",
-      brand: "Ford",
-      model: "Ranger",
-      imageUrl: "/vehicles/ford_ranger.png",
-      plateNumber: "ABCD-1234",
-      fuelType: "Diesel",
-      seatCapacity: "6",
-      lastMaintenance: "2025-06-06",
-    },
-    {
-      id: "2",
-      brand: "Mitsubishi",
-      model: "Triton",
-      imageUrl: "/vehicles/mitsubishi_triton.png",
-      plateNumber: "ABCD-5678",
-      fuelType: "Diesel",
-      seatCapacity: "6",
-      lastMaintenance: "2025-06-07",
-    },
-    {
-      id: "3",
-      brand: "Toyota",
-      model: "Hiace",
-      imageUrl: "/vehicles/toyota_hiace.png",
-      plateNumber: "ABCD-8976",
-      fuelType: "Diesel",
-      seatCapacity: "6",
-      lastMaintenance: "2025-06-08",
-    },
-  ];
+  // const data = [
+  //   {
+  //     id: "1",
+  //     brand: "Ford",
+  //     model: "Ranger",
+  //     imageUrl: "/vehicles/ford_ranger.png",
+  //     plateNumber: "ABCD-1234",
+  //     fuelType: "Diesel",
+  //     seatCapacity: "6",
+  //     lastMaintenance: "2025-06-06",
+  //   },
+  //   {
+  //     id: "2",
+  //     brand: "Mitsubishi",
+  //     model: "Triton",
+  //     imageUrl: "/vehicles/mitsubishi_triton.png",
+  //     plateNumber: "ABCD-5678",
+  //     fuelType: "Diesel",
+  //     seatCapacity: "6",
+  //     lastMaintenance: "2025-06-07",
+  //   },
+  //   {
+  //     id: "3",
+  //     brand: "Toyota",
+  //     model: "Hiace",
+  //     imageUrl: "/vehicles/toyota_hiace.png",
+  //     plateNumber: "ABCD-8976",
+  //     fuelType: "Diesel",
+  //     seatCapacity: "6",
+  //     lastMaintenance: "2025-06-08",
+  //   },
+  // ];
 
-  const vehicles_data = [
-    {
-      id: "1",
-      icon: <CarFront />,
-      label: "All Vehicle",
-      total: "4",
-      bg: "bg-blue-100 text-blue-600",
-    },
-    {
-      id: "2",
-      icon: <CircleCheck />,
-      label: "New Vehicles",
-      total: "2",
-      bg: "bg-green-100 text-green-600",
-    },
-  ];
+  // {
+  //       label: "New Applications",
+  //       total: status.today.newApplications ?? "-",
+  //       icon: <FilePlus2 />,
+  //       bg: "bg-blue-100 text-blue-600",
+  //       mainBg: "bg-blue-100",
+  //       tooltip: "New applications today",
+  //     },
+  //     {
+  //       label: "Unassigned",
+  //       total: status.today.awaitingAssignment ?? "-",
+  //       icon: <UserX />,
+  //       bg: "bg-amber-100 text-amber-600",
+  //       mainBg: "bg-amber-100",
+  //       tooltip: "Applications awaiting assignment (all time)",
+  //     },
+  // const vehiclesInfo = [
+  //   {
+  //     label: "All Vehicle",
+  //     total: vehiclesData?.allVehicles ?? "-",
+  //     icon: <CarFront />,
+  //     bg: "bg-blue-100 text-blue-600",
+  //     mainBg: "bg-blue-100",
+  //     tooltip: "All Vehicles",
+  //   },
+  //   {
+  //     label: "New Vehicles",
+  //     total: vehiclesData?.newVehicles ?? "-",
+  //     icon: <CircleCheck />,
+  //     bg: "bg-green-100 text-green-600",
+  //     mainBg: "bg-green-100",
+  //     tooltip: "New vehicles in the past 7 days",
+  //   },
+  // ];
 
   const {
     search,
@@ -121,15 +145,12 @@ export default function ManageVehicleUI() {
     itemsPerPage: 8,
   });
 
-  const roleOptions = ["Diesel", "Gasoline", "Electric"];
+  const roleOptions = ["DIESEL", "GASOLINE", "ELECTRIC"];
 
-  const sortOptions = [
-    { label: "Brand", key: "brand" },
-    { label: "Last Maintenance", key: "lastMaintenance" },
-  ];
+  const sortOptions = [{ label: "Brand", key: "brand" }];
 
   return (
-    <div className="mb-4">
+    <div className="">
       <div className="flex justify-between items-center">
         <Title
           title="Manage"
@@ -144,20 +165,9 @@ export default function ManageVehicleUI() {
           Add Vehicle
         </button>
       </div>
+      {children}
 
-      <InfoCardContainer title="Vehicles">
-        {vehicles_data.map((d) => (
-          <InfoCard
-            key={d.id}
-            icon={d.icon}
-            label={d.label}
-            total={d.total}
-            bg={d.bg}
-          />
-        ))}
-      </InfoCardContainer>
-
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <SearchInput
             value={search}
@@ -188,12 +198,12 @@ export default function ManageVehicleUI() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {paginatedData.map((d) => (
               <div
-                key={d.id}
+                key={d?.id}
                 className="flex flex-col w-full rounded-lg pb-1 bg-[#4DAA74]"
               >
                 <div className="flex justify-center w-full h-56">
                   <Image
-                    src={d.imageUrl}
+                    src={d?.imageUrl}
                     alt="Ford Ranger"
                     width={280}
                     height={250}
@@ -202,25 +212,62 @@ export default function ManageVehicleUI() {
                 </div>
                 <div className="px-2 py-2 flex-col justify-center">
                   <span className="flex justify-center font-bold text-lg px-2 py-1 text-white">
-                    {d.brand} {d.model}
+                    {d?.brand} {d?.model}
                   </span>
                   <div className="flex flex-row flex-wrap items-center justify-center gap-2 px-0.5 py-2.5 rounded-md mb-2 bg-green-50 border border-green-200 shadow-sm text-sm font-medium text-green-900">
                     <span className="flex flex-row gap-1.5 items-center pr-2 border-r-3 border-green-300  text-xs md:text-sm">
                       <IdCard className="w-4 h-4 text-green-700" />
-                      {d.plateNumber}
+                      {d?.plateNumber}
                     </span>
                     <span className="flex flex-row gap-1.5 items-center pr-2 border-r-3 border-green-300 text-xs md:text-sm">
-                      <Fuel className="w-4 h-4 text-green-700" /> {d.fuelType}
+                      <Fuel className="w-4 h-4 text-green-700" /> {d?.fuelType}
                     </span>
                     <span className="flex flex-row gap-1.5 items-center  text-xs md:text-sm">
                       <Users className="w-4 h-4 text-green-700" />{" "}
-                      {d.seatCapacity}
+                      {d?.seatCapacity}
                     </span>
                   </div>
-                  <span className="flex items-center justify-center gap-2 mb-2 text-white text-xs">
-                    <CalendarDays className="w-4 h-4 " />
-                    Last Maintenance: {d.lastMaintenance}
-                  </span>
+
+                  <div className="flex w-full flex-col gap-2 pb-2">
+                    <div className="flex w-full items-center text-white text-xs">
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 shrink-0" />
+                        <span>Last Maintenance:</span>
+                      </div>
+
+                      <span className="ml-auto whitespace-nowrap">
+                        {d?.lastMaintenanceDate
+                          ? localDateTime(d?.lastMaintenanceDate)
+                          : "-"}
+                      </span>
+                    </div>
+
+                    <div className="flex w-full items-center text-white text-xs">
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 shrink-0" />
+                        <span>Registration Date:</span>
+                      </div>
+
+                      <span className="ml-auto whitespace-nowrap">
+                        {d?.lastRegistrationDate
+                          ? localDateTime(d?.lastRegistrationDate)
+                          : "-"}
+                      </span>
+                    </div>
+
+                    <div className="flex w-full items-center text-white text-xs">
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 shrink-0" />
+                        <span>Registration Expiration:</span>
+                      </div>
+
+                      <span className="ml-auto whitespace-nowrap">
+                        {d?.registrationExpiration
+                          ? localDateTime(d?.registrationExpiration)
+                          : "-"}
+                      </span>
+                    </div>
+                  </div>
                   <div className="flex items-center justify-between gap-2 text-white">
                     <button
                       onClick={() => openVehicle(d.id)}

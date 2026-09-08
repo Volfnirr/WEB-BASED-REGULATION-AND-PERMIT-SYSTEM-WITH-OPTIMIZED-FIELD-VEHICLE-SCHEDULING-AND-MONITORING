@@ -1,97 +1,58 @@
 import InfoCard from "@/components/ui/infocard";
 import InfoCardContainer from "@/components/ui/infocardcontainer";
-import {
-  BadgeCheck,
-  CircleX,
-  AlertCircle,
-  CalendarClock,
-  CalendarDays,
-  CheckCircle2,
-} from "lucide-react";
+import { BadgeCheck, CircleX, ClipboardCheck } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-export default async function PendingInfo() {
-  const infocardstatus = [
+export default async function PendingInfo({ status }) {
+  const info = [
     {
       label: "Approved",
-      total: "120",
+      total: status.approved ?? "-",
       icon: <BadgeCheck />,
-      bg: "bg-green-100 text-green-600",
+      bg: "bg-green-200 text-green-600",
+      mainBg: "bg-green-100",
+      tooltip: "All Approved applications assigned to you",
     },
     {
       label: "Rejected",
-      total: "18",
+      total: status?.rejected ?? "-",
       icon: <CircleX />,
-      bg: "bg-red-100 text-red-600",
-    },
-  ];
-
-  const infocarddeadline = [
-    {
-      label: "Due Today",
-      total: "4",
-      icon: <AlertCircle />,
-      bg: "bg-red-100 text-red-600",
-      tooltip: "Application due today",
+      bg: "bg-red-200 text-red-600 border-2",
+      mainBg: "bg-red-100",
+      tooltip: "All Rejected applications assigned to you",
     },
     {
-      label: "Due This Week",
-      total: "12",
-      icon: <CalendarClock />,
-      bg: "bg-amber-100 text-amber-600",
-      tooltip: "Application due this week",
-    },
-    {
-      label: "Upcoming",
-      total: "28",
-      icon: <CalendarDays />,
-      bg: "bg-blue-100 text-blue-600",
-      tooltip: "Upcoming applications",
-    },
-    {
-      label: "Completed",
-      total: "112",
-      icon: <CheckCircle2 />,
-      bg: "bg-green-100 text-green-600",
-      tooltip: "Completed Applications",
+      label: "Pending",
+      total: status?.pending ?? "-",
+      icon: <ClipboardCheck />,
+      bg: "bg-orange-200 text-orange-600",
+      mainBg: "bg-orange-100",
+      tooltip: "All Pending applications assigned to you",
     },
   ];
   return (
     <div>
-      <InfoCardContainer title="Status">
-        {infocardstatus.map((status) => {
+      <InfoCardContainer title="Assigned Applications Status">
+        {info.map((d) => {
           return (
-            <InfoCard
-              key={status.label}
-              icon={status.icon}
-              label={status.label}
-              total={status.total}
-              bg={status.bg}
-            />
-          );
-        })}
-      </InfoCardContainer>
-
-      <InfoCardContainer title="Deadline">
-        {infocarddeadline.map((deadline) => {
-          return (
-            <Tooltip key={deadline.label}>
+            <Tooltip key={d.label}>
               <TooltipTrigger
                 render={
                   <InfoCard
-                    // key={deadline.label}
-                    icon={deadline.icon}
-                    label={deadline.label}
-                    total={deadline.total}
-                    bg={deadline.bg}
+                    key={d.label}
+                    mainBg={d.mainBg}
+                    icon={d.icon}
+                    label={d.label}
+                    total={d.total}
+                    bg={d.bg}
                   />
                 }
-              />
+              ></TooltipTrigger>
               <TooltipContent>
-                <p>{deadline.tooltip}</p>
+                <p>{d.tooltip}</p>
               </TooltipContent>
             </Tooltip>
           );

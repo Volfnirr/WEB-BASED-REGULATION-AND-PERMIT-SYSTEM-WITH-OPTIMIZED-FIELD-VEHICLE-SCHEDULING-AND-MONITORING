@@ -91,7 +91,7 @@ export default async function TreeCuttingInfo({ status }) {
               <TooltipTrigger
                 render={
                   <InfoCard
-                    key={status.label}
+                    // key={status.label}
                     mainBg={status.mainBg}
                     icon={status.icon}
                     label={status.label}

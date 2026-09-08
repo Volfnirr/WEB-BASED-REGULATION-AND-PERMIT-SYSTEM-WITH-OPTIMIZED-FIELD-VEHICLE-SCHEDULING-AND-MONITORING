@@ -1,9 +1,9 @@
 import { getDayName } from "@/lib/date";
 import { StatusColor } from "@/lib/status";
-
+// hidden lg:block
 export default function VehicleSchedulesTableUI({ date, columns, rows, page }) {
   return (
-    <div className="hidden lg:block overflow-x-auto rounded-lg border">
+    <div className=" overflow-x-auto rounded-lg border">
       <table className="min-w-full table-fixed border-collapse">
         <thead className="bg-white">
           <tr>
@@ -51,7 +51,7 @@ export default function VehicleSchedulesTableUI({ date, columns, rows, page }) {
                 {columns.map((column) => (
                   <td
                     key={column.data}
-                    className="border-b px-4 py-2 text-sm text-gray-900"
+                    className="border-b px-4 py-2 text-sm  text-gray-900 whitespace-nowrap font-semibold"
                   >
                     {row[column.data]}
                   </td>
@@ -63,9 +63,11 @@ export default function VehicleSchedulesTableUI({ date, columns, rows, page }) {
                     className="border-b px-4 py-2 text-center text-sm"
                   >
                     {(() => {
-                      const schedule = row.vehicle_schedules?.find(
-                        (s) => s.date === d,
-                      );
+                      const schedule = row.vehicle_schedule?.find((s) => {
+                        const start = s.startDate.split("T")[0];
+                        const end = s.endDate.split("T")[0];
+                        return d >= start && d <= end;
+                      });
                       const status = schedule?.status ?? "AVAILABLE";
 
                       return (
