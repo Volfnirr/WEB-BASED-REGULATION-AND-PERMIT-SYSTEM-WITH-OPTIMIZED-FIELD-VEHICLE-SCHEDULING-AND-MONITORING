@@ -1,11 +1,82 @@
 "use client";
 
 import React from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller } from "react-hook-form";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
+import { StatusColor } from "@/lib/status";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function ReviewChainsawApp({ data }) {
+import {
+  approveApplication,
+  rejectApplication,
+} from "@/lib/api/applications/app-admin-action";
+
+const action = [
+  { id: 1, value: "APPROVED" },
+  { id: 2, value: "REJECTED" },
+];
+
+const submitFormSchema = z.object({
+  action: z.enum(["APPROVED", "REJECTED"], "Please select an action"),
+  remarks: z.string().trim().min(1, "Remarks is required"),
+});
+
+export default function ReviewChainsawApp({ data, params }) {
   const chainsaw = data;
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(submitFormSchema),
+  });
+
+  const onSubmit = async (formData) => {
+    try {
+      if (formData.action === "APPROVED") {
+        await approveApplication({
+          id: params,
+          remarks: formData.remarks,
+        });
+      } else {
+        await rejectApplication({
+          id: params,
+          remarks: formData.remarks,
+        });
+      }
+      toast.success(
+        formData.action === "APPROVED"
+          ? "Successfully approved application"
+          : "Successfully rejected application",
+        { position: "top-center" }
+      );
+    } catch (err) {
+      toast.error(
+        `Something went wrong submitting your application:  ${
+          err ? err.message : ""
+        }`,
+        {
+          position: "top-center",
+        }
+      );
+    }
+  };
+
   const readOnlyInputClass =
     "w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-800 pointer-events-none";
+
   return (
     <div
       className="flex-1 w-full min-h-screen overflow-y-auto p-4 md:p-8 font-sans rounded-lg"
@@ -31,12 +102,16 @@ export default function ReviewChainsawApp({ data }) {
               </span>
             </p>
           </div>
-          <div className="mt-4 md:mt-0 px-4 py-1.5 bg-yellow-100 text-yellow-800 font-bold text-sm rounded-full border border-yellow-200 shadow-sm">
+          <div
+            className={`${StatusColor(
+              chainsaw?.status
+            )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg border border-yellow-200 shadow-sm`}
+          >
             {chainsaw?.status}
           </div>
         </div>
 
-        <form className="space-y-8">
+        <div className="space-y-8">
           {/* Section: Applicant Information */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-4 tracking-wide">
@@ -162,31 +237,90 @@ export default function ReviewChainsawApp({ data }) {
             </div>
           </div>
 
-          {/* Bottom Action Buttons (for the Reviewer) */}
-          <div className="border rounded-xl p-4 text-black ">
-            <h3 className="font-bold mb-4">ACTION</h3>
+          {chainsaw?.status === "PENDING" && (
+            /* Bottom Action Buttons (for the Reviewer) */
+            <div className="border rounded-xl p-4 text-black">
+              <h3 className="font-bold mb-4">ACTION</h3>
+              <form
+                className="space-y-8"
+                onSubmit={handleSubmit(onSubmit)}
+                disabled={isSubmitting}
+              >
+                <div className="flex flex-col justify-center gap-4">
+                  <div className="flex flex-col gap-1 text-left">
+                    <Controller
+                      name="action"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value ?? ""}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger
+                            size="20"
+                            className="w-full px-2 py-2 mb-0 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start"
+                          >
+                            <SelectValue placeholder="*SELECT ACTION" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              {action.map((a) => (
+                                <SelectItem key={a.id} value={a.value}>
+                                  {a.value}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.action && (
+                      <div className="text-red-600 text-xs font-medium">
+                        {errors.action.message}
+                      </div>
+                    )}
+                  </div>
 
-            <div className="flex flex-col justify-center gap-4">
-              <select id="status" className="border rounded-lg p-3">
-                <option value="Approved">Approve</option>
-                <option value="Rejected">Reject</option>
-              </select>
-              <div>
-                <p className="font-semibold mb-2">Review</p>
-
-                <textarea
-                  id="comment"
-                  rows="5"
-                  className="w-full border rounded-lg p-3"
-                  placeholder="Enter comments here..."
-                />
-              </div>
-              <button className="bg-green-600 text-white py-3 rounded-lg hover:bg-green-700">
-                Submit Review
-              </button>
+                  <div className="grid grid-cols-1 gap-4 mb-4">
+                    <div className="flex flex-col gap-1 text-left">
+                      <textarea
+                        {...register("remarks")}
+                        type="text"
+                        placeholder="Add remarks..."
+                        className="w-full resize-y overflow-auto px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                      />
+                      {errors.remarks && (
+                        <div className="text-red-600 text-xs font-medium">
+                          {errors.remarks.message}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700">
+                    {isSubmitting ? <Spinner data-icon /> : "Submit Review"}
+                  </button>
+                </div>
+              </form>
             </div>
-          </div>
-        </form>
+          )}
+
+          {chainsaw?.status === "APPROVED" ||
+          chainsaw?.status === "REJECTED" ? (
+            <div>
+              <h2 className="text-sm font-bold text-gray-800 mb-3">Remarks</h2>
+              <div className="grid grid-cols-1 gap-4 mb-4">
+                <div>
+                  <input
+                    type="text"
+                    value={chainsaw?.remarks}
+                    className={readOnlyInputClass}
+                    readOnly
+                  />
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

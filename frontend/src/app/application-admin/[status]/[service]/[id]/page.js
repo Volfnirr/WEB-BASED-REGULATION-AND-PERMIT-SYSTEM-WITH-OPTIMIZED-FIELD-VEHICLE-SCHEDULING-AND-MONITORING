@@ -8,12 +8,14 @@ import ReviewChainsawApp from "@/components/review/chainsaw/chainsaw-review";
 
 import { getTreeCuttingFormDataById } from "@/lib/api/applications/tree-cutting/tree-cutting-server";
 import { getResidentialFormDataById } from "@/lib/api/applications/residential/residential-server";
+import { getAgriculturalFormDataById } from "@/lib/api/applications/agricultural/agricultural-server";
+import { getChainsawFormDataById } from "@/lib/api/applications/chainsaw/chainsaw-server";
 const serviceConfig = {
-  //   agricultural: {
-  //     reqServices: [1],
-  //     fetchFormData: getAgriculturalFormDataById,
-  //     Component: ReviewAgricultural,
-  //   },
+    agricultural: {
+       reqServices: [1],
+       fetchFormData: getAgriculturalFormDataById,
+       Component: ReviewAgricultural,
+     },
   residential: {
     reqServices: [2],
     fetchFormData: getResidentialFormDataById,
@@ -24,11 +26,11 @@ const serviceConfig = {
     fetchFormData: getTreeCuttingFormDataById,
     Component: ReviewTreeCutting,
   },
-  //   chainsaw: {
-  //     reqServices: [4],
-  //     fetchFormData: getChainsawFormDataById,
-  //     Component: ReviewChainsawApp,
-  //   },
+     chainsaw: {
+       reqServices: [4],
+       fetchFormData: getChainsawFormDataById,
+       Component: ReviewChainsawApp,
+     },
 };
 
 export default async function ApplicationReview({ params }) {

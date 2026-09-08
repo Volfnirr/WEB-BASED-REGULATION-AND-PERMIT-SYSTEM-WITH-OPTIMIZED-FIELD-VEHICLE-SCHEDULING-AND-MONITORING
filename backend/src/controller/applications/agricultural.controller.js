@@ -54,3 +54,70 @@ export async function submitAgriculturalFormMW(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
+export async function listAgriculturalApplications(req, res) {
+  try {
+    const agriculturalApplications =
+      await agriculturalService.listAgriculturalApplications();
+
+    const applications = agriculturalApplications.map((app) => ({
+      id: app.id,
+      status: app.status,
+      submittedAt: app.submittedAt,
+      referenceNo: app.referenceNo,
+      assignedToId: app.assignedToId,
+      serviceName: app.service.name,
+      userAccName: app.user_application_userIdTouser.name,
+      userAccEmail: app.user_application_userIdTouser.email,
+      action: "SELF_ASSIGN",
+    }));
+
+    return res.status(200).json({
+      message: "Agricultural application list",
+      applications,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function viewAgriculturalFormById(req, res) {
+  try {
+    const applicationData =
+      await agriculturalService.listAssignedAgriculturalApplications(
+        req.params.id,
+      );
+
+    if (applicationData.assignedToId !== req.user.id) {
+      return res.status(409).json({
+        message: `You are not authorized to access this form data, the only one with access is ${applicationData.user_application_assignedToIdTouser.name}`,
+      });
+    }
+
+    const agriculturalFormData = await agriculturalService.viewAgriculturalById(
+      req.params.id,
+    );
+    
+    return res.status(200).json({
+      message: "Successfully get the Form data",
+      agriculturalFormData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function listAgriculturalAppStatus(req, res) {
+  try {
+    const status = await agriculturalService.listAgriculturalAppStatus();
+    return res.status(200).json({
+      message: "Successfully get the agricultural application status",
+      status,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}

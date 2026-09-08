@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
-export async function treeCuttingApplications() {
+export async function chainsawApplications() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
   const response = await fetch(
-    `${process.env.API_URL}/api/v1/applications/tree-cutting`,
+    `${process.env.API_URL}/api/v1/applications/chainsaw`,
     {
       method: "GET",
 
@@ -17,19 +17,19 @@ export async function treeCuttingApplications() {
   const result = await response.json();
   if (!response.ok) {
     throw new Error(
-      result.message || "Failed to retrieve tree cutting applications.",
+      result.message || "Failed to retrieve chainsaw applications.",
     );
   }
 
   return result;
 }
 
-export async function getTreeCuttingFormDataById(id) {
+export async function getChainsawFormDataById(id) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/tree-cutting/${id}`,
+    `${process.env.API_URL}/api/v1/applications/chainsaw/${id}`,
     {
       method: "GET",
       headers: {
@@ -43,20 +43,19 @@ export async function getTreeCuttingFormDataById(id) {
 
   if (!response.ok) {
     throw new Error(
-      result.message ||
-        "Failed to retrieve tree cutting application form data.",
+      result.message || "Failed to retrieve chainsaw application form data.",
     );
   }
 
   return result;
 }
 
-export async function getTreeCuttingStatus() {
+export async function getChainsawAppStatus() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
   const response = await fetch(
-    `${process.env.API_URL}/api/v1/applications/tree-cutting/status`,
+    `${process.env.API_URL}/api/v1/applications/chainsaw/status`,
     {
       method: "GET",
       headers: {
@@ -70,7 +69,7 @@ export async function getTreeCuttingStatus() {
 
   if (!response.ok) {
     throw new Error(
-      result.message || "Failed to retrieve tree cutting application status.",
+      result.message || "Failed to retrieve chainsaw application status.",
     );
   }
 

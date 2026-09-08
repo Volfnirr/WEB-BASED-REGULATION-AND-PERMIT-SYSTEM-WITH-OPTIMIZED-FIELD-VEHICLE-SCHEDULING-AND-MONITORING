@@ -157,7 +157,7 @@ export async function approveApplication(req, res) {
       );
 
       await sendEmail(
-        "volfnir24@gmail.com", // change to approvedApplication.user_application_userIdTouser.email pag meron ng domain huhuhu //gawa ka resend mo tapos palitan mo yung email kung ano yung email na ginamit mo paggawa ng resend
+        "johneduard348@gmail.com", // change to approvedApplication.user_application_userIdTouser.email pag meron ng domain huhuhu //gawa ka resend mo tapos palitan mo yung email kung ano yung email na ginamit mo paggawa ng resend
         statusEmail({
           applicantName: approvedApplication.user_application_userIdTouser.name,
           status: "APPROVED",
