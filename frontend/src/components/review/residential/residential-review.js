@@ -1,5 +1,6 @@
 "use client";
 
+import { localDate } from "@/lib/local-date";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
@@ -97,7 +98,7 @@ export default function ReviewResidential({ data, params }) {
             <p className="text-sm text-gray-600">
               Date Submitted:{" "}
               <span className="font-medium text-gray-900">
-                {residential?.dateSubmitted}
+                 {localDate(residential?.application?.submittedAt)}
               </span>
             </p>
           </div>
@@ -124,7 +125,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.fullname}
+                  value={residential?.fullname}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -135,7 +136,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.comp_address}
+                  value={residential?.comp_address}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -149,7 +150,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.citizenship}
+                  value={residential?.citizenship}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -160,7 +161,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.civil_status}
+                  value={residential?.civil_status}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -174,7 +175,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.date}
+                  value={residential?.date}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -185,7 +186,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.pob}
+                  value={residential?.pob}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -199,7 +200,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.nameofSpouse}
+                  value={residential?.nameofSpouse}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -220,7 +221,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.province}
+                  value={residential?.province}
                   className={`${readOnlyInputClass} bg-gray-100 pointer-events-none`}
                   readOnly
                 />
@@ -231,7 +232,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.municipality}
+                  value={residential?.municipality}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -245,7 +246,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.barangay}
+                  value={residential?.barangay}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -256,7 +257,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.specific_loc}
+                  value={residential?.specific_loc}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -270,7 +271,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.lot_no}
+                  value={residential?.lot_no}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -281,7 +282,7 @@ export default function ReviewResidential({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={residential?.land_area}
+                  value={residential?.land_area}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -364,7 +365,7 @@ export default function ReviewResidential({ data, params }) {
                 <div>
                   <input
                     type="text"
-                    value={residential?.remarks || ""}
+                    value={residential?.remarks}
                     className={readOnlyInputClass}
                     readOnly
                   />
