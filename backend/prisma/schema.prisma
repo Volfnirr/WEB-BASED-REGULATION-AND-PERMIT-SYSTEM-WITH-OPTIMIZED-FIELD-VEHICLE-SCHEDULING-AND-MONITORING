@@ -64,8 +64,11 @@ model user {
   image                                      String?
   createdAt                                  DateTime                    @default(now()) @db.Timestamptz(6)
   updatedAt                                  DateTime                    @default(now()) @db.Timestamptz(6)
-  role                                       role                        @default(USER)
+  role                                       String                      @default("USER")
   termsAndCondition                          Boolean                     @default(false)
+  banned                                     Boolean?                    @default(false)
+  banReason                                  String?
+  banExpires                                 DateTime?                   @db.Timestamptz(6)
   account                                    account[]
   application_application_assignedToIdTouser application[]               @relation("application_assignedToIdTouser")
   application_application_reviewedByIdTouser application[]               @relation("application_reviewedByIdTouser")
