@@ -39,3 +39,11 @@ export const vehicleSubmitTicketLimit = rateLimit({
     message: "Please wait a moment and try again.",
   },
 });
+
+export const assignServicesLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 3,
+  message: {
+    message: "Please wait a moment and try again.",
+  },
+});

@@ -2,6 +2,15 @@ import "dotenv/config";
 import { betterAuth } from "better-auth";
 import { createAuthMiddleware, APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { admin } from "better-auth/plugins";
+import {
+  ac,
+  USER,
+  APPLICATION_ADMIN,
+  VEHICLE_ADMIN,
+  superAdmin,
+} from "./permission.js";
+
 import { prisma } from "./prisma.js";
 
 export const auth = betterAuth({
@@ -66,7 +75,18 @@ export const auth = betterAuth({
       }
     }),
   },
-
+  plugins: [
+    admin({
+      defaultRole: "USER",
+      ac,
+      roles: {
+        USER: USER,
+        APPLICATION_ADMIN: APPLICATION_ADMIN,
+        VEHICLE_ADMIN: VEHICLE_ADMIN,
+        SUPER_ADMIN: superAdmin,
+      },
+    }),
+  ],
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
@@ -87,5 +107,5 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: ["http://localhost:3000"],
+  trustedOrigins: [process.env.FRONTEND_URL],
 });

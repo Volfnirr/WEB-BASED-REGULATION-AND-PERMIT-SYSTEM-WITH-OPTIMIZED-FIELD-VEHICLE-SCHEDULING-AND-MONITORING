@@ -2,7 +2,6 @@
 import TableUI from "../ui/tables/table";
 
 import Title from "../ui/title";
-import EditUser from "../ui/modal/editUser";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import FilterDropdown from "@/components/ui/tables/tools/dropdown";
@@ -10,21 +9,23 @@ import SearchInput from "@/components/ui/tables/tools/search-input";
 import SortDropdown from "@/components/ui/tables/tools/sort-dropdown";
 import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
+import AddUser from "../ui/modal/super-admin/add-user";
+import SuperAdminTable from "../ui/tables/super-admin/manage-users/manage-users-table";
 export default function ManageUsersUI({ data }) {
-  const [isEditUserOpen, setisEditUserOpen] = useState(false);
+  const [isAddUserOpen, setisAddUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  function openUserEdit(id) {
-    const User = data.find((d) => d.id === id);
+  // function openUserEdit(id) {
+  //   const User = data.find((d) => d.id === id);
 
-    setSelectedUser(User);
-    setisEditUserOpen(true);
-  }
+  //   setSelectedUser(User);
+  //   setisEditUserOpen(true);
+  // }
   const column = [
-    {
-      head: "User ID",
-      data: "id",
-    },
+    // {
+    //   head: "User ID",
+    //   data: "id",
+    // },
     {
       head: "Name",
       data: "name",
@@ -42,8 +43,8 @@ export default function ManageUsersUI({ data }) {
       data: "createdAt",
     },
     {
-      head: "Action",
-      data: "action",
+      head: "Updated",
+      data: "updatedAt",
     },
   ];
 
@@ -67,10 +68,10 @@ export default function ManageUsersUI({ data }) {
   });
 
   const roleOptions = [
-    "Applicant",
-    "ApplicantAdmin",
-    "VehicleAdmin",
-    "SuperAdmin",
+    "APPLICANT",
+    "APPLICATION_ADMIN",
+    "VEHICLE_ADMIN",
+    "SUPER_ADMIN",
   ];
 
   const sortOptions = [
@@ -87,8 +88,8 @@ export default function ManageUsersUI({ data }) {
           description="View and manage all registered users."
         />
         <button
-          onClick={() => setisEditUserOpen(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-[#4DAA74] px-4 py-2.5 text-white font-medium cursor-pointer hover:bg-[#428f63] transition-colors duration-200"
+          onClick={() => setisAddUserOpen(true)}
+          className="flex items-center gap-1.5 text-sm whitespace-nowrap rounded-lg bg-[#4DAA74] px-4 py-2.5 text-white font-medium cursor-pointer hover:bg-[#428f63] transition-colors duration-200"
         >
           <Plus className="h-4 w-4" />
           Add new user
@@ -113,8 +114,8 @@ export default function ManageUsersUI({ data }) {
         />
       </div>
 
-      <TableUI columns={column} rows={paginatedData} onEdit={openUserEdit} />
-
+      {/* <TableUI columns={column} rows={paginatedData} onEdit={openUserEdit} /> */}
+      <SuperAdminTable columns={column} rows={paginatedData} />
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
@@ -123,11 +124,11 @@ export default function ManageUsersUI({ data }) {
         itemsPerPage={itemsPerPage}
       />
 
-      {isEditUserOpen && (
-        <EditUser
-          open={isEditUserOpen}
+      {isAddUserOpen && (
+        <AddUser
+          open={isAddUserOpen}
           onClose={() => {
-            setisEditUserOpen(false);
+            setisAddUserOpen(false);
             setSelectedUser(null);
           }}
           user={selectedUser}

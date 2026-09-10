@@ -1,6 +1,9 @@
 import ManageUsersUI from "@/components/super-admin/manage-users";
+import { listAllUsers } from "@/lib/api/super-admin/super-admin-server";
 
-export default function Users() {
+export default async function Users() {
+  const { users } = await listAllUsers();
+  console.log(users);
   const data = [
     {
       id: "1",
@@ -197,7 +200,7 @@ export default function Users() {
   ];
   return (
     <div>
-      <ManageUsersUI data={data} />
+      <ManageUsersUI data={users} />
     </div>
   );
 }

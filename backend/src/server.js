@@ -28,7 +28,7 @@ import applicationAdminRoutes from "./routes/applications/admin.routes.js";
 import chainsawRoutes from "./routes/applications/chainsaw.routes.js";
 import agriculturalRoutes from "./routes/applications/agricultural.routes.js";
 import vehicleRoutes from "./routes/vehicle/vehicle.routes.js";
-import superAdmin from "./routes/admin/admin.routes.js";
+import superAdmin from "./routes/super-admin/super-admin.routes.js";
 const app = express();
 
 const PORT = process.env.PORT || 5000;

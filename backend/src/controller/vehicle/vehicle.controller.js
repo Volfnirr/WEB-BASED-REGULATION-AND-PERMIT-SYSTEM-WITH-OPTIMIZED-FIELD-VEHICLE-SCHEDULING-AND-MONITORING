@@ -280,24 +280,31 @@ export async function availableVehicles(req, res) {
 export async function submitTripAndSchedule(req, res) {
   try {
     const submitTripAndAssignVehicle = await prisma.$transaction(async (tx) => {
+      console.log("Testing 1");
       await vehicleAdmin.verifyTripTicketTaken(
         req.validatedData.tripTicketNo,
         tx,
       );
+      console.log("Testing 2");
 
       const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
         req.validatedData,
         tx,
       );
+      console.log("Testing 3");
 
       if (!verifyStatus.available) {
         throw new Error(verifyStatus.reason);
       }
+      console.log("Testing 4");
+
       const createTicket = await vehicleAdmin.createTripTicket(
         req.validatedData,
         req.user.id,
         tx,
       );
+      console.log("Testing 5");
+
       const scheduleVehicle = await vehicleAdmin.scheduleVehicle(
         req.validatedData,
         createTicket.id,
@@ -318,6 +325,8 @@ export async function submitTripAndSchedule(req, res) {
 
       return { createTicket, scheduleVehicle };
     });
+    console.log("Testing Done");
+
     return res.status(200).json({
       message: "Trip ticket created and vehicle scheduled successfully.",
       trip: submitTripAndAssignVehicle,
