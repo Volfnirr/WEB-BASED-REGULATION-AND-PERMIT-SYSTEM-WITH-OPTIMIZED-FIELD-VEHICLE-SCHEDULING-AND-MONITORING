@@ -32,8 +32,8 @@ export async function assignValidate(id) {
 }
 
 // ASSIGN SERVICES TO APPLICATION ADMIN
-export async function assignedServices(assignServices) {
-  return prisma.application_admin_service.createMany({
+export async function assignedServices(assignServices, db = prisma) {
+  return db.application_admin_service.createManyAndReturn({
     data: assignServices,
   });
 }

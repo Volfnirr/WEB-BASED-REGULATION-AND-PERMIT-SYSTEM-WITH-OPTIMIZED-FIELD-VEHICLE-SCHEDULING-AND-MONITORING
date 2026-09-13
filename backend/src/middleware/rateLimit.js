@@ -47,3 +47,11 @@ export const assignServicesLimit = rateLimit({
     message: "Please wait a moment and try again.",
   },
 });
+
+export const createAccountLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  message: {
+    message: "Please wait a moment and try again.",
+  },
+});

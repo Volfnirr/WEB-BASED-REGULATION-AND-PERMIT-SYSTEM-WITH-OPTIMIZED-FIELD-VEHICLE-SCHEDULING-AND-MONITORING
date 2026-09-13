@@ -68,7 +68,7 @@ export default function ManageUsersUI({ data }) {
   });
 
   const roleOptions = [
-    "APPLICANT",
+    "USER",
     "APPLICATION_ADMIN",
     "VEHICLE_ADMIN",
     "SUPER_ADMIN",

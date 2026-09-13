@@ -3,7 +3,6 @@ import { listAllUsers } from "@/lib/api/super-admin/super-admin-server";
 
 export default async function Users() {
   const { users } = await listAllUsers();
-  console.log(users);
   const data = [
     {
       id: "1",
@@ -200,7 +199,7 @@ export default async function Users() {
   ];
   return (
     <div>
-      <ManageUsersUI data={users} />
+      <ManageUsersUI data={users.users} />
     </div>
   );
 }

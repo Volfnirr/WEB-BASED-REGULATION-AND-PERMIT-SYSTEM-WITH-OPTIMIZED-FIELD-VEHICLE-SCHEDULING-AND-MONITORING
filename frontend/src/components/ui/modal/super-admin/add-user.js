@@ -103,7 +103,7 @@ export default function AddUser({ open, onClose }) {
   const assignedServices = watch("assignedServices");
   const onSubmit = async (data) => {
     try {
-      const { data: newUser, error } = await createUser({
+      const { newUser, error } = await createUser({
         name: data.name,
         email: data.email,
         password: data.password,
@@ -117,6 +117,8 @@ export default function AddUser({ open, onClose }) {
         return;
       }
 
+      console.log("Role", data.role);
+      console.log("Services", data.assignServices);
       if (
         data.role === "APPLICATION_ADMIN" &&
         data.assignedServices.length > 0
@@ -132,17 +134,19 @@ export default function AddUser({ open, onClose }) {
         });
       }
 
-      (toast.success("User created successfully"),
-        {
-          position: "top-center",
-        });
-      onClose();
-      router.refresh();
-    } catch (err) {
-      console.error("ERROR creating user", err);
-      toast.error("Something went wrong while creating the user", {
+      toast.success("User created successfully", {
         position: "top-center",
       });
+      onClose();
+      router.refresh();
+    } catch (error) {
+      console.error("ERROR creating user", error.message);
+      toast.error(
+        error.message || "Something went wrong while creating the user",
+        {
+          position: "top-center",
+        },
+      );
     }
   };
 
