@@ -141,7 +141,9 @@ model agricultural_form {
   witness2Address        String
   dateFiled              DateTime     @db.Date
   signatureName          String
+  assignedInspector      Int?
   application            application  @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  inspectors             inspectors?  @relation(fields: [assignedInspector], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model application {
@@ -222,7 +224,9 @@ model residential_free_patent_form {
   affidavitLocation     String
   signatureAffiantName  String
   applicantFullName     String
+  assignedInspector     Int
   application           application  @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  inspectors            inspectors   @relation(fields: [assignedInspector], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model tree_cutting_permit_form {
@@ -314,11 +318,17 @@ model service_increment {
   @@unique([serviceId, year])
 }
 
-enum role {
-  USER
-  APPLICATION_ADMIN
-  VEHICLE_ADMIN
-  SUPER_ADMIN
+model inspectors {
+  id                           Int                            @id @default(autoincrement())
+  lastName                     String                         @db.VarChar(100)
+  firstName                    String                         @db.VarChar(100)
+  middleName                   String?                        @db.VarChar(100)
+  extensionName                String?                        @db.VarChar(10)
+  email                        String                         @unique @db.VarChar(255)
+  isAvailable                  Boolean                        @default(true)
+  createdAt                    DateTime                       @default(now()) @db.Timestamptz(6)
+  agricultural_form            agricultural_form[]
+  residential_free_patent_form residential_free_patent_form[]
 }
 
 enum application_status {

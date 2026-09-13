@@ -26,7 +26,7 @@ export const vehicleAction = rateLimit({
 
 export const fetchLimit = rateLimit({
   windowMs: 60 * 1000,
-  max: 999, //80
+  max: 80, //80
   message: {
     message: "Please wait a moment and try again.",
   },
@@ -51,6 +51,14 @@ export const assignServicesLimit = rateLimit({
 export const createAccountLimit = rateLimit({
   windowMs: 60 * 1000,
   max: 5,
+  message: {
+    message: "Please wait a moment and try again.",
+  },
+});
+
+export const createInspectorLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 8,
   message: {
     message: "Please wait a moment and try again.",
   },

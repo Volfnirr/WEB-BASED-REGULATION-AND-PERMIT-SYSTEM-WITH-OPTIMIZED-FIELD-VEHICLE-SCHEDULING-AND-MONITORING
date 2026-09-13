@@ -75,7 +75,7 @@ export async function listUsers(req, res) {
       headers: fromNodeHeaders(req.headers),
     });
     res.status(200).json({
-      message: "Successfully fetched users",
+      message: "Successfully retrieved users",
       users,
     });
   } catch (error) {
@@ -139,3 +139,48 @@ export async function assignedServices(req, res) {
   }
 }
 // MANAGE USERS END
+
+// MANAGE INSPECTOR START
+
+export async function createInspector(req, res) {
+  try {
+    const createInspector = await prisma.$transaction(async (tx) => {
+      console.log(req.validatedData);
+      const inspector = await superAdmin.createInspector(req.validatedData);
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Create Inspector",
+          target: "Inspector",
+          details: `Created an inspector with ID: ${inspector.id} and name: ${inspector.name}.`,
+        },
+        tx,
+      );
+      return inspector;
+    });
+    res.status(201).json({
+      message: "Successfully created inspector",
+      createInspector,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function listAllInspectors(req, res) {
+  try {
+    const list = await superAdmin.listAllInspectors();
+    res.status(200).json({
+      message: "Successfully retrieved inspectors list",
+      list,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// MANAGE INSPECTOR END

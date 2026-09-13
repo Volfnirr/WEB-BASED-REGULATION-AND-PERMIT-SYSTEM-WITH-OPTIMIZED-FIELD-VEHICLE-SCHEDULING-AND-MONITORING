@@ -5,6 +5,7 @@ import {
   fetchLimit,
   assignServicesLimit,
   createAccountLimit,
+  createInspectorLimit,
 } from "../../middleware/rateLimit.js";
 import { requireAuthentication } from "../../middleware/requireAuthentication.js";
 import { requireAuthorization } from "../../middleware/requireAuthorization.js";
@@ -13,9 +14,12 @@ import {
   assignedServices,
   createUser,
   listUsers,
+  createInspector,
+  listAllInspectors,
 } from "../../controller/super-admin/super-admin.controller.js";
 import { validate } from "../../middleware/validate.js";
 import { assignServicesSchema } from "../../validation/super-admin/superAdminData.js";
+import { createInspectorSchema } from "../../validation/super-admin/inspectorsData.js";
 
 // AUDIT LOGS START
 // GET ALL AUDIT LOGS DESC (createdAt)
@@ -59,4 +63,23 @@ router.post(
 
 // MANAGE USERS END
 
+// MANAGE INSPECTOR START
+
+router.post(
+  "/inspectors",
+  createInspectorLimit,
+  requireAuthentication,
+  requireAuthorization("SUPER_ADMIN"),
+  validate(createInspectorSchema),
+  createInspector,
+);
+
+router.get(
+  "/inspectors",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("SUPER_ADMIN"),
+  listAllInspectors,
+);
+// MANAGE INSPECTOR END
 export default router;

@@ -13,6 +13,7 @@ import {
   listResidentialApplications,
   viewResidentialFormById,
   listResidentialAppStatus,
+  listAllAvailInspectors,
 } from "../../controller/applications/residential.controller.js";
 
 // User submits a residential application
@@ -23,6 +24,13 @@ router.post(
   requireAuthorization("USER"),
   validate(residentialFormSchema),
   submitResidentialForm,
+);
+
+router.get(
+  "/residential/inspectors",
+  requireAuthentication,
+  requireAuthorization("USER"),
+  listAllAvailInspectors,
 );
 
 // Get all pending  residential applications for self assign

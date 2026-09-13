@@ -30,34 +30,69 @@ import { Spinner } from "@/components/ui/spinner";
 const residentialFormSchema = z
   .object({
     // APPLICANT INFORMATION
-    lastName: z.string().trim().min(1, "Last name is required"),
-    firstName: z.string().trim().min(1, "First name is required"),
-    middleName: z.string().trim().optional(),
-    extensionName: z.string().trim().optional(),
+    lastName: z
+      .string()
+      .trim()
+      .min(1, "Last name is required")
+      .max(100, "Last name is too long"),
+    firstName: z
+      .string()
+      .trim()
+      .min(1, "First name is required")
+      .max(100, "First name is too long"),
+    middleName: z
+      .string()
+      .trim()
+      .max(100, "Middle name is too long")
+      .optional(),
+    extensionName: z
+      .string()
+      .trim()
+      .max(20, "Extension name is too long")
+      .optional(),
     email: z.email("Invalid email address"),
-    fullAddress: z.string().trim().min(1, "Complete address is required"),
+    fullAddress: z
+      .string()
+      .trim()
+      .min(1, "Complete address is required")
+      .max(255, "Address is too long"),
     contactNo: z
       .string()
       .regex(/^09\d{9}$/, "Enter a valid Philippine mobile number"),
     privacyConsent: z.literal(true, "Please check this box to proceed"),
-    citizenship: z.string().trim().min(1, "Citizenship is required"),
+    citizenship: z
+      .string()
+      .trim()
+      .min(1, "Citizenship is required")
+      .max(50, "Citizenship is too long"),
     civilStatus: z.enum(
       ["SINGLE", "MARRIED", "WIDOWED", "ANNULLED"],
       "Please select a civil status",
     ),
     dateOfBirth: z.coerce.date("Date of birth is required"),
-    placeOfBirth: z.string().trim().min(1, "Place of birth is required"),
-    spouseName: z.string().trim().optional(),
+    placeOfBirth: z
+      .string()
+      .trim()
+      .min(1, "Place of birth is required")
+      .max(150, "Place of birth is too long"),
+    spouseName: z
+      .string()
+      .trim()
+      .max(100, "Spouse name is too long")
+      .optional(),
 
     // LAND INFORMATION
-    province: z.string().trim().min(1, "Province is required"),
-    municipality: z.string().trim().min(1, "Municipality is required"),
-    barangay: z.string().trim().min(1, "Barangay is required"),
+    province: z.string().trim().min(1, "Province is required").max(100),
+    municipality: z.string().trim().min(1, "Municipality is required").max(100),
+    barangay: z.string().trim().min(1, "Barangay is required").max(100),
+
     specificLocation: z
       .string()
       .trim()
-      .min(1, "Specific Location / Sitio is required"),
-    lotNo: z.string().trim().min(1, "Lot No. is required"),
+      .min(1, "Specific Location / Sitio is required")
+      .max(255),
+    lotNo: z.string().trim().min(1, "Lot No. is required").max(50),
+
     landAreaSqm: z.coerce
       .number("Land area is required")
       .positive("Land area must be greater than 0")
@@ -83,7 +118,11 @@ const residentialFormSchema = z
       .number("Years in possession is required")
       .int("Years must be a whole number")
       .nonnegative("Years in possession cannot be negative"),
-    purposeOfUse: z.string().trim().min(1, "Purpose of use is required"),
+    purposeOfUse: z
+      .string()
+      .trim()
+      .min(1, "Purpose of use is required")
+      .max(255),
     affidavitDate: z.coerce.date("Affidavit date is required"),
     affidavitLocation: z
       .string()
@@ -92,7 +131,15 @@ const residentialFormSchema = z
     signatureAffiantName: z
       .string()
       .trim()
-      .min(1, "Full name signature is required"),
+      .min(1, "Full name signature is required")
+      .max(150, "Signature is too long")
+      .regex(/^[a-zA-Z\s.'-]+$/, "Signature can only contain letters"),
+    //Inspector
+    assignedInspector: z
+      .number({ error: "Please assign an inspector" })
+      .int("Invalid inspector")
+      .positive("Invalid inspector")
+      .max(9999, "Invalid inspector"),
   })
   .refine(
     (data) => {
@@ -122,7 +169,8 @@ const civilStatusChoices = [
   { id: 4, value: "ANNULLED" },
 ];
 
-export default function ResidentialForm() {
+export default function ResidentialForm({ inspectors }) {
+  console.log("INSPECOTS", inspectors);
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-xs font-medium";
@@ -130,7 +178,8 @@ export default function ResidentialForm() {
   const [showModal, setShowModal] = useState(false);
   const [open, setOpen] = useState(false);
   const [openWitness, setOpenWitness] = useState(false);
-
+  const [showInspectors, setShowInspectors] = useState(true);
+  const [selectedInspector, setSelectedInspector] = useState(null);
   const {
     register,
     handleSubmit,
@@ -749,7 +798,64 @@ export default function ResidentialForm() {
               </div>
             </div>
           </div>
+          <div>
+            <div>
+              <div className="flex flex-col gap-1 text-left">
+                <label className="text-left text-xs font-bold text-gray-700 mb-1">
+                  Assign Inspector
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowInspectors((prev) => !prev)}
+                  className={`${inputClass} text-left`}
+                >
+                  {selectedInspector
+                    ? `${selectedInspector.firstName} ${selectedInspector.lastName} (${selectedInspector.email})`
+                    : "Select an inspector"}
+                </button>
 
+                {errors.assignedInspector && (
+                  <div className={errorClass}>
+                    {errors.assignedInspector.message}
+                  </div>
+                )}
+
+                {showInspectors && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                    {inspectors
+                      .filter((i) => i.isAvailable)
+                      .map((i) => (
+                        <button
+                          key={i.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedInspector(i);
+                            setValue("assignedInspector", i.id, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            });
+                            setShowInspectors(false);
+                          }}
+                          className="text-left px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg hover:border-[#1a5632] hover:bg-[#f0f7f3] transition-colors"
+                        >
+                          <div className="text-sm font-semibold text-gray-900">
+                            {[
+                              i.firstName,
+                              i.middleName,
+                              i.lastName,
+                              i.extensionName,
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                          </div>
+                          <div className="text-xs text-gray-500">{i.email}</div>
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
           {/* DATA PRIVACY CONSENT SECTION */}
           <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
             <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">

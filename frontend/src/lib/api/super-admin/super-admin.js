@@ -46,3 +46,28 @@ export async function createAppAdmin({ assignServices }) {
 
   return result;
 }
+
+// INSPECTOR START
+export async function createInspector({ data }) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/super-admin/inspectors`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    console.log(result.message);
+    throw new Error("Failed to create inspector.");
+  }
+
+  return result;
+}
+// INSPECTOR END

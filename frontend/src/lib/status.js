@@ -8,6 +8,7 @@ const statusColors = {
 
   //VEHICLE
   AVAILABLE: "bg-lime-500 text-lime-950 font-bold",
+  NOT_AVAILABLE: "bg-red-500 text-red-950 font-bold",
   RESERVED: "bg-cyan-500 text-cyan-950 font-bold",
   MAINTENANCE: "bg-fuchsia-600 text-fuchsia-50 font-bold",
   UNUSED: "bg-neutral-400 text-neutral-900 font-bold",

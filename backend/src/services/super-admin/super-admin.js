@@ -39,3 +39,14 @@ export async function assignedServices(assignServices, db = prisma) {
 }
 
 // MANAGE USERS END
+
+// MANAGE INSPECTOR START
+export async function createInspector(data, db = prisma) {
+  return db.inspectors.create({
+    data,
+  });
+}
+export async function listAllInspectors() {
+  return prisma.inspectors.findMany();
+}
+// MANAGE INSPECTOR END
