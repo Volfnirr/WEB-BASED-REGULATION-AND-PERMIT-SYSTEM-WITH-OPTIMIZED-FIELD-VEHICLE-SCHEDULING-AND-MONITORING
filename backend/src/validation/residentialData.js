@@ -69,44 +69,66 @@ export const residentialFormSchema = z
     landAreaSqm: z.coerce
       .number("Land area is required")
       .positive("Land area must be greater than 0")
+      .max(99999999.99, "Land area cannot exceed 99,999,999.99 sqm")
       .refine(
         (val) => Math.round(val * 100) === val * 100,
         "Land area can only have up to 2 decimal places",
       ),
 
     // AFFIDAVIT
-    affidavitProvince: z.string().trim().min(1, "Province is required"),
-    affidavitCity: z.string().trim().min(1, "City/Municipality is required"),
-    affiantName: z.string().trim().min(1, "Affiant's name is required"),
-    affiantAddress: z.string().trim().min(1, "Affiant's address is required"),
+    affidavitProvince: z
+      .string()
+      .trim()
+      .min(1, "Province is required")
+      .max(50, "Province is too long"),
+    affidavitCity: z
+      .string()
+      .trim()
+      .min(1, "City/Municipality is required")
+      .max(50, "City/Municipality  is too long"),
+    affiantName: z
+      .string()
+      .trim()
+      .min(1, "Affiant's name is required")
+      .max(100, "Affiant's name is too long"),
+    affiantAddress: z
+      .string()
+      .trim()
+      .min(1, "Affiant's address is required")
+      .max(200, "Affiant's address is too long"),
     applicantFullName: z
       .string()
       .trim()
-      .min(1, "Applicant fullname is required"),
+      .min(1, "Applicant fullname is required")
+      .max(100, "Applicant fullname is too long"),
     affidavitLandLocation: z
       .string()
       .trim()
-      .min(1, "Land location is required"),
+      .min(1, "Land location is required")
+      .max(100, "Land location is too long"),
     yearsOfOccupation: z.coerce
       .number("Years in possession is required")
       .int("Years must be a whole number")
-      .nonnegative("Years in possession cannot be negative"),
+      .nonnegative("Years in possession cannot be negative")
+      .max(999999, "Years in possession is too long"),
     purposeOfUse: z
       .string()
       .trim()
       .min(1, "Purpose of use is required")
-      .max(255),
+      .max(255, "Purpose of use is too long"),
     affidavitDate: z.coerce.date("Affidavit date is required"),
     affidavitLocation: z
       .string()
       .trim()
-      .min(1, "Affidavit location is required"),
+      .min(1, "Affidavit location is required")
+      .max(100, "Affidavit location is too long"),
     signatureAffiantName: z
       .string()
       .trim()
       .min(1, "Full name signature is required")
-      .max(150, "Signature is too long")
-      .regex(/^[a-zA-Z\s.'-]+$/, "Signature can only contain letters"),
+      .max(150, "Full name signature  is too long")
+      .regex(/^[a-zA-Z\s.'-]+$/, "Full name signature can only contain letters")
+      .max(100, "Full name signature  is too long"),
     //Inspector
     assignedInspector: z
       .number({ error: "Please assign an inspector" })
