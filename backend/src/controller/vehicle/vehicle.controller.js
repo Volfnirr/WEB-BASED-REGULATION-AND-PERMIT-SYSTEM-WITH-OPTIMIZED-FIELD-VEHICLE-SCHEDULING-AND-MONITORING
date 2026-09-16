@@ -2,6 +2,8 @@ import { prisma } from "../../lib/prisma.js";
 import { supabase } from "../../lib/supabase.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import * as vehicleAdmin from "../../services/vehicle/vehicle.service.js";
+import { tripTicketExcelExport } from "../../lib/excel-templates/vehicle/tripTicketExport.js";
+import { number } from "zod";
 
 // VEHICLE START
 
@@ -238,6 +240,12 @@ export async function vehicleStatus(req, res) {
 
 export async function availableVehicles(req, res) {
   try {
+    if (!req.query.startDate || !req.query.endDate) {
+      res.status(200).json({
+        message: "Please enter a start and end date ",
+      });
+    }
+
     const availableVehiclesList = await vehicleAdmin.availableVehicles(
       req.query.startDate,
       req.query.endDate,
@@ -527,6 +535,42 @@ export async function vehiclesSchdulesStatus(req, res) {
       status,
     });
   } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function exportTripTicketAsExcel(req, res) {
+  try {
+    if (!req.params.id || isNaN(Number(req.params.id))) {
+      res.status(200).json({
+        message: "Invalid params",
+      });
+    }
+    const { id } = req.params;
+
+    const { tripData } = await vehicleAdmin.listTripTicketFormA(id);
+
+    if (!tripData) {
+      res.status(200).json({
+        message: "Invalid id",
+      });
+    }
+    console.log(tripData);
+
+    const workbook = await tripTicketExcelExport(tripData);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=trip-ticket-${tripData.tripTicketNo}.xlsx`,
+    );
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 }

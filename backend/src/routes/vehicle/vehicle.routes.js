@@ -32,6 +32,7 @@ import {
   updateTripTicket,
   dashboardStatus,
   vehiclesSchdulesStatus,
+  exportTripTicketAsExcel,
 } from "../../controller/vehicle/vehicle.controller.js";
 
 // Create a new vehicle
@@ -104,13 +105,11 @@ router.get(
   tripTicketList,
 );
 
-router.patch(
-  "/trip-ticket/:id",
-  vehicleAction,
+router.get(
+  "/trip-ticket/excel/:id/export",
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
-  validate(updatetripTicketFormSchema),
-  updateTripTicket,
+  exportTripTicketAsExcel,
 );
 
 router.get(
@@ -119,6 +118,15 @@ router.get(
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
   tripTicketStatus,
+);
+
+router.patch(
+  "/trip-ticket/:id",
+  vehicleAction,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(updatetripTicketFormSchema),
+  updateTripTicket,
 );
 
 // TRIP TICKET END
