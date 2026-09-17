@@ -30,3 +30,8 @@ export const vehicleSchema = z.object({
 });
 
 export const updateVehicleSchema = vehicleSchema.partial();
+
+export const vehicleMaintenaceSchema = z.object({
+  startDate: z.coerce.date({ message: "Departure date is required" }),
+  endDate: z.coerce.date({ message: "Return date is required" }),
+});

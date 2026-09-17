@@ -14,6 +14,7 @@ import {
 import { useUser } from "@/lib/context/account-info-context";
 
 import { logout } from "@/lib/api/logout";
+import { ClipboardCheck } from "lucide-react";
 const links = [
   {
     icon: <LayoutDashboard />,
@@ -29,6 +30,11 @@ const links = [
     icon: <ClipboardList />,
     name: "Audit Logs",
     href: "/super-admin/audit-logs",
+  },
+  {
+    icon: <ClipboardCheck />,
+    name: "Inspectors",
+    href: "/super-admin/inspectors",
   },
 ];
 

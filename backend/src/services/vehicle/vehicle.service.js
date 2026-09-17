@@ -390,3 +390,78 @@ export async function vehiclesSchdulesStatus() {
     },
   };
 }
+
+// Export trip ticket to excel
+export async function listTripTicketFormA(tripTicketId) {
+  const { vehicleId, ...rest } = await prisma.trip_ticket.findUnique({
+    where: {
+      id: Number(tripTicketId),
+    },
+    select: {
+      tripTicketNo: true,
+      vehicleId: true,
+      driverName: true,
+      authorizedPassengers: true,
+      placesToVisit: true,
+      purpose: true,
+    },
+  });
+  const { plateNumber } = await prisma.vehicle.findUnique({
+    where: {
+      id: Number(vehicleId),
+    },
+    select: {
+      plateNumber: true,
+    },
+  });
+
+  const { startDate, endDate } = await prisma.vehicle_schedule.findUnique({
+    where: {
+      tripTicketId: Number(tripTicketId),
+    },
+    select: {
+      startDate: true,
+      endDate: true,
+    },
+  });
+  const tripDate = {};
+  if (startDate.toString() === endDate.toString()) {
+    tripDate.date = startDate.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  } else {
+    tripDate.date = `${startDate.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })}-${endDate.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })}`;
+  }
+
+  return {
+    tripData: {
+      ...rest,
+      plateNumber,
+      tripDepartureDate: tripDate.date,
+    },
+    // vehicle_schedule,
+  };
+}
+
+// Schedule a maintenance
+
+export async function scheduleVehicleMaintenance(vehicleId, data, db = prisma) {
+  return await db.vehicle_schedule.create({
+    data: {
+      vehicleId: Number(vehicleId),
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate),
+      status: "MAINTENANCE",
+    },
+  });
+}

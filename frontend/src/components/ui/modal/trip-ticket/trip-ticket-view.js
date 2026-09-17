@@ -3,8 +3,31 @@
 import { X } from "lucide-react";
 import { localDateFormat } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
+import { useState } from "react";
+import { exportTripTicket } from "@/lib/api/vehicle/manage-vehicles";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
 
 export default function TripTicketView({ isOpen, onClose, data }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleExport = async () => {
+    setLoading(true);
+    try {
+      await exportTripTicket(data.id);
+      toast.success("Successfully downloaded excel file", {
+        position: "top-center",
+      });
+    } catch (error) {
+      toast.error(error ?? "Failed to download excel file", {
+        position: "top-center",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   const fieldClass =
@@ -143,15 +166,25 @@ export default function TripTicketView({ isOpen, onClose, data }) {
                 </div>
               </div>
             </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] transition-colors"
-              >
-                Close
-              </button>
+            <div className="grid grid-cols-1 items-center justify-between w-full md:grid-cols-2">
+              <div className="flex justify-start items-center w-full gap-2 min-h-10">
+                <Button
+                  onClick={handleExport}
+                  disabled={loading}
+                  className="cursor-pointer bg-green-700 hover:bg-green-800 text-md min-h-9 max-h-md"
+                >
+                  {loading ? <Spinner data-icon /> : "Export Trip Ticket"}
+                </Button>
+              </div>
+              <div className="flex justify-start items-center w-full gap-2 min-h-15 md:justify-end">
+                <Button
+                  type="button"
+                  onClick={onClose}
+                  className="cursor-pointer text-md min-h-9 max-h-md bg-green-700 hover:bg-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  Close
+                </Button>
+              </div>
             </div>
           </div>
         </div>

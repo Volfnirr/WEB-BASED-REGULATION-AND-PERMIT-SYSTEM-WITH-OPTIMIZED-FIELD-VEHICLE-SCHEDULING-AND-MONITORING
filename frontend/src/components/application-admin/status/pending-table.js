@@ -105,13 +105,6 @@ export default function PendingTable({ initialData }) {
     itemsPerPage: 8,
   });
 
-  const roleOptions = ["PENDING", "REJECTED", "APPROVED"];
-
-  const sortOptions = [
-    { label: "Request ID", key: "referenceNo" },
-    { label: "Submission Date", key: "submittedAt" },
-  ];
-
   return (
     <div>
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -119,17 +112,6 @@ export default function PendingTable({ initialData }) {
           value={search}
           onChange={updateSearch}
           placeholder="Search by name, status, reference no, or email..."
-        />
-        <FilterDropdown
-          value={filters.status}
-          onChange={(value) => updateFilter("status", value)}
-          options={roleOptions}
-          label="Status"
-        />
-        <SortDropdown
-          sortConfig={sortConfig}
-          onSort={updateSort}
-          options={sortOptions}
         />
       </div>
 

@@ -27,7 +27,7 @@ export async function submitResidentialForm(refNo, userId, data, db = prisma) {
           barangay: data.barangay,
           specificLocation: data.specificLocation,
           lotNo: data.lotNo,
-          landAreaSqm: parseFloat(data.area),
+          landAreaSqm: parseFloat(data.landAreaSqm),
           affidavitProvince: data.affidavitProvince,
           affidavitCity: data.affidavitCity,
           affiantName: data.affiantName,
@@ -39,6 +39,7 @@ export async function submitResidentialForm(refNo, userId, data, db = prisma) {
           affidavitDate: data.affidavitDate,
           affidavitLocation: data.affidavitLocation,
           signatureAffiantName: data.signatureAffiantName,
+          assignedInspector: data.assignedInspector,
         },
       },
     },
@@ -219,4 +220,12 @@ export async function listResidentialAppStatus() {
       rejected: weeklyRejected,
     },
   };
+}
+
+export async function listAllAvailInspectors(params) {
+  return prisma.inspectors.findMany({
+    where: {
+      isAvailable: true,
+    },
+  });
 }

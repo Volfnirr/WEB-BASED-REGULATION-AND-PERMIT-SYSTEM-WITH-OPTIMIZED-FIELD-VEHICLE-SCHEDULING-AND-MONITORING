@@ -117,3 +117,53 @@ export async function updateTripAndSchedule({ id, data }) {
 
   return result;
 }
+
+export async function exportTripTicket(tripId) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/trip-ticket/excel/${tripId}/export`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to download excel.");
+  }
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `trip-ticket-${tripId}.xlsx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+  return {
+    message: "Sucessfully downloaded excel file",
+  };
+}
+
+export async function scheduleVehicleMaintenance(id, data) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/maintenance/${id}/schedule`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Failed to schedule vehicle maintenance.",
+    );
+  }
+
+  return result;
+}

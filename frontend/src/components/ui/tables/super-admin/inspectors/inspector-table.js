@@ -29,12 +29,12 @@ import { StatusColor } from "@/lib/status";
 import { FileSearchCorner } from "lucide-react";
 import { useState } from "react";
 
-export default function SuperAdminTable({ columns, rows, View }) {
+export default function InspectorTableUI({ columns, rows, View }) {
   const [viewAuditLogs, setViewAuditLogs] = useState(null);
 
   return (
     <div className="bg-white rounded">
-      <Table>
+      <Table className="rounded">
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
@@ -61,18 +61,33 @@ export default function SuperAdminTable({ columns, rows, View }) {
           ) : (
             rows.map((row) => (
               <TableRow
-                className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition-colors border-b last:border-b-0 "
+                className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition-colors border-b last:border-b-0"
                 key={row.email}
               >
                 {columns.map((column) => (
-                  <TableCell className="text-sm " key={column.data}>
-                    {column.data === "createdAt" ||
-                    column.data === "updatedAt" ? (
+                  <TableCell
+                    className="text-sm max-w-60 truncate"
+                    key={column.data}
+                  >
+                    {column.data === "middleName" ||
+                    column.data === "extensionName" ? (
+                      <span>{row[column.data] ? row[column.data] : "N/A"}</span>
+                    ) : column.data === "isAvailable" ? (
+                      row[column.data] === true ? (
+                        <span
+                          className={`${StatusColor("AVAILABLE")} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                        >
+                          AVAILABLE
+                        </span>
+                      ) : (
+                        <span
+                          className={`${StatusColor("NOT_AVAILABLE")} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                        >
+                          NOT AVAILABLE
+                        </span>
+                      )
+                    ) : column.data === "createdAt" ? (
                       <span>{localDateTime(row[column.data])}</span>
-                    ) : column.data === "email" || column.data === "name" ? (
-                      <span className="block max-w-60 truncate">
-                        {row[column.data]}
-                      </span>
                     ) : (
                       <span>{row[column.data]}</span>
                     )}
@@ -81,26 +96,16 @@ export default function SuperAdminTable({ columns, rows, View }) {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger
-                      className="border border-gray-400"
+                      className="border border-gray-400 cursor-pointer"
                       render={<Button variant="outline">...</Button>}
                     />
                     <DropdownMenuContent>
                       <DropdownMenuGroup>
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Set User Role</DropdownMenuItem>
-                        <DropdownMenuItem>Set User Password</DropdownMenuItem>
-                        {row.role === "APPLICATION_ADMIN" ? (
-                          <DropdownMenuItem>Assign Services</DropdownMenuItem>
-                        ) : null}
+                        <DropdownMenuItem className=" cursor-pointer">
+                          Edit
+                        </DropdownMenuItem>
                       </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem variant="destructive">
-                        Ban User
-                      </DropdownMenuItem>
-                      <DropdownMenuItem variant="destructive">
-                        Unban User
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -110,13 +115,13 @@ export default function SuperAdminTable({ columns, rows, View }) {
         </TableBody>
       </Table>
 
-      {viewAuditLogs && View && (
+      {/* {viewAuditLogs && View && (
         <View
           isOpen={!!viewAuditLogs}
           onClose={() => setViewAuditLogs(null)}
           data={viewAuditLogs}
         />
-      )}
+      )} */}
     </div>
   );
 }

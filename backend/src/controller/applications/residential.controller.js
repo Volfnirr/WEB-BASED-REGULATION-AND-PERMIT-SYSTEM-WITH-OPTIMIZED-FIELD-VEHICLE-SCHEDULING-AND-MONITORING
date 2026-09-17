@@ -121,3 +121,16 @@ export async function listResidentialAppStatus(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
+export async function listAllAvailInspectors(req, res) {
+  try {
+    const inspectors = await residentialService.listAllAvailInspectors();
+    return res.status(200).json({
+      message: "Successfully retrieved the residential application status",
+      inspectors,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
