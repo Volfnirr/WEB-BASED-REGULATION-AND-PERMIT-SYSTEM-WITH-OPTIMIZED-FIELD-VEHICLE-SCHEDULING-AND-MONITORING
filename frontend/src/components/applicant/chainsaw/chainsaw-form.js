@@ -21,38 +21,39 @@ const chainsawFormSchema = z.object({
   registrationType: z.enum(["New", "Renewal"], {
     errorMap: () => ({ message: "Please select a registration type" }),
   }),
-  lastname: z.string().trim().min(1, "Last name is required"),
-  firstname: z.string().trim().min(1, "First name is required"),
-  middlename: z.string().trim().min(1, "Middle name is required"),
-  extension: z.string().trim().optional(),
+  lastname: z.string().trim().min(1, "Last name is required").max(255, "Maximum 255 characters allowed"),
+  firstname: z.string().trim().min(1, "First name is required").max(255, "Maximum 255 characters allowed"),
+  middlename: z.string().trim().min(1, "Middle name is required").max(255, "Maximum 255 characters allowed"),
+  extension: z.string().trim().max(50, "Maximum 50 characters allowed").optional(),
   
-  province: z.string().trim().min(1, "Province is required"),
-  municipality: z.string().trim().min(1, "Municipality is required"),
-  barangay: z.string().trim().min(1, "Barangay is required"),
-  completeAddress: z.string().trim().min(5, "Complete address is required"),
+  province: z.string().trim().min(1, "Province is required").max(255, "Maximum 255 characters allowed"),
+  municipality: z.string().trim().min(1, "Municipality is required").max(255, "Maximum 255 characters allowed"),
+  barangay: z.string().trim().min(1, "Barangay is required").max(255, "Maximum 255 characters allowed"),
+  completeAddress: z.string().trim().min(5, "Complete address is required").max(1000, "Maximum 1000 characters allowed"),
   
-  email: z.email("Invalid email"),
+  email: z.email("Invalid email").max(255, "Maximum 255 characters allowed"),
   
   contactNumber: z 
      .string()
      .trim()
-     .regex(/^09\d{9}$/, "Enter a valid 11-digit Philippine mobile number"),
+     .regex(/^09\d{9}$/, "Enter a valid 11-digit Philippine mobile number")
+     .max(11, "Maximum 11 characters allowed"),
 
-  brand: z.string().trim().min(1, "Brand is required"),
-  model: z.string().trim().min(1, "Model is required"),
+  brand: z.string().trim().min(1, "Brand is required").max(255, "Maximum 255 characters allowed"),
+  model: z.string().trim().min(1, "Model is required").max(255, "Maximum 255 characters allowed"),
   dateAcquisition: z
     .string()
     .trim()
-    .regex(/^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/, "Please use MM/DD/YYYY format"),
-  serialNumber: z.string().trim().min(1, "Serial number is required"),
-  horsePower: z.string().trim().min(1, "Horse power is required"),
-  guideBarLength: z.string().trim().min(1, "Guide bar length is required"),
+    .regex(/^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/, "Please use MM/DD/YYYY format")
+    .max(20, "Maximum 20 characters allowed"),
+  serialNumber: z.string().trim().min(1, "Serial number is required").max(255, "Maximum 255 characters allowed"),
+  horsePower: z.string().trim().min(1, "Horse power is required").max(100, "Maximum 100 characters allowed"),
+  guideBarLength: z.string().trim().min(1, "Guide bar length is required").max(100, "Maximum 100 characters allowed"),
 
   privacyConsent: z.literal(true, {
     errorMap: () => ({ message: "Please check this box to proceed" }),
   }),
 });
-
 export default function ChainsawForm() {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
