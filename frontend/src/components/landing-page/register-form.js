@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import CustomInput from "@/components/landing-page/CustomInput";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { getRoleRoute } from "@/lib/role-route";
@@ -82,8 +81,8 @@ export default function RegisterForm() {
           termsAndCondition: signUpData.termsAndCondition,
         },
         {
-          onSuccess: async () => {
-            await logNewUser();
+          onSuccess: async (ctx) => {
+            await logNewUser(ctx);
             toast.success("Registration Successful", {
               position: "top-center",
             });
