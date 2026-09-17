@@ -21,8 +21,7 @@ export const auth = betterAuth({
   advanced: {
     // TODO: Add this when the backend is deployed. -N.
     ipAddress: {
-      ipAddressHeaders:
-        process.env.NODE_ENV === "production" ? ["x-forwarded-for"] : [],
+      ipAddressHeaders: ["x-forwarded-for"],
     },
   },
   rateLimit: {
