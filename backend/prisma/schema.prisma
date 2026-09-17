@@ -242,20 +242,23 @@ model tree_cutting_permit_form {
 }
 
 model trip_ticket {
-  id                   Int                @id @default(autoincrement())
-  tripTicketNo         String             @unique
-  vehicleId            Int
-  driverName           String
-  authorizedPassengers String
-  placesToVisit        String
-  purpose              String
-  status               trip_ticket_status @default(ACTIVE)
-  createdById          String
-  createdAt            DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt            DateTime           @default(now()) @db.Timestamptz(6)
-  user                 user               @relation(fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  vehicle              vehicle            @relation(fields: [vehicleId], references: [id], onUpdate: NoAction)
-  vehicle_schedule     vehicle_schedule?
+  id                     Int                     @id @default(autoincrement())
+  tripTicketNo           String                  @unique
+  vehicleId              Int
+  driverName             String
+  authorizedPassengers   String
+  placesToVisit          String
+  purpose                String
+  status                 trip_ticket_status      @default(ACTIVE)
+  createdById            String
+  createdAt              DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime                @default(now()) @db.Timestamptz(6)
+  user                   user                    @relation(fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  vehicle                vehicle                 @relation(fields: [vehicleId], references: [id], onUpdate: NoAction)
+  trip_ticket_completion trip_ticket_completion?
+  trip_ticket_passenger  trip_ticket_passenger[]
+  trip_ticket_place      trip_ticket_place[]
+  vehicle_schedule       vehicle_schedule?
 }
 
 model vehicle {
@@ -312,6 +315,40 @@ model service_increment {
   service   service @relation(fields: [serviceId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([serviceId, year])
+}
+
+model trip_ticket_completion {
+  tripTicketId            Int         @id
+  timeOfDeparture         DateTime    @db.Timestamptz(6)
+  timeOfArrivalBack       DateTime    @db.Timestamptz(6)
+  approxDistanceTraveled  Decimal     @db.Decimal(10, 2)
+  fuelBalanceInTank       Decimal     @db.Decimal(10, 2)
+  fuelIssuedByOfficeStock Decimal     @db.Decimal(10, 2)
+  fuelAddPurchasedTrip    Decimal     @db.Decimal(10, 2)
+  gearOilIssued           Decimal     @db.Decimal(10, 2)
+  lubOilIssued            Decimal     @db.Decimal(10, 2)
+  greaseIssued            Decimal     @db.Decimal(10, 2)
+  speedometerStart        Decimal?    @db.Decimal(10, 2)
+  speedometerEnd          Decimal?    @db.Decimal(10, 2)
+  speedometerDistance     Decimal?    @db.Decimal(10, 2)
+  remarks                 String
+  trip_ticket             trip_ticket @relation(fields: [tripTicketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model trip_ticket_passenger {
+  id            Int         @id @default(autoincrement())
+  tripTicketId  Int
+  passengerName String
+  trip_ticket   trip_ticket @relation(fields: [tripTicketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model trip_ticket_place {
+  id              Int         @id @default(autoincrement())
+  tripTicketId    Int
+  placeName       String
+  timeOfArrival   DateTime?   @db.Timestamptz(6)
+  timeOfDeparture DateTime?   @db.Timestamptz(6)
+  trip_ticket     trip_ticket @relation(fields: [tripTicketId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 enum role {
