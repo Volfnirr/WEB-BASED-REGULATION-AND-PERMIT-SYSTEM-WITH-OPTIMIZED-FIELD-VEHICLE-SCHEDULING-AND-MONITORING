@@ -84,6 +84,11 @@ export async function listResidentialApplications(req, res) {
 // view an application by the selected id
 export async function viewResidentialFormById(req, res) {
   try {
+    if (!req.params.id || isNaN(Number(req.params.id))) {
+      res.status(200).json({
+        message: "Invalid params",
+      });
+    }
     const applicationData =
       await residentialService.listAssignedResidentialApplications(
         req.params.id,

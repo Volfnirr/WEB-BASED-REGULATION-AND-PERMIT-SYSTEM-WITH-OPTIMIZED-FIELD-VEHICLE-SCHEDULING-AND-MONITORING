@@ -15,7 +15,7 @@ export default function TripTicketView({ isOpen, onClose, data }) {
   const handleExport = async () => {
     setLoading(true);
     try {
-      await exportTripTicket(data.id);
+      await exportTripTicket(data.id, data.tripTicketNo);
       toast.success("Successfully downloaded excel file", {
         position: "top-center",
       });

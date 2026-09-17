@@ -118,7 +118,7 @@ export async function updateTripAndSchedule({ id, data }) {
   return result;
 }
 
-export async function exportTripTicket(tripId) {
+export async function exportTripTicket(tripId, tripTicketNo) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/trip-ticket/excel/${tripId}/export`,
     {
@@ -134,7 +134,7 @@ export async function exportTripTicket(tripId) {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `trip-ticket-${tripId}.xlsx`;
+  link.download = `trip-ticket-${tripTicketNo}-${tripId}.xlsx`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

@@ -10,6 +10,8 @@ import { useState, useEffect } from "react";
 import { listVehiclesSchedules } from "@/lib/api/vehicle/manage-vehicles";
 import { Spinner } from "@/components/ui/spinner";
 import { Calendar } from "@/components/ui/calendar";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import {
   Popover,
   PopoverContent,
@@ -107,9 +109,16 @@ export default function VehicleSchedulesTable() {
         </Popover>
       </div>
       {isLoading ? (
-        <div className="relative flex h-90 w-250 flex-col items-center justify-center gap-2">
-          <Spinner />
-          <span className="text-sm text-gray-500">Loading...</span>
+        <div className="flex w-full flex-col gap-2">
+          <div className="flex flex-col gap-2 rounded-lg border p-4">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div className="flex gap-4" key={index}>
+                <Skeleton className="h-7 flex-1 bg-gray-300" />
+                <Skeleton className="h-7 w-24 bg-gray-300" />
+                <Skeleton className="h-7 w-20 bg-gray-300" />
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <TableContainerUI>

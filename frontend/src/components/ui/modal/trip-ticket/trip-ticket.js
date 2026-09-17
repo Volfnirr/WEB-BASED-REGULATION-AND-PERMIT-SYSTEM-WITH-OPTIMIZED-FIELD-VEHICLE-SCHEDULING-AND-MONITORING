@@ -313,7 +313,7 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
                             defaultMonth={range?.from}
                             selected={range}
                             onSelect={field.onChange}
-                            numberOfMonths={2}
+                            numberOfMonths={1}
                           />
                         </PopoverContent>
                       </Popover>

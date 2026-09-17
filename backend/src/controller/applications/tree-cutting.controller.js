@@ -105,6 +105,11 @@ export async function listTreeCuttingApplications(req, res) {
 // view an application by the selected id
 export async function viewTreeCuttingFormById(req, res) {
   try {
+    if (!req.params.id || isNaN(Number(req.params.id))) {
+      res.status(200).json({
+        message: "Invalid params",
+      });
+    }
     const applicationData =
       await treeCuttingService.listAssignedToTreeCuttingApplications(
         req.params.id,

@@ -84,10 +84,13 @@ export async function listChainsawApplications(req, res) {
 // view an application by the selected id
 export async function viewChainsawFormById(req, res) {
   try {
+    if (!req.params.id || isNaN(Number(req.params.id))) {
+      res.status(200).json({
+        message: "Invalid params",
+      });
+    }
     const applicationData =
-      await residentialService.listAssignedChainsawApplications(
-        req.params.id,
-      );
+      await residentialService.listAssignedChainsawApplications(req.params.id);
 
     if (applicationData.assignedToId !== req.user.id) {
       return res.status(409).json({

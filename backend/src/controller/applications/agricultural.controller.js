@@ -84,6 +84,11 @@ export async function listAgriculturalApplications(req, res) {
 
 export async function viewAgriculturalFormById(req, res) {
   try {
+    if (!req.params.id || isNaN(Number(req.params.id))) {
+      res.status(200).json({
+        message: "Invalid params",
+      });
+    }
     const applicationData =
       await agriculturalService.listAssignedAgriculturalApplications(
         req.params.id,
@@ -98,7 +103,7 @@ export async function viewAgriculturalFormById(req, res) {
     const agriculturalFormData = await agriculturalService.viewAgriculturalById(
       req.params.id,
     );
-    
+
     return res.status(200).json({
       message: "Successfully get the Form data",
       agriculturalFormData,

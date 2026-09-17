@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function sendEmail(to, { subject, html }) {
   try {
     await resend.emails.send({
-      from: "PENRO Portal <onboarding@resend.dev>",
+      from: "PENRO Portal <no-reply@penropampanga.online>",
       to,
       subject,
       html,
