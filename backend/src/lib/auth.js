@@ -18,26 +18,26 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   secret: process.env.BETTER_AUTH_SECRET,
-  // advanced: {
-  //   // TODO: Add this when the backend is deployed. -N.
-  //   crossSubDomainCookies: {
-  //     enabled: true,
-  //     domain: "penropampanga.online",
-  //   },
-  //   ipAddress: {
-  //     ipAddressHeaders: ["X-Real-IP"],
-  //   },
-  // },
-  // rateLimit: {
-  //   // 5 request per minute
-  //   enabled: true,
-  //   // windows time in sec
-  //   window: 60,
-  //   // maximum try
-  //   max: 20,
-  //   storage: "database",
-  //   modelName: "rateLimit",
-  // },
+  advanced: {
+    // TODO: Add this when the backend is deployed. -N.
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: "penropampanga.online",
+    },
+    ipAddress: {
+      ipAddressHeaders: ["X-Real-IP"],
+    },
+  },
+  rateLimit: {
+    // 5 request per minute
+    enabled: true,
+    // windows time in sec
+    window: 60,
+    // maximum try
+    max: 20,
+    storage: "database",
+    modelName: "rateLimit",
+  },
 
   emailAndPassword: {
     enabled: true,
