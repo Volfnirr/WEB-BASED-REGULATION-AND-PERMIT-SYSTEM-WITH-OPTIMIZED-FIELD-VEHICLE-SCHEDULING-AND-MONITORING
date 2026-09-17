@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { getRoleRoute } from "@/lib/role-route";
 import Loading from "@/components/ui/loading";
 import AuthUI from "@/components/landing-page/auth-ui";
-import { logNewUser } from "@/lib/api/applications/user-applications-status";
+import { logNewUser } from "@/lib/api/applications/user-applications";
 
 const modalH3 =
   "text-xs font-bold text-green-800 mt-4 mb-1.5 pb-1 border-b border-gray-200 uppercase tracking-[0.04em]";
