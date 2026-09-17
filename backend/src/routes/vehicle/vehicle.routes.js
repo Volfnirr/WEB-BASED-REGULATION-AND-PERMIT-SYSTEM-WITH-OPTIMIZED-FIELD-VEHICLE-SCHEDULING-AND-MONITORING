@@ -14,6 +14,7 @@ import upload from "../../middleware/upload.js";
 import {
   vehicleSchema,
   updateVehicleSchema,
+  vehicleMaintenaceSchema,
 } from "../../validation/vehicle/vehicleData.js";
 import {
   tripTicketFormSchema,
@@ -33,10 +34,10 @@ import {
   dashboardStatus,
   vehiclesSchdulesStatus,
   exportTripTicketAsExcel,
+  scheduleVehicleMaintenance,
 } from "../../controller/vehicle/vehicle.controller.js";
 
 // Create a new vehicle
-// Sarap tulugan HAHAHAHA 2:00 AM 12 hours na
 
 // VEHICLE START
 
@@ -74,6 +75,14 @@ router.get(
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
   vehicleStatus,
+);
+
+router.post(
+  "/maintenance/:id/schedule",
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(vehicleMaintenaceSchema),
+  scheduleVehicleMaintenance,
 );
 
 router.get(

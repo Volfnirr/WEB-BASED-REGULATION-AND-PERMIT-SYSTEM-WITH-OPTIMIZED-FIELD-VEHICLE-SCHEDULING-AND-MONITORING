@@ -29,21 +29,25 @@ import DeleteModal from "@/components/ui/modal/delete";
 import AddEditVehicleModal from "@/components/ui/modal/addEditVehicle";
 import Title from "@/components/ui/title";
 import { localDateTime } from "@/lib/local-date";
+import VehicleMaintenance from "@/components/ui/modal/vehicle/set-vehicle-maintenance";
+import { Wrench } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function ManageVehicleUI({ children, initialData }) {
   const [data, setData] = useState(initialData);
-  const [isDeleteOpen, setisDeleteOpen] = useState(false);
+  const [isVehicleMaintenanceOpen, setIsVehicleMaintenanceOpen] =
+    useState(false);
   const [isAddEditVehicleOpen, setisAddEditVehicleOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   useEffect(() => {
     setData(initialData);
   }, [initialData]);
 
-  function openVehicle(id) {
+  function openVehicleMaintenance(id) {
     const vehicle = data.find((d) => d.id === id);
 
     setSelectedVehicle(vehicle);
-    setisDeleteOpen(true);
+    setIsVehicleMaintenanceOpen(true);
   }
   function openVehicleEdit(id) {
     const vehicle = data.find((d) => d.id === id);
@@ -268,24 +272,31 @@ export default function ManageVehicleUI({ children, initialData }) {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-2 text-white">
-                    <button
-                      onClick={() => openVehicle(d.id)}
-                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red-500 px-2 py-2 cursor-pointer  hover:bg-red-800 transition-colors duration-200"
-                    >
-                      <Trash className="h-4 w-4 text-white" />
-                      <span>Delete</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setisAddEditVehicleOpen(true);
-                        openVehicleEdit(d.id);
-                      }}
-                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-green-500 px-2 py-2 cursor-pointer  hover:bg-green-600 transition-colors duration-200"
-                    >
-                      <Pencil className="h-4 w-4 text-white" />
-                      <span>Edit</span>
-                    </button>
+                  <div className="grid grid-cols-1 items-center justify-between w-full">
+                    <div className="flex justify-start items-center w-full gap-2 min-h-10">
+                      <Button
+                        onClick={() => {
+                          setIsVehicleMaintenanceOpen(true);
+                          openVehicleMaintenance(d.id);
+                        }}
+                        className="flex flex-1 text-md min-h-9 max-h-md text-sm items-center justify-center gap-1.5 rounded-lg bg-red-500 px-2 py-2 cursor-pointer  hover:bg-red-800 transition-colors duration-200"
+                      >
+                        <Wrench className="h-4 w-4 text-white" />
+                        <span>Set Maintenance</span>
+                      </Button>
+                    </div>
+                    <div className="flex justify-start items-center w-full gap-2 min-h-15 md:justify-end">
+                      <Button
+                        onClick={() => {
+                          setisAddEditVehicleOpen(true);
+                          openVehicleEdit(d.id);
+                        }}
+                        className="flex flex-1 text-md min-h-9 max-h-md  text-sm items-center justify-center gap-1.5 rounded-lg bg-green-500 px-2 py-2 cursor-pointer  hover:bg-green-600 transition-colors duration-200"
+                      >
+                        <Pencil className="h-4 w-4 text-white" />
+                        <span>Edit</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -310,10 +321,14 @@ export default function ManageVehicleUI({ children, initialData }) {
           />
         )}
 
-        {isDeleteOpen && (
-          <DeleteModal
-            data={selectedVehicle}
-            onClose={() => setisDeleteOpen(false)}
+        {isVehicleMaintenanceOpen && (
+          <VehicleMaintenance
+            isOpen={isVehicleMaintenanceOpen}
+            onClose={() => {
+              setIsVehicleMaintenanceOpen(false);
+              setSelectedVehicle(null);
+            }}
+            vehicle={selectedVehicle}
           />
         )}
       </div>

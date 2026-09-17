@@ -576,3 +576,64 @@ export async function exportTripTicketAsExcel(req, res) {
 }
 
 // VEHICLE SCHEDULES END
+
+export async function scheduleVehicleMaintenance(req, res) {
+  try {
+    const vehicleMaintenace = await prisma.$transaction(async (tx) => {
+      if (!req.params.id || isNaN(Number(req.params.id))) {
+        res.status(200).json({
+          message: "Invalid params",
+        });
+      }
+      const { id } = req.params;
+      const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
+        { ...req.validatedData, vehicleId: id },
+        tx,
+      );
+
+      if (!verifyStatus.available) {
+        throw new Error(verifyStatus.reason);
+      }
+
+      const scheduleVehicle = await vehicleAdmin.scheduleVehicleMaintenance(
+        id,
+        req.validatedData,
+        tx,
+      );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Schedule Vehicle for maintenance",
+          target: "Vehicle Schedule",
+          details: `Schduled Vehicle for maintenance (Plate No: ${verifyStatus.vehicle.plateNumber}, ID: ${verifyStatus.vehicle.id}), Schedule (ID: ${scheduleVehicle.id}, Start: ${scheduleVehicle.startDate.toISOString()}, End: ${scheduleVehicle.endDate.toISOString()})`,
+        },
+        tx,
+      );
+
+      return scheduleVehicle;
+    });
+
+    return res.status(200).json({
+      message: "Successfully scheduled vehicle maintenance.",
+      maintenance: vehicleMaintenace,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error.message === "VEHICLE_NOT_FOUND") {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+    if (error.message === "VEHICLE_NOT_USABLE") {
+      return res.status(400).json({ message: "Vehicle is not usable" });
+    }
+    if (error.message === "SCHEDULE_CONFLICT") {
+      return res.status(409).json({
+        message: "This vehicle is already scheduled for the date(s) provided",
+      });
+    }
+
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}

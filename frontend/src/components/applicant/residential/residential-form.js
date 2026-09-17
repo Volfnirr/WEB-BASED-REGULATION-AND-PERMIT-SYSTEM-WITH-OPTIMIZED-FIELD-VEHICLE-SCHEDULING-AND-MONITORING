@@ -971,6 +971,11 @@ export default function ResidentialForm({ inspectors }) {
                   >
                     Previous
                   </Button>
+                  {errors.assignedInspector && (
+                    <div className={errorClass}>
+                      Go back and {errors.assignedInspector.message}
+                    </div>
+                  )}
                 </div>
                 {/* Form Submission Action */}
                 <div className="flex justify-start items-center w-full gap-2 min-h-15 md:justify-end">

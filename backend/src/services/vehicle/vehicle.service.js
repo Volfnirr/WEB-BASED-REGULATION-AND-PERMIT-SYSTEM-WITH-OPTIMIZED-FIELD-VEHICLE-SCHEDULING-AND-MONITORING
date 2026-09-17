@@ -391,6 +391,7 @@ export async function vehiclesSchdulesStatus() {
   };
 }
 
+// Export trip ticket to excel
 export async function listTripTicketFormA(tripTicketId) {
   const { vehicleId, ...rest } = await prisma.trip_ticket.findUnique({
     where: {
@@ -450,4 +451,17 @@ export async function listTripTicketFormA(tripTicketId) {
     },
     // vehicle_schedule,
   };
+}
+
+// Schedule a maintenance
+
+export async function scheduleVehicleMaintenance(vehicleId, data, db = prisma) {
+  return await db.vehicle_schedule.create({
+    data: {
+      vehicleId: Number(vehicleId),
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate),
+      status: "MAINTENANCE",
+    },
+  });
 }
