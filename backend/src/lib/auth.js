@@ -20,6 +20,10 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
   advanced: {
     // TODO: Add this when the backend is deployed. -N.
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: "penropampanga.online",
+    },
     ipAddress: {
       ipAddressHeaders: ["X-Real-IP"],
     },
