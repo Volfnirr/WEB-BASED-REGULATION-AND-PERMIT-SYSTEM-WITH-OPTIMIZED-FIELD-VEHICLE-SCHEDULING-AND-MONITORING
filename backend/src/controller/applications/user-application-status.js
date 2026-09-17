@@ -28,13 +28,21 @@ export async function getUserApplicationStatus(req, res) {
 
 export async function logUserCreate(req, res) {
   try {
+    if (!req.body.data) {
+      res.status(200).json({
+        message: "Invalid request",
+      });
+    }
     await createAuditLog({
-      actorId: req.user.id,
-      actorName: req.user.name,
-      actorRole: req.user.role,
+      actorId: req.body.data.user.id,
+      actorName: req.body.data.user.name,
+      actorRole: req.body.data.user.role,
       action: "Create Account",
       target: "User",
-      details: `User with name of ${req.user.name} and gmail of ${req.user.email} is created`,
+      details: `User with name of ${req.body.data.user.name} and gmail of ${req.body.data.user.email} is created`,
+    });
+    res.status(201).json({
+      message: "Successfully log user",
     });
   } catch (error) {
     console.log(error);

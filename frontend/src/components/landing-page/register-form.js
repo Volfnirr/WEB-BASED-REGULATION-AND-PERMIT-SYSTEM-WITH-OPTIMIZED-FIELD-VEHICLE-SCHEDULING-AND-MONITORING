@@ -55,6 +55,7 @@ export default function RegisterForm() {
     register: registerSignUp,
     handleSubmit: handleRegisterSubmit,
     setError: setregisterError,
+    reset,
     formState: { errors: registerErrors, isSubmitting: isRegisterSubmitting },
   } = useForm({
     resolver: zodResolver(registerSchema),
@@ -79,14 +80,23 @@ export default function RegisterForm() {
           password: signUpData.password, // user password -> min 8 characters by default
           name: signUpData.name, // user display name
           termsAndCondition: signUpData.termsAndCondition,
+          // callbackURL: "http://localhost:3000/login?verified=true", // Dev
+          callbackURL: "https://www.penropampanga.online/login?verified=true", // Prod
         },
         {
           onSuccess: async (ctx) => {
             await logNewUser(ctx);
-            toast.success("Registration Successful", {
-              position: "top-center",
-            });
+
+            toast.success(
+              "Check your email for verification valid for only 1 hour",
+              {
+                position: "top-center",
+              },
+            );
             // router.push("/login");
+
+            console.log(ctx);
+            reset();
           },
           onError: (ctx) => {
             toast.error(ctx.error.message, { position: "top-center" });
