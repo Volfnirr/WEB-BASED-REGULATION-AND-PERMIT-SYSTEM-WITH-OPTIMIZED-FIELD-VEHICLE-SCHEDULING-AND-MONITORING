@@ -21,7 +21,7 @@ export const auth = betterAuth({
   advanced: {
     // TODO: Add this when the backend is deployed. -N.
     ipAddress: {
-      ipAddressHeaders: ["x-forwarded-for"],
+      ipAddressHeaders: ["X-Real-IP"],
     },
   },
   rateLimit: {
