@@ -154,7 +154,7 @@ export async function createInspector(req, res) {
           actorRole: req.user.role,
           action: "Create Inspector",
           target: "Inspector",
-          details: `Created an inspector with ID: ${inspector.id} and name: ${inspector.name}.`,
+          details: `Created an inspector with ID: ${inspector.id} and email: ${inspector.email}.`,
         },
         tx,
       );

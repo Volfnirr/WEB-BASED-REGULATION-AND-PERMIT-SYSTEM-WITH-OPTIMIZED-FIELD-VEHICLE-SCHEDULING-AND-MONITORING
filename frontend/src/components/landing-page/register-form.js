@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { getRoleRoute } from "@/lib/role-route";
 import Loading from "@/components/ui/loading";
 import AuthUI from "@/components/landing-page/auth-ui";
+import { logNewUser } from "@/lib/api/applications/user-applications-status";
 
 const modalH3 =
   "text-xs font-bold text-green-800 mt-4 mb-1.5 pb-1 border-b border-gray-200 uppercase tracking-[0.04em]";
@@ -73,7 +74,7 @@ export default function RegisterForm() {
   const onSignUp = async (data) => {
     try {
       const { confirmPassword, ...signUpData } = data;
-      const { error } = await authClient.signUp.email(
+      await authClient.signUp.email(
         {
           email: signUpData.email, // user email address
           password: signUpData.password, // user password -> min 8 characters by default
@@ -81,7 +82,8 @@ export default function RegisterForm() {
           termsAndCondition: signUpData.termsAndCondition,
         },
         {
-          onSuccess: () => {
+          onSuccess: async () => {
+            await logNewUser();
             toast.success("Registration Successful", {
               position: "top-center",
             });
