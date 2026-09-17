@@ -23,12 +23,6 @@ export const auth = betterAuth({
     ipAddress: {
       ipAddressHeaders:
         process.env.NODE_ENV === "production" ? ["x-forwarded-for"] : [],
-      //x-forwarded-for Used by Render, most load balancers, Nginx, Cloudflare, etc.
-      //x-real-ip -Nginx-specific convention
-      //cf-connecting-ip if cloudflare
-      //x-client-ip apache
-      //true-client-ip akamai
-      // empty in dev — falls back to raw connection IP
     },
   },
   rateLimit: {
