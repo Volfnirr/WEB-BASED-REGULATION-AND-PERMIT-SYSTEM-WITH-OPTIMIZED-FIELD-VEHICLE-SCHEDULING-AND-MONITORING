@@ -266,6 +266,12 @@ export default function RegisterForm() {
             Log in
           </Link>
         </div>
+        <div className="text-[12px] text-gray-600 mt-3">
+          <span>Back to the homepage? </span>{" "}
+          <Link href="/" className="text-blue-600 font-bold hover:underline">
+            Go back
+          </Link>
+        </div>
       </div>
 
       {/* === TERMS MODAL === */}

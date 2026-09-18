@@ -208,7 +208,7 @@ export default function ManageVehicleUI({ children, initialData }) {
                 <div className="flex justify-center w-full h-56">
                   <Image
                     src={d?.imageUrl}
-                    alt="Ford Ranger"
+                    alt={`${d?.brand} ${d?.model}`}
                     width={280}
                     height={250}
                     className="drop-shadow-md w-full rounded-t-md  h-auto object-contain bg-white"
