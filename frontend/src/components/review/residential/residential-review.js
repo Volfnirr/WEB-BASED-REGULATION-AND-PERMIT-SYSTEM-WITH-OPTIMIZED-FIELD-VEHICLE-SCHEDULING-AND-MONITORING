@@ -576,12 +576,12 @@ export default function ReviewResidential({ data, params }) {
               <h2 className="text-sm font-bold text-gray-800 mb-3">Remarks</h2>
               <div className="grid grid-cols-1 gap-4 mb-4">
                 <div className={`whitespace-pre-wrap ${readOnlyInputClass} `}>
-                  {treeCutting?.application?.remarks}
+                  {residential?.application?.remarks}
                 </div>
               </div>
               <Link
                 className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700"
-                href={`/application-admin/${treeCutting?.application?.status === "APPROVED" ? "approved" : "rejected"}`}
+                href={`/application-admin/${residential?.application?.status === "APPROVED" ? "approved" : "rejected"}`}
               >
                 Go back
               </Link>

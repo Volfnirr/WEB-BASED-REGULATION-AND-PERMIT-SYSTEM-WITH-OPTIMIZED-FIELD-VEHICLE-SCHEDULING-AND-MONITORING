@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, ChevronRight } from "lucide-react";
+import { UserRoundCog } from "lucide-react";
+import ManageProfileUI from "./modal/manage-account";
+import { useState } from "react";
 
 function formatSegment(segment) {
   return segment
@@ -12,6 +15,7 @@ function formatSegment(segment) {
 }
 
 export default function Topbar() {
+  const [manageUserOpen, isManageUserOpen] = useState(false);
   const pathname = usePathname();
 
   const rawSegments = pathname.split("/").filter(Boolean);
@@ -47,10 +51,21 @@ export default function Topbar() {
           );
         })}
       </div>
-
-      <button className="p-2 rounded-full hover:bg-gray-100 transition-colors shrink-0 ml-2">
-        <Bell size={20} className="text-gray-600" />
-      </button>
+      <div className="flex flex-row justify-end">
+        <button
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors shrink-0 ml-2"
+          onClick={() => isManageUserOpen(true)}
+        >
+          <UserRoundCog size={20} className="text-green-600" />
+        </button>
+        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors shrink-0 ml-2">
+          <Bell size={20} className="text-gray-600" />
+        </button>
+      </div>
+      <ManageProfileUI
+        isOpen={manageUserOpen}
+        onClose={() => isManageUserOpen(false)}
+      />
     </header>
   );
 }
