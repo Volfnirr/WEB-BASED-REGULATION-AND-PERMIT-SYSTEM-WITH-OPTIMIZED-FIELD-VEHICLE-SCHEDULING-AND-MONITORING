@@ -92,22 +92,22 @@ export default function ReviewChainsawApp({ data, params }) {
             <p className="text-sm text-gray-600">
               Application No.:{" "}
               <span className="font-medium text-gray-900">
-                {chainsaw?.applicationNo}
+                {chainsaw?.chainsawFormData?.application?.referenceNo}
               </span>
             </p>
             <p className="text-sm text-gray-600">
               Date Submitted:{" "}
               <span className="font-medium text-gray-900">
-                 {localDate(chainsaw?.application?.submittedAt)}
+                {localDate(chainsaw?.chainsawFormData?.application?.submittedAt)}
               </span>
             </p>
           </div>
           <div
             className={`${StatusColor(
-              chainsaw?.status
+              chainsaw?.application?.status
             )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg border border-yellow-200 shadow-sm`}
           >
-            {chainsaw?.status}
+            {chainsaw?.application?.status}
           </div>
         </div>
 
@@ -125,7 +125,14 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={chainsaw?.fullname}
+                  value={[
+                    chainsaw?.chainsawFormData?.firstName,
+                    chainsaw?.chainsawFormData?.middleName,
+                    chainsaw?.chainsawFormData?.lastName,
+                    chainsaw?.chainsawFormData?.extensionName,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -136,7 +143,7 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={chainsaw?.contact_no}
+                  value={chainsaw?.chainsawFormData?.contactNo}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -150,7 +157,7 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="email"
-                  defaultValue={chainsaw?.email}
+                  value={chainsaw?.chainsawFormData?.email}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -161,7 +168,7 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={chainsaw?.address}
+                  value={chainsaw?.chainsawFormData?.fullAddress}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -182,7 +189,7 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={chainsaw?.regtype}
+                  value={chainsaw?.chainsawFormData?.registrationType}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -193,7 +200,7 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={chainsaw?.dataOfAcquisition}
+                  value={localDate(chainsaw?.chainsawFormData?.dateOfAcquisition)}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -207,7 +214,7 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={chainsaw?.brand}
+                  value={chainsaw?.chainsawFormData?.brand}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -218,7 +225,7 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={chainsaw?.model}
+                  value={chainsaw?.chainsawFormData?.model}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -229,7 +236,7 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  defaultValue={chainsaw?.serNum}
+                  value={chainsaw?.chainsawFormData?.serialNumber}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -237,8 +244,7 @@ export default function ReviewChainsawApp({ data, params }) {
             </div>
           </div>
 
-          {chainsaw?.status === "PENDING" && (
-            /* Bottom Action Buttons (for the Reviewer) */
+          {chainsaw?.chainsawFormData?.application?.status === "PENDING" && (
             <div className="border rounded-xl p-4 text-black">
               <h3 className="font-bold mb-4">ACTION</h3>
               <form
@@ -285,7 +291,6 @@ export default function ReviewChainsawApp({ data, params }) {
                     <div className="flex flex-col gap-1 text-left">
                       <textarea
                         {...register("remarks")}
-                        type="text"
                         placeholder="Add remarks..."
                         className="w-full resize-y overflow-auto px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
                       />
@@ -304,15 +309,15 @@ export default function ReviewChainsawApp({ data, params }) {
             </div>
           )}
 
-          {chainsaw?.status === "APPROVED" ||
-          chainsaw?.status === "REJECTED" ? (
+          {(chainsaw?.application?.status === "APPROVED" ||
+            chainsaw?.application?.status === "REJECTED") ? (
             <div>
               <h2 className="text-sm font-bold text-gray-800 mb-3">Remarks</h2>
               <div className="grid grid-cols-1 gap-4 mb-4">
                 <div>
                   <input
                     type="text"
-                    value={chainsaw?.remarks}
+                    value={chainsaw?.application?.remarks}
                     className={readOnlyInputClass}
                     readOnly
                   />
