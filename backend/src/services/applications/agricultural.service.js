@@ -20,7 +20,7 @@ export async function submitAgriculturalForm(refNo, userId, data, db = prisma) {
           sex: data.sex.toUpperCase(),
           citizenship: data.citizenship,
           naturalBorn: data.naturalBorn === "Yes",
-          civil_status: data.civilStatus,
+          civilStatus: data.civilStatus,
           spouseName: data.spouse || null,
           fullAddress: data.mailingAddress,
           province: data.province,
