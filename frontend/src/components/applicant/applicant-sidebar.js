@@ -28,14 +28,14 @@ const links = [
     href: "/applicant/residential",
   },
   {
-    icon: <ToolCase />,
-    name: "Chainsaw Registration",
-    href: "/applicant/chainsaw",
-  },
-  {
     icon: <Trees />,
     name: "Tree Cutting Permit",
     href: "/applicant/tree-cutting",
+  },
+  {
+    icon: <ToolCase />,
+    name: "Chainsaw Registration",
+    href: "/applicant/chainsaw",
   },
 ];
 

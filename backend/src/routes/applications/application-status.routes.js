@@ -13,10 +13,5 @@ router.get(
   requireAuthorization("USER"),
   getUserApplicationStatus,
 );
-router.post(
-  "/users/create",
-  requireAuthentication,
-  requireAuthorization("USER"),
-  logUserCreate,
-);
+router.post("/users/create", logUserCreate);
 export default router;

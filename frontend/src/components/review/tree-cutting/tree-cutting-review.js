@@ -20,6 +20,8 @@ import {
   approveApplication,
   rejectApplication,
 } from "@/lib/api/applications/app-admin-action";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const action = [
   { id: 1, value: "APPROVED" },
@@ -33,6 +35,7 @@ const submitFormSchema = z.object({
 
 export default function ReviewTreeCutting({ data, params }) {
   const treeCutting = data.treeCuttingFormData;
+  const router = useRouter();
 
   const {
     register,
@@ -65,6 +68,7 @@ export default function ReviewTreeCutting({ data, params }) {
           position: "top-center",
         },
       );
+      router.push("/application-admin/pending");
     } catch (err) {
       toast.error(
         `Something went wrong submitting your application:  ${err ? err.message : ""}`,
@@ -309,15 +313,17 @@ export default function ReviewTreeCutting({ data, params }) {
             <div>
               <h2 className="text-sm font-bold text-gray-800 mb-3">Remarks</h2>
               <div className="grid grid-cols-1 gap-4 mb-4">
-                <div>
-                  <input
-                    type="text"
-                    value={treeCutting?.application?.remarks}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
+                <div className={`whitespace-pre-wrap ${readOnlyInputClass} `}>
+                  {treeCutting?.application?.remarks}
                 </div>
               </div>
+
+              <Link
+                className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700"
+                href={`/application-admin/${treeCutting?.application?.status === "APPROVED" ? "approved" : "rejected"}`}
+              >
+                Go back
+              </Link>
             </div>
           ) : null}
         </div>

@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { Spinner } from "@/components/ui/spinner.js";
 import { assignUserToApplication } from "@/lib/api/applications/app-admin-action";
+import { useRouter } from "next/navigation";
+
 const confirmSchema = z.object({
   confirm: z
     .string()
@@ -21,6 +23,8 @@ export default function AssignApplication({
   assignedRole,
   assignedService,
 }) {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -34,6 +38,8 @@ export default function AssignApplication({
       toast.success(`${response.message}`, {
         position: "top-center",
       });
+      router.refresh();
+
       onClose();
     } catch (err) {
       toast.error(err.message, {

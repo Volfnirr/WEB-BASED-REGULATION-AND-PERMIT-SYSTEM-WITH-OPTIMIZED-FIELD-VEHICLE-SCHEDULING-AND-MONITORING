@@ -20,7 +20,8 @@ import {
   approveApplication,
   rejectApplication,
 } from "@/lib/api/applications/app-admin-action";
-
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 const action = [
   { id: 1, value: "APPROVED" },
   { id: 2, value: "REJECTED" },
@@ -32,8 +33,10 @@ const submitFormSchema = z.object({
 });
 
 export default function ReviewResidential({ data, params }) {
-  const residential = data;
+  const router = useRouter();
+  const { residentialFormData: residential } = data;
 
+  console.log("RESIDENTIAL DATA", residential);
   const {
     register,
     handleSubmit,
@@ -60,8 +63,9 @@ export default function ReviewResidential({ data, params }) {
         formData.action === "APPROVED"
           ? "Successfully approved application"
           : "Successfully rejected application",
-        { position: "top-center" }
+        { position: "top-center" },
       );
+      router.push("/application-admin/pending");
     } catch (err) {
       toast.error(
         `Something went wrong submitting your application:  ${
@@ -69,7 +73,7 @@ export default function ReviewResidential({ data, params }) {
         }`,
         {
           position: "top-center",
-        }
+        },
       );
     }
   };
@@ -92,59 +96,97 @@ export default function ReviewResidential({ data, params }) {
             <p className="text-sm text-gray-600">
               Application No.:{" "}
               <span className="font-medium text-gray-900">
-                {residential?.applicationNo}
+                {residential?.application.referenceNo}
               </span>
             </p>
             <p className="text-sm text-gray-600">
               Date Submitted:{" "}
               <span className="font-medium text-gray-900">
-                 {localDate(residential?.application?.submittedAt)}
+                {localDate(residential?.application?.submittedAt)}
               </span>
             </p>
           </div>
           <div
             className={`${StatusColor(
-              residential?.status
-            )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg border border-yellow-200 shadow-sm`}
+              residential?.application?.status,
+            )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg  shadow-sm`}
           >
-            {residential?.status}
+            {residential?.application?.status}
           </div>
         </div>
 
         <div className="space-y-8">
           {/* Section: Applicant Information */}
           <div>
-            <h2 className="text-sm font-bold text-gray-800  mb-3">
+            <h2 className="text-sm font-bold text-gray-800  mb-3 uppercase">
               Applicant Information
             </h2>
 
             <div className="grid grid-cols-1 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={residential?.fullname}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    value={residential?.lastName}
+                    className={readOnlyInputClass}
+                    readOnly
+                  />
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    value={residential?.firstName}
+                    className={readOnlyInputClass}
+                    readOnly
+                  />
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                    Middle Name
+                  </label>
+                  <input
+                    type="text"
+                    value={residential?.middleName || "N/A"}
+                    className={readOnlyInputClass}
+                    readOnly
+                  />
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                    Extension Name
+                  </label>
+                  <input
+                    type="text"
+                    value={residential?.extensionName || "N/A"}
+                    className={readOnlyInputClass}
+                    readOnly
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Complete Address
-                </label>
-                <input
-                  type="text"
-                  value={residential?.comp_address}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
+
+              <div className="grid grid-cols-1 gap-4 mb-4">
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                    Complete Address
+                  </label>
+                  <input
+                    type="text"
+                    value={residential?.fullAddress}
+                    className={readOnlyInputClass}
+                    readOnly
+                  />
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1 ">
                   Citizenship
                 </label>
@@ -155,13 +197,14 @@ export default function ReviewResidential({ data, params }) {
                   readOnly
                 />
               </div>
-              <div>
+
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1 ">
                   Civil Status
                 </label>
                 <input
                   type="text"
-                  value={residential?.civil_status}
+                  value={residential?.civilStatus}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -169,43 +212,70 @@ export default function ReviewResidential({ data, params }) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Date
+                  Contact Number
                 </label>
                 <input
                   type="text"
-                  value={residential?.date}
+                  value={residential?.contactNo ?? ""}
                   className={readOnlyInputClass}
                   readOnly
                 />
               </div>
-              <div>
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  PLACE OF BIRTH
+                  Email Address
                 </label>
                 <input
                   type="text"
-                  value={residential?.pob}
+                  value={residential?.email ?? ""}
                   className={readOnlyInputClass}
                   readOnly
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  NAME OF SPOUSE
+                  Date of Birth
                 </label>
                 <input
                   type="text"
-                  value={residential?.nameofSpouse}
+                  value={localDate(residential?.dateOfBirth) ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Place of Birth
+                </label>
+                <input
+                  type="text"
+                  value={residential?.placeOfBirth ?? ""}
                   className={readOnlyInputClass}
                   readOnly
                 />
               </div>
             </div>
+
+            {residential?.civilStatus === "MARRIED" && (
+              <div className="grid grid-cols-1 gap-4 mb-4">
+                <div className="flex flex-col gap-1 text-left">
+                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                    Name of Spouse
+                  </label>
+                  <input
+                    type="text"
+                    value={residential?.spouseName ?? ""}
+                    className={readOnlyInputClass}
+                    readOnly
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Section: Land Information */}
@@ -215,24 +285,24 @@ export default function ReviewResidential({ data, params }) {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
                   Province
                 </label>
                 <input
                   type="text"
-                  value={residential?.province}
-                  className={`${readOnlyInputClass} bg-gray-100 pointer-events-none`}
+                  value={residential?.province ?? ""}
+                  className={readOnlyInputClass}
                   readOnly
                 />
               </div>
-              <div>
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1 ">
                   Municipality
                 </label>
                 <input
                   type="text"
-                  value={residential?.municipality}
+                  value={residential?.municipality ?? ""}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -240,24 +310,24 @@ export default function ReviewResidential({ data, params }) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  BARANGAY
+                  Barangay
                 </label>
                 <input
                   type="text"
-                  value={residential?.barangay}
+                  value={residential?.barangay ?? ""}
                   className={readOnlyInputClass}
                   readOnly
                 />
               </div>
-              <div>
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1 ">
                   Specific Location
                 </label>
                 <input
                   type="text"
-                  value={residential?.specific_loc}
+                  value={residential?.specificLocation ?? ""}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -265,32 +335,175 @@ export default function ReviewResidential({ data, params }) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1  ">
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
                   Lot No.
                 </label>
                 <input
                   type="text"
-                  value={residential?.lot_no}
+                  value={residential?.lotNo ?? ""}
                   className={readOnlyInputClass}
                   readOnly
                 />
               </div>
-              <div>
+              <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1 ">
                   Land Area (SQM)
                 </label>
                 <input
                   type="text"
-                  value={residential?.land_area}
+                  value={residential?.landAreaSqm ?? ""}
                   className={readOnlyInputClass}
                   readOnly
                 />
               </div>
             </div>
           </div>
+          <div>
+            <h2 className="text-sm font-bold text-gray-800  mb-3">
+              Affidavit Support
+            </h2>
 
-          {residential?.status === "PENDING" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Province
+                </label>
+                <input
+                  type="text"
+                  value={residential?.affidavitProvince ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  City / Municipality
+                </label>
+                <input
+                  type="text"
+                  value={residential?.affidavitCity ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Affiant's Name
+                </label>
+                <input
+                  type="text"
+                  value={residential?.affiantName ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Affiant's Address
+                </label>
+                <input
+                  type="text"
+                  value={residential?.affiantAddress ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Land Location
+                </label>
+                <input
+                  type="text"
+                  value={residential?.affidavitLandLocation ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Applicant's Full Name
+                </label>
+                <input
+                  type="text"
+                  value={residential?.applicantFullName ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Years in Possession
+                </label>
+                <input
+                  type="text"
+                  value={residential?.yearsOfOccupation ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Purpose of Use
+                </label>
+                <input
+                  type="text"
+                  value={residential?.purposeOfUse ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Date Signed
+                </label>
+                <input
+                  type="text"
+                  value={localDate(residential?.affidavitDate) ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Location Signed
+                </label>
+                <input
+                  type="text"
+                  value={residential?.affidavitLocation ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1 ">
+                  Affiant's Signature
+                </label>
+                <input
+                  type="text"
+                  value={residential?.signatureAffiantName ?? ""}
+                  className={readOnlyInputClass}
+                  readOnly
+                />
+              </div>
+            </div>
+          </div>
+          {residential?.application?.status === "PENDING" && (
             /* Bottom Action Buttons (for the Reviewer) */
             <div className="border rounded-xl p-4 text-black">
               <h3 className="font-bold mb-4">ACTION</h3>
@@ -357,20 +570,21 @@ export default function ReviewResidential({ data, params }) {
             </div>
           )}
 
-          {residential?.status === "APPROVED" ||
-          residential?.status === "REJECTED" ? (
+          {residential?.application?.status === "APPROVED" ||
+          residential?.application?.status === "REJECTED" ? (
             <div>
               <h2 className="text-sm font-bold text-gray-800 mb-3">Remarks</h2>
               <div className="grid grid-cols-1 gap-4 mb-4">
-                <div>
-                  <input
-                    type="text"
-                    value={residential?.remarks}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
+                <div className={`whitespace-pre-wrap ${readOnlyInputClass} `}>
+                  {treeCutting?.application?.remarks}
                 </div>
               </div>
+              <Link
+                className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700"
+                href={`/application-admin/${treeCutting?.application?.status === "APPROVED" ? "approved" : "rejected"}`}
+              >
+                Go back
+              </Link>
             </div>
           ) : null}
         </div>

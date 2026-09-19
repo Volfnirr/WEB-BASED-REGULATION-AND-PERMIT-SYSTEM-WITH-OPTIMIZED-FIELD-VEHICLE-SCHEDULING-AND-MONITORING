@@ -3,7 +3,6 @@ import { supabase } from "../../lib/supabase.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import * as vehicleAdmin from "../../services/vehicle/vehicle.service.js";
 import { tripTicketExcelExport } from "../../lib/excel-templates/vehicle/tripTicketExport.js";
-import { number } from "zod";
 
 // VEHICLE START
 

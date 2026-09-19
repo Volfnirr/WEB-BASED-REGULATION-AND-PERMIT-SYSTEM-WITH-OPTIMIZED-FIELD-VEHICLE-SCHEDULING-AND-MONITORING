@@ -17,9 +17,9 @@ export default function LandingPage() {
           <section id="home" className="scroll-mt-64 ">
             <Home />
           </section>
-          <section id="aboutus">
+          {/* <section id="aboutus">
             <AboutUs />
-          </section>
+          </section> */}
           <section id="services">
             <ServicesPage />
           </section>

@@ -2,7 +2,7 @@ const statusColors = {
   //APPLICATION
   APPROVED: "bg-[#4daa74] text-green-950 hover:bg-green-600  font-bold",
   REJECTED: "bg-rose-600 text-rose-50 hover:bg-rose-700 font-bold",
-  PENDING: "bg-amber-400 text-amber-950 hover:bg-amber-500 font-bold",
+  PENDING: "bg-green-400 text-green-950 hover:bg-green-500 font-bold",
   SELF_ASSIGN: "bg-violet-500 text-violet-100 hover:bg-violet-600 font-bold",
   VIEW: "bg-sky-500 text-sky-950 hover:bg-sky-600 font-bold",
 

@@ -10,7 +10,8 @@ import {
   VEHICLE_ADMIN,
   superAdmin,
 } from "./permission.js";
-
+import { sendEmail } from "../email/sendEmail.js";
+import { statusEmail, verifyEmail } from "../email/templates.js";
 import { prisma } from "./prisma.js";
 
 export const auth = betterAuth({
@@ -42,18 +43,40 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
-    // requireEmailVerification: false, // change to true when
-    // autoSignIn: false,
+    requireEmailVerification: true, // change to true when
+    autoSignIn: false,
     // onExistingUserSignUp: async ({ user }, request) => {
     //   console.log(`Duplicate signup attempt for ${user.email}`);
     // },
+  },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      const email = verifyEmail({
+        applicantName: user.name,
+        verifyUrl: url,
+      });
+      void sendEmail(user.email, email);
+    },
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    expiresIn: 60 * 60,
   },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.path !== "/sign-up/email") return;
       const termsAccepted = ctx.body?.termsAndCondition;
       const password = ctx.body?.password;
+      const email = ctx.body?.email;
+      const existingUser = await ctx.context.adapter.findOne({
+        model: "user",
+        where: [{ field: "email", value: email }],
+      });
 
+      if (existingUser) {
+        throw new APIError("BAD_REQUEST", {
+          message: "An account with this email already exists.",
+        });
+      }
       if (!password || !/[A-Z]/.test(password)) {
         throw new APIError("BAD_REQUEST", {
           message: "Password must contain at least 1 uppercase letter",

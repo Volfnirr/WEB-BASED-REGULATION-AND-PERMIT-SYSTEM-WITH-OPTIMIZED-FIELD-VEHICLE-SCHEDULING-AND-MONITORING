@@ -151,7 +151,6 @@ export default function LoginForm() {
             )}
           </button>
         </form>
-
         <div className="text-[12px] text-gray-600 mt-6">
           <span>Don&apos;t have an account? </span>{" "}
           <Link
@@ -159,6 +158,12 @@ export default function LoginForm() {
             className="text-blue-600 font-bold bg-transparent border-none p-0 cursor-pointer hover:underline"
           >
             Sign up
+          </Link>
+        </div>
+        <div className="text-[12px] text-gray-600 mt-3">
+          <span>Back to the homepage? </span>{" "}
+          <Link href="/" className="text-blue-600 font-bold hover:underline">
+            Go back
           </Link>
         </div>
       </div>

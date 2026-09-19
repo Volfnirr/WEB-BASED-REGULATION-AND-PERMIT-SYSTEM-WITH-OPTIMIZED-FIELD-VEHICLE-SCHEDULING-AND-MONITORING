@@ -39,13 +39,13 @@ const ALL_SERVICES = [
   },
   {
     id: 3,
-    icon: <ToolCase />,
+    icon: <Trees />,
     name: "Tree Cutting Permit",
     href: "/application-admin/tree-cutting",
   },
   {
     id: 4,
-    icon: <Trees />,
+    icon: <ToolCase />,
     name: "Chainsaw Registration",
     href: "/application-admin/chainsaw",
   },

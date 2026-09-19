@@ -33,6 +33,7 @@ export async function createUser(req, res) {
         name, // required, The name of the user.
         role, // A string or array of  stringsrepresenting the roles to apply to the new user.
         data: {
+          emailVerified: true,
           termsAndCondition: true,
         }, // Extra fields for the user. Including custom additional fields.
       },
