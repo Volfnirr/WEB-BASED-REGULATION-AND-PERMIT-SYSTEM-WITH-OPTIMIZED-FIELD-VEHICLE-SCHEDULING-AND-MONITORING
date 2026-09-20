@@ -25,11 +25,11 @@ export async function listAppAdminAssignedApplications(req, res) {
       submittedAt: app.submittedAt,
       referenceNo: app.referenceNo,
       assignedToId: app.assignedToId,
+      reviewedAt: app.reviewedAt,
       serviceId: app.service.id,
       serviceName: app.service.name,
       userAccName: app.user_application_userIdTouser.name,
       userAccEmail: app.user_application_userIdTouser.email,
-      action: "VIEW",
     }));
 
     return res.status(200).json({
@@ -44,6 +44,12 @@ export async function listAppAdminAssignedApplications(req, res) {
 
 export async function selfAssignApplication(req, res) {
   try {
+    if (
+      !Number.isSafeInteger(Number(req.params.id)) ||
+      Number(req.params.id) < 1
+    ) {
+      return res.status(400).json({ message: "Invalid id" });
+    }
     const applicationData = await appAdmin.getApplicationForSelfAssign(
       req.params.id,
     );

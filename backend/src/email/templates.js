@@ -40,13 +40,3 @@ export function resetPasswordEmail({ applicantName, resetUrl }) {
     }),
   };
 }
-
-export function passwordChangedEmail({ applicantName }) {
-  return {
-    subject: "Your password was changed",
-    html: emailLayout({
-      title: "Password Changed",
-      bodyHtml: `<p>Hi ${applicantName},</p><p>Your password was just changed. If this wasn't you, contact support immediately.</p>`,
-    }),
-  };
-}

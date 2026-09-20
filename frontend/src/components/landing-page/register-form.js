@@ -80,12 +80,11 @@ export default function RegisterForm() {
           password: signUpData.password, // user password -> min 8 characters by default
           name: signUpData.name, // user display name
           termsAndCondition: signUpData.termsAndCondition,
-          // callbackURL: "http://localhost:3000/login?verified=true", // Dev
-          callbackURL: "https://www.penropampanga.online/login?verified=true", // Prod
+          callbackURL: `${window.location.origin}/login?verified=true`,
         },
         {
           onSuccess: async (ctx) => {
-            await logNewUser(ctx);
+            // await logNewUser(ctx);
 
             toast.success(
               "Check your email for verification valid for only 1 hour",

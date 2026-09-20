@@ -1,7 +1,12 @@
 import InfoCard from "@/components/ui/infocard";
 import InfoCardContainer from "@/components/ui/infocardcontainer";
 import Title from "@/components/ui/title";
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { userDashboard } from "@/lib/api/super-admin/super-admin-server";
 import {
   UserPlus,
   UserRound,
@@ -17,128 +22,143 @@ import {
   CircleCheck,
 } from "lucide-react";
 
-export default function Dashboard() {
-  const data = [
+export default async function Dashboard() {
+  const { userDashboard: dashboard } = await userDashboard();
+
+  const userData = [
     {
-      id: "1",
-      icon: <UserPlus />,
       label: "New users",
-      total: "2",
-      bg: "bg-blue-100",
-      iconColor: "text-blue-600",
+      total: dashboard?.newUsersLast7Days ?? "-",
+      icon: <UserPlus />,
+      bg: "bg-blue-200 text-blue-600",
+      mainBg: "bg-blue-100",
+      tooltip: "Users who registered in the past 7 days",
     },
     {
-      id: "2",
-      icon: <UserRound />,
       label: "Applicant",
-      total: "3",
-      bg: "bg-green-100",
-      iconColor: "text-green-600",
+      total: dashboard?.applicant ?? "-",
+      icon: <UserRound />,
+      bg: "bg-green-200 text-green-600",
+      mainBg: "bg-green-100",
+      tooltip: "Total users with the applicant role",
     },
     {
-      id: "3",
+      label: "Application Admin",
+      total: dashboard?.applicationAdmin ?? "-",
       icon: <UserCog />,
-      label: "Applicant Admin",
-      total: "4",
-      bg: "bg-purple-100",
-      iconColor: "text-purple-600",
+      bg: "bg-purple-200 text-purple-600",
+      mainBg: "bg-purple-100",
+      tooltip: "Total users with the application admin role",
     },
     {
-      id: "4",
-      icon: <CarFront />,
       label: "Vehicle Admin",
-      total: "2",
-      bg: "bg-orange-100",
-      iconColor: "text-orange-600",
-    },
-    {
-      id: "5",
-      icon: <ShieldCheck />,
-      label: "Super Admin",
-      total: "4",
-      bg: "bg-red-100",
-      iconColor: "text-red-600",
-    },
-  ];
-  const applications_data = [
-    {
-      id: "1",
-      icon: <FileText />,
-      label: "New Applications",
-      total: "2",
-      bg: "bg-blue-100 text-blue-600",
-    },
-    {
-      id: "2",
-      icon: <Clock3 />,
-      label: "Pending",
-      total: "3",
-      bg: "bg-amber-100 text-amber-600",
-    },
-    {
-      id: "3",
-      icon: <BadgeCheck />,
-      label: "Approved",
-      total: "4",
-      bg: "bg-green-100 text-green-600",
-    },
-    {
-      id: "4",
-      icon: <CircleX />,
-      label: "Rejected",
-      total: "2",
-      bg: "bg-red-100 text-red-600",
-    },
-  ];
-  const vehicles_data = [
-    {
-      id: "1",
+      total: dashboard?.vehicleAdmin ?? "-",
       icon: <CarFront />,
-      label: "All Vehicle",
-      total: "2",
-      bg: "bg-blue-100 text-blue-600",
+      bg: "bg-orange-200 text-orange-600",
+      mainBg: "bg-orange-100",
+      tooltip: "Total users with the vehicle admin role",
     },
     {
-      id: "2",
-      icon: <Wrench />,
-      label: "Under Maintenance",
-      total: "3",
-      bg: "bg-amber-100 text-amber-600",
-    },
-    {
-      id: "3",
-      icon: <CalendarCheck />,
-      label: "Scheduled This Week",
-      total: "4",
-      bg: "bg-purple-100 text-purple-600",
-    },
-    {
-      id: "4",
-      icon: <CircleCheck />,
-      label: "Available This Week",
-      total: "2",
-      bg: "bg-green-100 text-green-600",
+      label: "Super Admin",
+      total: dashboard?.superAdmin ?? "-",
+      icon: <ShieldCheck />,
+      bg: "bg-red-200 text-red-600",
+      mainBg: "bg-red-100",
+      tooltip: "Total users with the super admin role",
     },
   ];
+  // const applications_data = [
+  //   {
+  //     id: "1",
+  //     icon: <FileText />,
+  //     label: "New Applications",
+  //     total: "2",
+  //     bg: "bg-blue-100 text-blue-600",
+  //   },
+  //   {
+  //     id: "2",
+  //     icon: <Clock3 />,
+  //     label: "Pending",
+  //     total: "3",
+  //     bg: "bg-amber-100 text-amber-600",
+  //   },
+  //   {
+  //     id: "3",
+  //     icon: <BadgeCheck />,
+  //     label: "Approved",
+  //     total: "4",
+  //     bg: "bg-green-100 text-green-600",
+  //   },
+  //   {
+  //     id: "4",
+  //     icon: <CircleX />,
+  //     label: "Rejected",
+  //     total: "2",
+  //     bg: "bg-red-100 text-red-600",
+  //   },
+  // ];
+  // const vehicles_data = [
+  //   {
+  //     id: "1",
+  //     icon: <CarFront />,
+  //     label: "All Vehicle",
+  //     total: "2",
+  //     bg: "bg-blue-100 text-blue-600",
+  //   },
+  //   {
+  //     id: "2",
+  //     icon: <Wrench />,
+  //     label: "Under Maintenance",
+  //     total: "3",
+  //     bg: "bg-amber-100 text-amber-600",
+  //   },
+  //   {
+  //     id: "3",
+  //     icon: <CalendarCheck />,
+  //     label: "Scheduled This Week",
+  //     total: "4",
+  //     bg: "bg-purple-100 text-purple-600",
+  //   },
+  //   {
+  //     id: "4",
+  //     icon: <CircleCheck />,
+  //     label: "Available This Week",
+  //     total: "2",
+  //     bg: "bg-green-100 text-green-600",
+  //   },
+  // ];
   return (
     <div>
       <Title
         title2="Dashboard"
-        description="View an overview of users, applications, and vehicles."
+        // description="View an overview of users, applications, and vehicles."
+        description="View an overview of users."
       />
       <InfoCardContainer title="Accounts">
-        {data.map((d) => (
-          <InfoCard
-            key={d.id}
-            icon={d.icon}
-            label={d.label}
-            total={d.total}
-            bg={d.bg}
-          />
-        ))}
+        {userData.map((user) => {
+          return (
+            <Tooltip key={user.label}>
+              <TooltipTrigger
+                render={
+                  <InfoCard
+                    // key={status.label}
+                    mainBg={user.mainBg}
+                    icon={user.icon}
+                    label={user.label}
+                    total={user.total}
+                    bg={user.bg}
+                  />
+                }
+              ></TooltipTrigger>
+              <TooltipContent>
+                <p>{user.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
       </InfoCardContainer>
 
-      <InfoCardContainer title="Applications">
+      {/* <InfoCardContainer title="Applications">
         {applications_data.map((d) => (
           <InfoCard
             key={d.id}
@@ -160,7 +180,7 @@ export default function Dashboard() {
             bg={d.bg}
           />
         ))}
-      </InfoCardContainer>
+      </InfoCardContainer> */}
     </div>
   );
 }

@@ -23,7 +23,7 @@ export default async function ResidentialApplicationReview() {
         />
         <ResidentialInfo status={status} />
         <ResidentialTable initialData={applications} />
-        <ScheduleCardValue />
+        {/* <ScheduleCardValue /> */}
       </AssignedServices>
     </div>
   );

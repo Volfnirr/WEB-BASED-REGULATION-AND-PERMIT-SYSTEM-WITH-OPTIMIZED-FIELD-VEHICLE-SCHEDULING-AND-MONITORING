@@ -23,7 +23,7 @@ export default async function ChainsawApplicationReview() {
         />
         <ChainsawInfo status={status} />
         <ChainsawTable initialData={applications} />
-        <ScheduleCardValue />
+        {/* <ScheduleCardValue /> */}
       </AssignedServices>
     </div>
   );

@@ -107,8 +107,8 @@ export default function ApplicationAdminSidebar({}) {
       )}
 
       {isOpen && (
-        <aside className="fixed z-99 md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl">
-          <div>
+        <aside className="fixed z-99 md:relative w-64 h-dvh bg-[#005221] text-white flex flex-col inset-y-0 left-0 shrink-0 shadow-xl md:h-auto md:min-h-screen">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <Image
@@ -207,7 +207,7 @@ export default function ApplicationAdminSidebar({}) {
                 })}
               </div>
 
-              <div className="flex flex-col gap-1 pt-1">
+              {/* <div className="flex flex-col gap-1 pt-1">
                 <div className="px-3 mb-2 text-xs font-semibold text-green-300 uppercase tracking-wider">
                   <h2>Trip</h2>
                 </div>
@@ -224,11 +224,11 @@ export default function ApplicationAdminSidebar({}) {
                   <FileText />
                   Trip History
                 </Link>
-              </div>
+              </div> */}
             </nav>
           </div>
 
-          <div className="p-4 border-t border-green-800">
+          <div className="shrink-0 p-4 border-t border-green-800">
             <button
               onClick={() => logout(router)}
               className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium bg-red-700 hover:bg-red-800 text-white rounded-lg transition-colors shadow cursor-pointer"

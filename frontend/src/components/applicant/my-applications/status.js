@@ -239,7 +239,7 @@ export default function ApplicationStatusPage({ initialData }) {
                   <p className="text-gray-500 font-medium">No remarks yet</p>
                 </div>
               ) : (
-                <span>{d?.remarks}</span>
+                <span className="whitespace-pre-wrap">{d?.remarks}</span>
               )}
             </div>
           ))

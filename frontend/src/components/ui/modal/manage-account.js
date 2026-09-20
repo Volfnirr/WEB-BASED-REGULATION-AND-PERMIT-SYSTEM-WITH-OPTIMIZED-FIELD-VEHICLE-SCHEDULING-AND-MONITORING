@@ -72,19 +72,11 @@ export default function ManageProfileUI({ isOpen, onClose }) {
     }
   };
 
-  console.log("USER", user);
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-y-0 left-0 right-0 md:left-64 z-50 flex items-center justify-center pt-10 bg-black/40 p-4">
       <div className="flex max-h-[85vh] w-full max-w-xl flex-col rounded-xl bg-white">
-        {/* <div className="flex items-center justify-between border-b p-4 sm:p-6">
-          <h2 className="text-xl font-bold sm:text-2xl">Manage Account</h2>
-          <button onClick={onClose} className=" cursor-pointer">
-            <X />
-          </button>
-        </div> */}
-
         {isFormOpen ? (
           <div className="flex flex-col px-4">
             <div className="text-center text-lg font-bold text-green-600 mt-4 ">
@@ -165,33 +157,21 @@ export default function ManageProfileUI({ isOpen, onClose }) {
                   {errors.root.message}
                 </div>
               )}
-              <div className="flex h-fit justify-end gap-2">
-                <div className="grid grid-cols-1 items-center justify-between w-full mb-2 md:grid-cols-2">
-                  <div className="flex justify-start items-center w-full gap-2 min-h-10">
-                    <Button
-                      type="button"
-                      onClick={() => setIsFormOpen(false)}
-                      className="justify-start rounded-lg w-40 whitespace-nowrap  text-black font-bold bg-green-300 px-4 py-2 cursor-pointer hover:bg-green-400"
-                    >
-                      Back
-                    </Button>
-                  </div>
-                  <div className="flex justify-start items-center w-full gap-2 min-h-10 md:justify-end">
-                    <Button
-                      disabled={isSubmitting}
-                      type="submit"
-                      className="justify-center rounded-lg w-40 whitespace-nowrap  text-black font-bold bg-red-500 px-4 py-2 cursor-pointer hover:bg-red-700"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Spinner />
-                        </>
-                      ) : (
-                        "Change password"
-                      )}
-                    </Button>
-                  </div>
-                </div>
+              <div className="flex h-fit justify-end gap-2 mb-2">
+                <Button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="flex-1 sm:flex-none sm:w-40 justify-center rounded-lg whitespace-nowrap text-black font-bold bg-green-300 px-4 py-2 cursor-pointer hover:bg-green-400"
+                >
+                  Back
+                </Button>
+                <Button
+                  disabled={isSubmitting}
+                  type="submit"
+                  className="flex-1 sm:flex-none sm:w-40 justify-center rounded-lg whitespace-nowrap text-black font-bold bg-red-500 px-4 py-2 cursor-pointer hover:bg-red-700"
+                >
+                  {isSubmitting ? <Spinner /> : "Change password"}
+                </Button>
               </div>
             </form>
           </div>
@@ -220,7 +200,7 @@ export default function ManageProfileUI({ isOpen, onClose }) {
               </div>
             </div>
 
-            <p className="text-sm font-semibold uppercase tracking-wide text-green-500 mt-4">
+            <p className="mt-4 mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
               Actions
             </p>
             <Button
@@ -233,26 +213,22 @@ export default function ManageProfileUI({ isOpen, onClose }) {
           </div>
         )}
         {isFormOpen ? null : (
-          <div className="w-full py-2">
-            <div className="grid px-4 grid-cols-1 items-center justify-between w-full md:grid-cols-2">
-              <div className="flex justify-start items-center w-full gap-2 min-h-10">
-                <Button
-                  type="button"
-                  onClick={() => logout(router)}
-                  className="cursor-pointer bg-red-700 hover:bg-red-800 text-md min-h-9 max-h-md"
-                >
-                  Logout
-                </Button>
-              </div>
-              <div className="flex justify-end items-center w-full gap-2 min-h-10">
-                <Button
-                  onClick={onClose}
-                  type="button"
-                  className="cursor-pointer text-md min-h-9 max-h-md bg-green-700 hover:bg-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                >
-                  Close
-                </Button>
-              </div>
+          <div className="w-full mt-4 py-3 px-4 border-t border-gray-200">
+            <div className="flex items-center justify-between w-full">
+              <Button
+                type="button"
+                onClick={() => logout(router)}
+                className="cursor-pointer bg-red-700 hover:bg-red-800 text-md min-h-9"
+              >
+                Logout
+              </Button>
+              <Button
+                onClick={onClose}
+                type="button"
+                className="cursor-pointer text-md min-h-9 bg-transparent border border-green-700 text-green-700 hover:bg-green-50 transition-colors"
+              >
+                Close
+              </Button>
             </div>
           </div>
         )}

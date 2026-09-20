@@ -2,7 +2,6 @@ import ApplicantSidebar from "@/components/applicant/applicant-sidebar";
 import CheckRole from "@/components/route-protection/check-role";
 import Topbar from "@/components/ui/top-bar";
 import { UserProvider } from "@/lib/context/account-info-context";
-
 export default function ApplicantLayout({ children }) {
   return (
     <UserProvider>

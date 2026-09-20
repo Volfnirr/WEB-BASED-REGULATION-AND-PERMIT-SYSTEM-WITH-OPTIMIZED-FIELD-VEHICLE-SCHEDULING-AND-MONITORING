@@ -43,11 +43,11 @@ export default function TripApplicationTable({ initialData }) {
     },
     {
       head: "View",
-      data: "view",
+      data: "VIEW",
     },
     {
       head: "Edit",
-      data: "edit",
+      data: "EDIT",
     },
   ];
 
@@ -120,7 +120,7 @@ export default function TripApplicationTable({ initialData }) {
         ViewTicket={TripTicketView}
         EditTicket={TripTicketModal}
       />
-      <CardContainer title="Pending Applications">
+      {/* <CardContainer title="Pending Applications">
         {paginatedData.map((data) => {
           return (
             <ScheduleCardInfo
@@ -135,7 +135,7 @@ export default function TripApplicationTable({ initialData }) {
             />
           );
         })}
-      </CardContainer>
+      </CardContainer> */}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

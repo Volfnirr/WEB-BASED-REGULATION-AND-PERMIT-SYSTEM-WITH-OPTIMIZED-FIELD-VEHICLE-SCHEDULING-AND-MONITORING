@@ -2,6 +2,29 @@
 import { cookies } from "next/headers";
 import { authClient } from "@/lib/auth-client";
 
+export async function userDashboard() {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+  const response = await fetch(
+    `${process.env.API_URL}/api/v1/super-admin/dashboard`,
+    {
+      method: "GET",
+
+      headers: {
+        Cookie: cookieHeader,
+      },
+      cache: "no-store",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieved user dashboard.");
+  }
+
+  return result;
+}
+
 export async function listAllAuditLogs() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();

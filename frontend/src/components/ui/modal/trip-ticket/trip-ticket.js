@@ -21,6 +21,7 @@ import {
   updateTripAndSchedule,
 } from "@/lib/api/vehicle/manage-vehicles";
 import { X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const tripTicketFormSchema = z.object({
   tripTicketNo: z.string().trim().min(1, "Trip Ticket is Required"),
@@ -51,6 +52,8 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
   const [showVehicles, setShowVehicles] = useState(false);
   const [loadingVehicles, setLoadingVehicles] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -183,6 +186,7 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
         toast.success(message ?? "Trip ticket updated", {
           position: "top-center",
         });
+        router.refresh();
       } else {
         console.log("Submit Details", tripData);
 

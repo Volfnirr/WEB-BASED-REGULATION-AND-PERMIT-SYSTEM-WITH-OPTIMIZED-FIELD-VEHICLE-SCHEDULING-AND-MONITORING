@@ -128,6 +128,11 @@ export async function listAllVehicles(req, res) {
 export async function updateVehicle(req, res) {
   try {
     const updateVehicle = await prisma.$transaction(async (tx) => {
+      if (!req.params.id || isNaN(Number(req.params.id))) {
+        res.status(200).json({
+          message: "Invalid params",
+        });
+      }
       const { imageUrl, ...vehicleData } = req.validatedData;
       if (vehicleData.plateNumber) {
         await vehicleAdmin.checkVehiclePlateIfExist(
@@ -465,8 +470,6 @@ export async function tripTicketList(req, res) {
       plateNumber: trip.vehicle.plateNumber,
       startDate: trip.vehicle_schedule.startDate,
       endDate: trip.vehicle_schedule.endDate,
-      view: "VIEW",
-      edit: "EDIT",
     }));
     res.status(200).json({
       message: "Successfuly retrieved trip ticket list",

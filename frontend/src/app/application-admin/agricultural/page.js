@@ -23,7 +23,7 @@ export default async function AgriculturalApplicationReview() {
         />
         <AgriculturalInfo status={status} />
         <AgriculturalTable initialData={applications} />
-        <ScheduleCardValue />
+        {/* <ScheduleCardValue /> */}
       </AssignedServices>
     </div>
   );

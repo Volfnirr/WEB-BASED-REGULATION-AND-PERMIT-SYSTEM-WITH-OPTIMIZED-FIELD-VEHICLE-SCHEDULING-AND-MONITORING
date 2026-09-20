@@ -28,9 +28,15 @@ import { localDateTime } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
 import { FileSearchCorner } from "lucide-react";
 import { useState } from "react";
+import EditUser from "@/components/ui/modal/super-admin/actions/edit-user";
+import BanUser from "@/components/ui/modal/super-admin/actions/ban-user";
+import UnBanUser from "@/components/ui/modal/super-admin/actions/unban-user";
 
 export default function SuperAdminTable({ columns, rows, View }) {
   const [viewAuditLogs, setViewAuditLogs] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedBanUser, setSelectedBanUser] = useState(null);
+  const [selectedUnBanUser, setSelectedUnBanUser] = useState(null);
 
   return (
     <div className="bg-white rounded">
@@ -87,7 +93,9 @@ export default function SuperAdminTable({ columns, rows, View }) {
                     <DropdownMenuContent>
                       <DropdownMenuGroup>
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSelectedUser(row)}>
+                          Edit
+                        </DropdownMenuItem>
                         <DropdownMenuItem>Set User Role</DropdownMenuItem>
                         <DropdownMenuItem>Set User Password</DropdownMenuItem>
                         {row.role === "APPLICATION_ADMIN" ? (
@@ -95,10 +103,16 @@ export default function SuperAdminTable({ columns, rows, View }) {
                         ) : null}
                       </DropdownMenuGroup>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem variant="destructive">
+                      <DropdownMenuItem
+                        onClick={() => setSelectedBanUser(row)}
+                        variant="destructive"
+                      >
                         Ban User
                       </DropdownMenuItem>
-                      <DropdownMenuItem variant="destructive">
+                      <DropdownMenuItem
+                        onClick={() => setSelectedUnBanUser(row)}
+                        variant="destructive"
+                      >
                         Unban User
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -115,6 +129,27 @@ export default function SuperAdminTable({ columns, rows, View }) {
           isOpen={!!viewAuditLogs}
           onClose={() => setViewAuditLogs(null)}
           data={viewAuditLogs}
+        />
+      )}
+      {selectedUser && (
+        <EditUser
+          isOpen={!!selectedUser}
+          userData={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
+      {selectedBanUser && (
+        <BanUser
+          isOpen={!!selectedBanUser}
+          userData={selectedBanUser}
+          onClose={() => setSelectedBanUser(null)}
+        />
+      )}
+      {selectedUnBanUser && (
+        <UnBanUser
+          isOpen={!!selectedUnBanUser}
+          userData={selectedUnBanUser}
+          onClose={() => setSelectedUnBanUser(null)}
         />
       )}
     </div>

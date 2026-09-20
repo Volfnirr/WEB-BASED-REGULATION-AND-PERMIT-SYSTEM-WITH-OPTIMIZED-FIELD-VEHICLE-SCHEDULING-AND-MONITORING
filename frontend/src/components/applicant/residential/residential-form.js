@@ -224,6 +224,7 @@ export default function ResidentialForm({ inspectors }) {
   });
 
   const civilStatus = watch("civilStatus");
+  const agreedToPrivacy = watch("privacyConsent");
 
   useEffect(() => {
     if (civilStatus !== "MARRIED") {
@@ -981,7 +982,7 @@ export default function ResidentialForm({ inspectors }) {
                 <div className="flex justify-start items-center w-full gap-2 min-h-15 md:justify-end">
                   <Button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !agreedToPrivacy}
                     className="cursor-pointer text-md min-h-9 max-h-md bg-green-700 hover:bg-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                   >
                     {isSubmitting ? (

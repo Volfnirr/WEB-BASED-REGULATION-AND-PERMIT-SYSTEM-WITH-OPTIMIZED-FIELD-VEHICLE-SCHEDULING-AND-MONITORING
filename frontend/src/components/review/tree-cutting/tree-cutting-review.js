@@ -113,7 +113,7 @@ export default function ReviewTreeCutting({ data, params }) {
             </p>
           </div>
           <div
-            className={`${StatusColor(treeCutting?.application?.status)}mt-4 md:mt-0 px-4 py-1.5 b font-bold text-sm rounded-lg border border-yellow-200 shadow-sm`}
+            className={`${StatusColor(treeCutting?.application?.status)}mt-4 md:mt-0 px-4 py-1.5 b font-bold text-sm rounded-lg border shadow-sm`}
           >
             {treeCutting?.application?.status}
           </div>

@@ -51,7 +51,7 @@ export default async function Status({ params }) {
           description={`View and manage all your ${status} applications.`}
         />
         <PendingInfo status={assignedStatus} />
-        <PendingTable initialData={applicationsWithPage} />
+        <PendingTable initialData={applicationsWithPage} status={status} />
       </AssignedServices>
     </div>
   );

@@ -155,7 +155,7 @@ export default function ManageVehicleUI({ children, initialData }) {
 
   return (
     <div className="">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col items-start justify-start mb-2 md:flex-row md:items-center md:justify-between">
         <Title
           title="Manage"
           title2="Vehicles"

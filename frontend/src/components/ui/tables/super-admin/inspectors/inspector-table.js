@@ -28,10 +28,10 @@ import { localDateTime } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
 import { FileSearchCorner } from "lucide-react";
 import { useState } from "react";
+import EditInspector from "@/components/ui/modal/super-admin/inspectors/edit-inspectos";
 
 export default function InspectorTableUI({ columns, rows, View }) {
-  const [viewAuditLogs, setViewAuditLogs] = useState(null);
-
+  const [selectedInspector, setSelectedInspector] = useState(null);
   return (
     <div className="bg-white rounded">
       <Table className="rounded">
@@ -102,7 +102,10 @@ export default function InspectorTableUI({ columns, rows, View }) {
                     <DropdownMenuContent>
                       <DropdownMenuGroup>
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem className=" cursor-pointer">
+                        <DropdownMenuItem
+                          onClick={() => setSelectedInspector(row)}
+                          className=" cursor-pointer"
+                        >
                           Edit
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
@@ -114,7 +117,13 @@ export default function InspectorTableUI({ columns, rows, View }) {
           )}
         </TableBody>
       </Table>
-
+      {selectedInspector && (
+        <EditInspector
+          isOpen={!!selectedInspector}
+          inspectorData={selectedInspector}
+          onClose={() => setSelectedInspector(null)}
+        />
+      )}
       {/* {viewAuditLogs && View && (
         <View
           isOpen={!!viewAuditLogs}

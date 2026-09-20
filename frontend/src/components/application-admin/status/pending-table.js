@@ -7,11 +7,13 @@ import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
 import { useState } from "react";
 
-export default function PendingTable({ initialData }) {
+export default function PendingTable({ initialData, status }) {
   // const page = {page};
-  const [data, setData] = useState(initialData);
+  console.log("Intial Data", initialData);
 
-  const column = [
+  const [data, setData] = useState(initialData);
+  console.log("DATA", data);
+  const initialColumn = [
     {
       head: "REF-NO",
       data: "referenceNo",
@@ -33,15 +35,22 @@ export default function PendingTable({ initialData }) {
       data: "submittedAt",
     },
     {
+      head: "Reviewed Date",
+      data: "reviewedAt",
+    },
+    {
       head: "Status",
       data: "status",
     },
     {
       head: "Action",
-      data: "action",
+      data: "VIEW",
     },
   ];
-
+  const column =
+    status === "pending"
+      ? initialColumn.filter((col) => col.data !== "reviewedAt")
+      : initialColumn.filter((col) => col.data !== "submittedAt");
   // const data = [
   //   {
   //     id: "1",

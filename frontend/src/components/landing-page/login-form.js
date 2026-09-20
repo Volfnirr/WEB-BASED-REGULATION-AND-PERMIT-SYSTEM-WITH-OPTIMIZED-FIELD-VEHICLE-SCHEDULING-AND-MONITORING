@@ -55,6 +55,7 @@ export default function LoginForm() {
           email,
           password,
           rememberMe: true,
+          callbackURL: `${window.location.origin}/login?verified=true`,
         },
         {
           onSuccess: (ctx) => {
@@ -104,7 +105,15 @@ export default function LoginForm() {
             )}
           </div>
           <div className="flex flex-col gap-1 text-left">
-            <label className="text-xs text-gray-500">Password</label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-gray-500">Password</label>
+              <Link
+                href="/forgot-password"
+                className="text-[12px] text-blue-600 font-bold hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <div className="relative">
               <input
                 {...registerLogin("password")}
@@ -151,7 +160,8 @@ export default function LoginForm() {
             )}
           </button>
         </form>
-        <div className="text-[12px] text-gray-600 mt-6">
+
+        <div className="text-[12px] text-gray-600 mt-3">
           <span>Don&apos;t have an account? </span>{" "}
           <Link
             href="/register"

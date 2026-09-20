@@ -11,13 +11,13 @@ export async function listAppAdminAssignedApplications(userId, status) {
       status,
       assignedToId: userId,
     },
-    orderBy: {
-      submittedAt: "desc",
-    },
+    orderBy:
+      status === "PENDING" ? { submittedAt: "desc" } : { reviewedAt: "desc" },
     select: {
       id: true,
       status: true,
       submittedAt: true,
+      reviewedAt: true,
       referenceNo: true,
       assignedToId: true,
       service: {

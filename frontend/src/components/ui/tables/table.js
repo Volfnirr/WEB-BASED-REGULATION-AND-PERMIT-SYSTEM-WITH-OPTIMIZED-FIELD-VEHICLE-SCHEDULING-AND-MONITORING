@@ -62,41 +62,42 @@ export default function TableUI({ columns, rows, ViewTicket, EditTicket }) {
                       >
                         {row[column.data]}
                       </span>
-                    ) : column.data === "submittedAt" ? (
+                    ) : column.data === "submittedAt" ||
+                      column.data === "reviewedAt" ? (
                       localDateTime(row[column.data])
                     ) : column.data === "startDate" ||
                       column.data === "endDate" ? (
                       <div className="whitespace-nowrap">
                         {localDateFormat(row[column.data])}
                       </div>
-                    ) : row[column.data] === "VIEW" ? (
+                    ) : column.data === "VIEW" ? (
                       ViewTicket ? (
                         <button
                           onClick={() => setViewingTrip(row)}
-                          className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm cursor-pointer transition-colors`}
+                          className={`${StatusColor(column.data)} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm cursor-pointer transition-colors`}
                         >
                           VIEW
                         </button>
                       ) : (
                         <Link
                           href={`${row.page}`}
-                          className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm transition-colors`}
+                          className={`${StatusColor(column.data)} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm transition-colors`}
                         >
                           VIEW
                         </Link>
                       )
-                    ) : row[column.data] === "EDIT" ? (
+                    ) : column.data === "EDIT" ? (
                       EditTicket ? (
                         <button
                           onClick={() => setEditingTrip(row)}
-                          className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm cursor-pointer transition-colors`}
+                          className={`${StatusColor(column.data)} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm cursor-pointer transition-colors`}
                         >
                           EDIT
                         </button>
                       ) : (
                         <Link
                           href={`${row.page}`}
-                          className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                          className={`${StatusColor(column.data)} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
                         >
                           {row[column.data]}
                         </Link>
@@ -104,7 +105,7 @@ export default function TableUI({ columns, rows, ViewTicket, EditTicket }) {
                     ) : row[column.data] === "SELF_ASSIGN" ? (
                       <button
                         onClick={() => setSelectedRow(row)}
-                        className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5  items-center justify-center rounded-md px-3 text-sm  cursor-pointer  transition-colors`}
+                        className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-30  items-center justify-center rounded-md px-3 text-sm  cursor-pointer  transition-colors`}
                       >
                         SELF ASSIGN
                       </button>
