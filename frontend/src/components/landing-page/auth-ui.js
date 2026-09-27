@@ -25,12 +25,12 @@ export default function AuthUI({ children }) {
           {/* Shared Header & Logo */}
           <div className="flex flex-col items-center gap-2.5 mb-6">
             <Image
-              src="/denrlogo.png"
+              src="/homedenrlogo.png"
               alt="DENR Logo"
               width={100}
               height={100}
               className="block mx-auto h-auto mb-4"
-              priority
+              loading="eager"
             />
             <h2 className="text-base font-bold text-[#1a1a1a] mb-1 leading-snug">
               Provincial Environment and Natural

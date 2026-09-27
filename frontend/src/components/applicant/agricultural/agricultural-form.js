@@ -25,6 +25,7 @@ import { CalendarDays } from "lucide-react";
 
 import { submitAgriculturalForm } from "@/lib/api/applications/agricultural/agricultural";
 import { Spinner } from "@/components/ui/spinner";
+import { toTitleCase } from "@/lib/title-case";
 
 const agriculturalFormSchema = z
   .object({
@@ -48,19 +49,15 @@ const agriculturalFormSchema = z
       .trim()
       .max(50, "Maximum 50 characters allowed")
       .optional(),
-
     contactNumber: z
       .string()
       .trim()
       .regex(/^09\d{9}$/, "Enter a valid 11-digit mobile number")
       .max(11, "Maximum 11 characters allowed"),
-    email: z.email("Invalid email").max(255, "Maximum 255 characters allowed"),
-
     birthday: z.coerce.date({
       required_error: "Date of birth is required",
       invalid_type_error: "Please enter a valid date",
     }),
-
     sex: z.enum(["Male", "Female"], {
       errorMap: () => ({ message: "Please select a sex" }),
     }),
@@ -69,13 +66,12 @@ const agriculturalFormSchema = z
       .trim()
       .min(1, "Citizenship is required")
       .max(100, "Maximum 100 characters allowed"),
-    naturalBorn: z.enum(["Yes", "No"], {
-      errorMap: () => ({ message: "Please select an option" }),
+    naturalBorn: z.boolean({
+      error: "Please select an option",
     }),
     civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANULLED"], {
       errorMap: () => ({ message: "Please select civil status" }),
     }),
-
     spouse: z
       .string()
       .trim()
@@ -84,9 +80,8 @@ const agriculturalFormSchema = z
     mailingAddress: z
       .string()
       .trim()
-      .min(5, "Complete mailing address is required")
+      .min(1, "Complete mailing address is required")
       .max(1000, "Maximum 1000 characters allowed"),
-
     province: z
       .string()
       .trim()
@@ -105,8 +100,8 @@ const agriculturalFormSchema = z
     location: z
       .string()
       .trim()
-      .max(500, "Maximum 500 characters allowed")
-      .optional(),
+      .min(1, "Specific locations is required")
+      .max(500, "Maximum 500 characters allowed"),
     lotNo: z
       .string()
       .trim()
@@ -125,12 +120,14 @@ const agriculturalFormSchema = z
         (val) => Math.round(val * 100) === val * 100,
         "Land area can only have up to 2 decimal places",
       ),
-
     cultivationDate: z
       .string()
       .trim()
-      .max(100, "Maximum 100 characters allowed")
-      .optional(),
+      .refine(
+        (val) =>
+          /^(\d{4}|(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4})$/.test(val),
+        { message: "Enter a date as MM/DD/YYYY or just YYYY" },
+      ),
     improvements: z
       .string()
       .trim()
@@ -151,7 +148,6 @@ const agriculturalFormSchema = z
       .trim()
       .max(1000, "Maximum 1000 characters allowed")
       .optional(),
-
     heir1_name: z
       .string()
       .trim()
@@ -182,7 +178,6 @@ const agriculturalFormSchema = z
       .trim()
       .max(255, "Maximum 255 characters allowed")
       .optional(),
-
     witness1_name: z
       .string()
       .trim()
@@ -203,20 +198,18 @@ const agriculturalFormSchema = z
       .trim()
       .min(1, "Witness 2 address is required")
       .max(1000, "Maximum 1000 characters allowed"),
-
     date_filed: z.coerce.date({
       required_error: "Date filed is required",
       invalid_type_error: "Please enter a valid date",
     }),
-    applicant_signature: z
-      .string()
-      .trim()
-      .min(1, "Digital signature is required")
-      .max(255, "Maximum 255 characters allowed"),
-
     privacyConsent: z.literal(true, {
       errorMap: () => ({ message: "Please check this box to proceed" }),
     }),
+    assignedInspector: z
+      .number({ error: "Please assign an inspector" })
+      .int("Invalid inspector")
+      .positive("Invalid inspector")
+      .max(9999, "Invalid inspector"),
   })
   .refine(
     (data) => {
@@ -246,7 +239,7 @@ const civilStatusChoices = [
   { id: 4, value: "ANULLED" },
 ];
 
-export default function AgriculturalForm() {
+export default function AgriculturalForm({ inspectors }) {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-xs font-medium";
@@ -273,6 +266,7 @@ export default function AgriculturalForm() {
   });
 
   const civilStatus = watch("civilStatus");
+  const agreedToPrivacy = watch("privacyConsent");
 
   useEffect(() => {
     if (civilStatus !== "Married") {
@@ -443,17 +437,44 @@ export default function AgriculturalForm() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  EMAIL ADDRESS*
+                  NATURAL BORN?*
                 </label>
                 <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("email")}
-                    type="email"
-                    placeholder="*EMAIL ADDRESS"
-                    className={inputClass}
+                  <Controller
+                    name="naturalBorn"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={
+                          field.value === undefined ? "" : String(field.value)
+                        }
+                        onValueChange={(val) => field.onChange(val === "true")}
+                      >
+                        <SelectTrigger
+                          size="20"
+                          className="w-full px-2 py-2 mb-0 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start"
+                        >
+                          <SelectValue placeholder="*SELECT">
+                            {field.value === true
+                              ? "Yes"
+                              : field.value === false
+                                ? "No"
+                                : undefined}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="true">Yes</SelectItem>
+                            <SelectItem value="false">No</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )}
                   />
-                  {errors.email && (
-                    <div className={errorClass}>{errors.email.message}</div>
+                  {errors.naturalBorn && (
+                    <div className={errorClass}>
+                      {errors.naturalBorn.message}
+                    </div>
                   )}
                 </div>
               </div>
@@ -547,44 +568,6 @@ export default function AgriculturalForm() {
                   />
                   {errors.sex && (
                     <div className={errorClass}>{errors.sex.message}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  NATURAL BORN?*
-                </label>
-                <div className="flex flex-col gap-1 text-left">
-                  <Controller
-                    name="naturalBorn"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value ?? ""}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger
-                          size="20"
-                          className="w-full px-2 py-2 mb-0 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start"
-                        >
-                          <SelectValue placeholder="*SELECT" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectItem value="Yes">Yes</SelectItem>
-                            <SelectItem value="No">No</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.naturalBorn && (
-                    <div className={errorClass}>
-                      {errors.naturalBorn.message}
-                    </div>
                   )}
                 </div>
               </div>
@@ -720,13 +703,22 @@ export default function AgriculturalForm() {
                     placeholder="MM/DD/YYYY or Year"
                     className={`${inputClass} w-full md:w-64`}
                   />
+                  {errors.cultivationDate && (
+                    <div className={errorClass}>
+                      {errors.cultivationDate.message}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1 text-left">
                   <textarea
                     {...register("improvements")}
                     rows="2"
                     placeholder="Improvements made..."
-                    className={inputClass}
+                    className={`${inputClass} resize-none overflow-hidden`}
+                    onInput={(e) => {
+                      e.currentTarget.style.height = "auto";
+                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                    }}
                   ></textarea>
                 </div>
               </div>
@@ -740,7 +732,11 @@ export default function AgriculturalForm() {
                     {...register("transferee_info")}
                     rows="2"
                     placeholder="State public land origin, date of first cultivation, etc."
-                    className={inputClass}
+                    className={`${inputClass} resize-none overflow-hidden`}
+                    onInput={(e) => {
+                      e.currentTarget.style.height = "auto";
+                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                    }}
                   ></textarea>
                 </div>
               </div>
@@ -754,7 +750,11 @@ export default function AgriculturalForm() {
                     {...register("heir_info")}
                     rows="2"
                     placeholder="State previous cultivator, date of death, improvements, etc."
-                    className={inputClass}
+                    className={`${inputClass} resize-none overflow-hidden`}
+                    onInput={(e) => {
+                      e.currentTarget.style.height = "auto";
+                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                    }}
                   ></textarea>
                 </div>
                 <div className="flex flex-col gap-1 text-left">
@@ -762,7 +762,11 @@ export default function AgriculturalForm() {
                     {...register("evidence")}
                     rows="2"
                     placeholder="Evidence of relationship, death, burial, and heirship is attached and consists of:"
-                    className={inputClass}
+                    className={`${inputClass} resize-none overflow-hidden`}
+                    onInput={(e) => {
+                      e.currentTarget.style.height = "auto";
+                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                    }}
                   ></textarea>
                 </div>
               </div>
@@ -964,27 +968,80 @@ export default function AgriculturalForm() {
                 </div>
               </div>
             </div>
-
-            <div className="mt-4">
-              <label className="block text-xs font-bold text-gray-700 mb-1">
-                APPLICANT'S SIGNATURE (E-Sign/Print)*
+          </div>
+          <div>
+            <div className="flex flex-col gap-1 text-left">
+              <label className="text-left text-sm font-bold text-gray-800 mb-1 uppercase">
+                Select Inspector
               </label>
-              <div className="flex flex-col gap-1 text-left w-full md:w-1/2">
-                <input
-                  {...register("applicant_signature")}
-                  type="text"
-                  placeholder="TYPE FULL NAME AS SIGNATURE"
-                  className={inputClass}
-                />
-                {errors.applicant_signature && (
-                  <div className={errorClass}>
-                    {errors.applicant_signature.message}
-                  </div>
-                )}
-              </div>
+
+              <Controller
+                name="assignedInspector"
+                control={control}
+                render={({ field }) => {
+                  const selectedInspector = inspectors.find(
+                    (i) => i.id === field.value,
+                  );
+
+                  const getInspectorName = (i) =>
+                    toTitleCase(
+                      [i.firstName, i.middleName, i.lastName, i.extensionName]
+                        .filter(Boolean)
+                        .join(" "),
+                    );
+
+                  return (
+                    <Select
+                      value={field.value ? String(field.value) : ""}
+                      onValueChange={(value) => field.onChange(Number(value))}
+                    >
+                      <SelectTrigger className={inputClass}>
+                        {selectedInspector ? (
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-semibold text-gray-800 truncate">
+                              {getInspectorName(selectedInspector)}
+                            </span>
+
+                            <span className="text-gray-400 truncate">
+                              ({selectedInspector.email})
+                            </span>
+                          </div>
+                        ) : (
+                          <SelectValue placeholder="Select an inspector" />
+                        )}
+                      </SelectTrigger>
+
+                      <SelectContent className="max-h-80">
+                        <SelectGroup>
+                          {inspectors
+                            .filter((i) => i.isAvailable)
+                            .map((i) => (
+                              <SelectItem key={i.id} value={String(i.id)}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="font-semibold text-green-800 truncate">
+                                    {getInspectorName(i)}
+                                  </span>
+
+                                  <span className="text-xs text-gray-400 truncate">
+                                    ({i.email})
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  );
+                }}
+              />
+
+              {errors.assignedInspector && (
+                <div className={errorClass}>
+                  {errors.assignedInspector.message}
+                </div>
+              )}
             </div>
           </div>
-
           {/* DATA PRIVACY CONSENT SECTION */}
           <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
             <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">
@@ -1024,8 +1081,8 @@ export default function AgriculturalForm() {
           <div className="flex justify-end pt-2">
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              disabled={isSubmitting || !agreedToPrivacy}
+              className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? (
                 <>

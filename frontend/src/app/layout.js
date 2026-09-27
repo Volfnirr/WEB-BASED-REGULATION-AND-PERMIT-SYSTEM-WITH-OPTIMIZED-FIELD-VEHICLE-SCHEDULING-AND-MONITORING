@@ -37,7 +37,7 @@ export const metadata = {
   authors: [{ name: "CAPSTONE-IT-16" }],
 
   icons: {
-    icon: "/homedenrlogo.png",
+    icon: "/DENR_LOGO.png",
   },
 
   openGraph: {
@@ -47,14 +47,14 @@ export const metadata = {
     url: "/",
     locale: "en_PH",
     type: "website",
-    images: [{ url: "/homedenrlogo.png", alt: "DENR logo" }],
+    images: [{ url: "/penrobuilding.png", alt: "DENR logo" }],
   },
 
   twitter: {
     card: "summary",
     title: title,
     description: description,
-    images: ["/homedenrlogo.png"],
+    images: ["/penrobuilding.png"],
   },
 };
 

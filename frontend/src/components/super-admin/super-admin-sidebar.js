@@ -70,7 +70,7 @@ export default function SuperAdminSiderbar() {
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <Image
-                  src="/denrlogo.png"
+                  src="/homedenrlogo.png"
                   alt="DENR logo"
                   width={40}
                   height={40}

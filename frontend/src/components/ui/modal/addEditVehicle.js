@@ -485,7 +485,64 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
               )}
             </div>
           </div>
-
+          <div>
+            <label
+              htmlFor="lastRegistrationDate"
+              className="block text-xs font-bold text-gray-700 mb-1"
+            >
+              Last Registration Date
+            </label>
+            <div className="flex flex-col gap-1 text-left">
+              <Controller
+                name="lastRegistrationDate"
+                control={control}
+                render={({ field }) => (
+                  <Popover
+                    open={openLastRegistrationDate}
+                    onOpenChange={setOpenLastRegistrationDate}
+                  >
+                    <PopoverTrigger
+                      render={
+                        <button
+                          type="button"
+                          id="lastRegistrationDate"
+                          className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start ${
+                            field.value ? "text-gray-800" : "text-gray-400"
+                          }`}
+                        >
+                          <div className="flex flex-row justify-between items-center">
+                            {field.value
+                              ? new Date(field.value).toLocaleDateString()
+                              : "Last Registration Date"}
+                            <CalendarDays size={20} />
+                          </div>
+                        </button>
+                      }
+                    />
+                    <PopoverContent
+                      className="w-auto overflow-hidden p-0"
+                      align="start"
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        defaultMonth={field.value}
+                        onSelect={(date) => {
+                          field.onChange(date);
+                          setOpenLastRegistrationDate(false);
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              />
+              {errors.lastRegistrationDate && (
+                <div className="text-red-600 text-xs font-medium">
+                  {errors.lastRegistrationDate.message}
+                </div>
+              )}
+            </div>
+          </div>
           <div>
             <label
               htmlFor="registrationExpiration"
@@ -545,64 +602,6 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
             </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="lastRegistrationDate"
-              className="block text-xs font-bold text-gray-700 mb-1"
-            >
-              Last Registration Date
-            </label>
-            <div className="flex flex-col gap-1 text-left">
-              <Controller
-                name="lastRegistrationDate"
-                control={control}
-                render={({ field }) => (
-                  <Popover
-                    open={openLastRegistrationDate}
-                    onOpenChange={setOpenLastRegistrationDate}
-                  >
-                    <PopoverTrigger
-                      render={
-                        <button
-                          type="button"
-                          id="lastRegistrationDate"
-                          className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start ${
-                            field.value ? "text-gray-800" : "text-gray-400"
-                          }`}
-                        >
-                          <div className="flex flex-row justify-between items-center">
-                            {field.value
-                              ? new Date(field.value).toLocaleDateString()
-                              : "Last Registration Date"}
-                            <CalendarDays size={20} />
-                          </div>
-                        </button>
-                      }
-                    />
-                    <PopoverContent
-                      className="w-auto overflow-hidden p-0"
-                      align="start"
-                    >
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        defaultMonth={field.value}
-                        onSelect={(date) => {
-                          field.onChange(date);
-                          setOpenLastRegistrationDate(false);
-                        }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                )}
-              />
-              {errors.lastRegistrationDate && (
-                <div className="text-red-600 text-xs font-medium">
-                  {errors.lastRegistrationDate.message}
-                </div>
-              )}
-            </div>
-          </div>
           {vehicle && (
             <div className="flex items-start justify-between gap-4 rounded-md border border-gray-300 px-4 py-3">
               <div className="flex flex-col gap-1">

@@ -1,13 +1,14 @@
 "use client";
-import Table from "@/components/ui/tables/table";
+// import Table from "@/components/ui/tables/table";
 import SearchInput from "@/components/ui/tables/tools/search-input";
 import SortDropdown from "@/components/ui/tables/tools/sort-dropdown";
 import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
 import { useState } from "react";
+import AssignApplicationsTable from "../application-table";
 
 export default function ResidentialTable({ initialData }) {
-  const [data, setData] = useState(initialData);
+  // const [data, setData] = useState(initialData);
 
   const column = [
     {
@@ -34,10 +35,10 @@ export default function ResidentialTable({ initialData }) {
       head: "Status",
       data: "status",
     },
-    {
-      head: "Action",
-      data: "action",
-    },
+    // {
+    //   head: "Action",
+    //   data: "action",
+    // },
   ];
 
   // const data = [
@@ -90,7 +91,7 @@ export default function ResidentialTable({ initialData }) {
     paginatedData,
     itemsPerPage,
   } = useDataTable({
-    data,
+    data: initialData,
     searchableFields: [
       "userAccEmail",
       "userAccName",
@@ -121,7 +122,7 @@ export default function ResidentialTable({ initialData }) {
         />
       </div>
 
-      <Table columns={column} rows={paginatedData} />
+      <AssignApplicationsTable columns={column} rows={paginatedData} />
 
       <Pagination
         currentPage={currentPage}

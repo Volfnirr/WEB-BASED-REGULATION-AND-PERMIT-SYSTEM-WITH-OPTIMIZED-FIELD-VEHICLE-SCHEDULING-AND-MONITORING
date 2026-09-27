@@ -1,90 +1,58 @@
 import { getDayName } from "@/lib/date";
 import { StatusColor } from "@/lib/status";
-// hidden lg:block
-export default function VehicleSchedulesTableUI({ date, columns, rows, page }) {
+
+export default function VehicleSchedulesTableUI({ date, rows }) {
   return (
-    <div className=" overflow-x-auto rounded-lg border">
-      <table className="min-w-full table-fixed border-collapse">
-        <thead className="bg-white">
-          <tr>
-            {columns.map((column) => (
-              <th
-                key={column.head}
-                className="border-b px-4 py-3 text-left text-sm font-bold text-green-700"
-              >
-                {column.head}
-              </th>
-            ))}
-            {date.map((d) => (
-              <th
-                key={d}
-                className="border-b px-4 py-3 text-center text-sm font-bold text-green-700"
-              >
-                <div className="flex flex-col leading-tight">
-                  <span className="text-sm font-bold text-green-700">
-                    {getDayName(d)}
-                  </span>
-                  <span className="text-xs font-normal text-green-700">
-                    ({d})
-                  </span>
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="bg-white">
-          {rows.length === 0 ? (
-            <tr>
-              <td
-                colSpan={columns.length + date.length}
-                className="px-4 py-10 text-center text-sm text-gray-400"
-              >
-                No available data
-              </td>
-            </tr>
-          ) : (
-            rows.map((row) => (
-              <tr
-                key={row.id}
-                className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition-colors border-b last:border-b-0"
-              >
-                {columns.map((column) => (
-                  <td
-                    key={column.data}
-                    className="border-b px-4 py-2 text-sm  text-gray-900 whitespace-nowrap font-semibold"
-                  >
-                    {row[column.data]}
-                  </td>
-                ))}
+    <div className="overflow-hidden rounded-xl border bg-white">
+      <div className="grid grid-cols-[220px_repeat(7,minmax(0,1fr))] border-b bg-gray-50">
+        <div className="p-4 text-xs font-semibold text-gray-500">VEHICLE</div>
 
-                {date.map((d) => (
-                  <td
-                    key={d}
-                    className="border-b px-4 py-2 text-center text-sm"
-                  >
-                    {(() => {
-                      const schedule = row.vehicle_schedule?.find((s) => {
-                        const start = s.startDate.split("T")[0];
-                        const end = s.endDate.split("T")[0];
-                        return d >= start && d <= end;
-                      });
-                      const status = schedule?.status ?? "AVAILABLE";
+        {date.map((d) => (
+          <div key={d} className="border-l p-3 text-center">
+            <p className="text-xs text-gray-400">{getDayName(d)}</p>
 
-                      return (
-                        <span
-                          className={`${StatusColor(status)} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm font-medium`}
-                        >
-                          {status}
-                        </span>
-                      );
-                    })()}
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            <p className="text-sm font-bold">{d}</p>
+          </div>
+        ))}
+      </div>
+
+      {rows.map((vehicle) => (
+        <div
+          key={vehicle.id}
+          className="grid min-h-24 grid-cols-[220px_repeat(7,minmax(0,1fr))] border-b last:border-b-0"
+        >
+          <div className="border-r p-4">
+            <p className="text-sm font-bold text-gray-900">
+              {vehicle.brand} {vehicle.model}
+            </p>
+
+            <span className="mt-2 inline-flex rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+              {vehicle.plateNumber}
+            </span>
+          </div>
+
+          {date.map((d) => {
+            const schedule = vehicle.vehicle_schedule?.find((s) => {
+              const start = s.startDate.split("T")[0];
+              const end = s.endDate.split("T")[0];
+
+              return d >= start && d <= end;
+            });
+
+            return (
+              <div key={d} className="border-r p-2">
+                {schedule && schedule.status !== "AVAILABLE" && (
+                  <div
+                    className={`${StatusColor(schedule.status)} rounded-lg px-3 py-2  text-xs  font-bold  `}
+                  >
+                    {schedule.status}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }

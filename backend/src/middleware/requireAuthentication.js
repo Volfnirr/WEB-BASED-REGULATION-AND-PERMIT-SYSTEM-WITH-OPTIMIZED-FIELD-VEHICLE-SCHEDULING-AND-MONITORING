@@ -11,6 +11,16 @@ export async function requireAuthentication(req, res, next) {
     }
     req.user = session.user;
     req.session = session.session;
+    console.log(
+      "User Email",
+      req.user.email,
+      new Date().toLocaleString("en-PH", { timeZone: "Asia/Manila" }),
+    );
+    console.log(
+      "User Name",
+      req.user.name,
+      new Date().toLocaleString("en-PH", { timeZone: "Asia/Manila" }),
+    );
     next();
   } catch (error) {
     console.log(error);

@@ -1,67 +1,50 @@
 "use client";
-import Image from "next/image";
-import { useState } from "react";
 
 export default function AboutUs() {
-  const images = ["/c1.png", "/c2.png", "/c3.png"];
-
-  const [currentImage, setCurrentImage] = useState(0);
   return (
-    <div className="flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-24 px-4">
-      {/* LEFT SIDE */}
-      <div className="w-full lg: mt-10 lg:mt-20">
-        <div className="bg-white rounded-3xl shadow-lg p-3">
-          <Image
-            src={images[currentImage]}
-            alt="Priorities"
-            width={700}
-            height={400}
-            className="rounded-2xl w-full h-auto"
-            priority
-          />
+    <section className="relative mx-10 mt-5 min-h-[600px] overflow-hidden rounded-2xl bg-green-900 md:min-h-[650px] md:bg-transparent">
+      <div
+        className="absolute inset-0 hidden bg-green-900 md:block"
+        style={{
+          clipPath: "polygon(0 0, 52.88% 0, 41.72% 100%, 0 100%)",
+        }}
+      />
 
-          {/* Slider Dots */}
-          <div className="flex justify-center gap-3 py-4">
-            {images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImage(index)}
-                className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full ${
-                  currentImage === index ? "bg-green-700" : "bg-gray-300"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+      <div
+        className="absolute inset-0 hidden bg-white/30 md:block"
+        style={{
+          clipPath: "polygon(52.88% 0, 100% 0, 100% 100%, 41.72% 100%)",
+        }}
+      />
 
-      {/* RIGHT SIDE */}
-      <div className="flex flex-col gap-6 lg:gap-12 mt-6 lg:mt-15 w-full lg:w-auto items-center lg:items-start">
-        {/* Mission */}
-        <div className="bg-white rounded-[30px] shadow-lg w-full sm:w-[90%] lg:w-[500px] min-h-[180px] flex flex-col justify-center px-6 lg:px-10 text-center">
-          <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-black font-['Times_New_Roman']">
-            Our Mission
+      <div className="relative z-10 flex min-h-[600px] flex-col justify-center gap-10 px-6 py-16 text-center md:block md:min-h-[650px] md:px-0 md:py-0 md:text-left">
+        <div className="w-full break-words md:absolute md:left-10 md:top-10 md:w-[42%] lg:left-5 lg:top-16">
+          <h2 className="mb-6 pr-4 text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-white sm:text-5xl sm:pr-0 lg:text-9xl">
+            Our
+            <br />
+            Mission
           </h2>
 
-          <p className="text-base lg:text-lg text-black font-['Times_New_Roman']">
+          <p className="mx-auto max-w-md pr-4 text-base leading-relaxed text-white sm:pr-0 sm:text-lg md:mx-0 md:text-2xl">
             To mobilize our citizenry in protecting, conserving, and managing
             the environment and natural resources for the present and future
             generations.
           </p>
         </div>
 
-        {/* Vision */}
-        <div className="bg-white rounded-[30px] shadow-lg w-full sm:w-[90%] lg:w-[500px] min-h-[180px] flex flex-col justify-center px-6 lg:px-10 text-center">
-          <h2 className="text-2xl lg:text-3xl font-bold mb-4 text-black font-['Times_New_Roman']">
-            Our Vision
+        <div className="w-full break-words md:absolute md:bottom-10 md:right-10 md:w-[42%] md:text-right lg:bottom-16 lg:right-5 mx-0">
+          <h2 className="mb-6 pl-4 pr-4 text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-white sm:pl-0 sm:pr-0 sm:text-5xl lg:text-9xl">
+            Our
+            <br />
+            Vision
           </h2>
 
-          <p className="text-base lg:text-lg text-black font-['Times_New_Roman']">
+          <p className="mx-auto max-w-md pl-4 pr-4 text-base leading-relaxed text-white sm:pl-0 sm:pr-0 sm:text-lg md:ml-auto md:mr-0 md:text-2xl">
             A nation enjoying and sustaining its natural resources and a clean
             and healthy environment.
           </p>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

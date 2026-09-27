@@ -217,22 +217,6 @@ export default function ReviewTreeCutting({ data, params }) {
           </div>
 
           {/* Section: Signature */}
-          <div>
-            <h2 className="text-sm font-bold text-gray-800 mb-3">Signature</h2>
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Signature Over Printed Name
-                </label>
-                <input
-                  type="text"
-                  value={treeCutting?.signatureName}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-          </div>
           {treeCutting?.application?.status === "PENDING" && (
             /* Bottom Action Buttons (for the Reviewer) */
             <div className="border rounded-xl p-4 text-black">
@@ -286,7 +270,11 @@ export default function ReviewTreeCutting({ data, params }) {
                         {...register("remarks")}
                         type="text"
                         placeholder="Add remarks..."
-                        className="w-full resize-y overflow-auto px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        className="h-9 max-h-80 resize-none overflow-hidden w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        onInput={(e) => {
+                          e.currentTarget.style.height = "auto";
+                          e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                        }}
                       />
                       {errors.remarks && (
                         <div className="text-red-600 text-xs font-medium">

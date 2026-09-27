@@ -34,8 +34,9 @@ const submitFormSchema = z.object({
 
 export default function ReviewResidential({ data, params }) {
   const router = useRouter();
-  const { residentialFormData: residential } = data;
-
+  console.log(data.residentialFormData);
+  const { residentialFormData: residential } = data.residentialFormData;
+  const display = data.residentialFormData.displayName;
   console.log("RESIDENTIAL DATA", residential);
   const {
     register,
@@ -488,21 +489,13 @@ export default function ReviewResidential({ data, params }) {
                 />
               </div>
             </div>
-
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Affiant's Signature
-                </label>
-                <input
-                  type="text"
-                  value={residential?.signatureAffiantName ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
           </div>
+          <input
+            type="text"
+            value={display ?? "-"}
+            className={readOnlyInputClass}
+            readOnly
+          />
           {residential?.application?.status === "PENDING" && (
             /* Bottom Action Buttons (for the Reviewer) */
             <div className="border rounded-xl p-4 text-black">
@@ -553,7 +546,11 @@ export default function ReviewResidential({ data, params }) {
                         {...register("remarks")}
                         type="text"
                         placeholder="Add remarks..."
-                        className="w-full resize-y overflow-auto px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        className="h-9  max-h-80 resize-none overflow-hidden w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        onInput={(e) => {
+                          e.currentTarget.style.height = "auto";
+                          e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                        }}
                       />
                       {errors.remarks && (
                         <div className="text-red-600 text-xs font-medium">

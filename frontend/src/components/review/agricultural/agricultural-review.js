@@ -32,9 +32,9 @@ const submitFormSchema = z.object({
 });
 
 export default function ReviewAgricultural({ data, params }) {
-  const agricultural = data.agriculturalFormData;
-
-
+  const agricultural = data.agriculturalFormData.agriculturalFormData;
+  const display = data.agriculturalFormData.displayName;
+  console.log(agricultural);
   const {
     register,
     handleSubmit,
@@ -65,14 +65,14 @@ export default function ReviewAgricultural({ data, params }) {
         formData.action === "APPROVED"
           ? "Successfully approved application"
           : "Successfully rejected application",
-        { position: "top-center" }
+        { position: "top-center" },
       );
     } catch (err) {
       toast.error(
         `Something went wrong submitting your application:  ${err ? err.message : ""}`,
         {
           position: "top-center",
-        }
+        },
       );
     }
   };
@@ -107,7 +107,7 @@ export default function ReviewAgricultural({ data, params }) {
           </div>
           <div
             className={`${StatusColor(
-              agricultural?.application?.status
+              agricultural?.application?.status,
             )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg border border-yellow-200 shadow-sm`}
           >
             {agricultural?.application?.status ?? "UNKNOWN"}
@@ -128,14 +128,16 @@ export default function ReviewAgricultural({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  value={[
-                    agricultural?.firstName,
-                    agricultural?.middleName,
-                    agricultural?.lastName,
-                    agricultural?.extensionName,
-                  ]
-                    .filter(Boolean)
-                    .join(" ") ?? ""}
+                  value={
+                    [
+                      agricultural?.firstName,
+                      agricultural?.middleName,
+                      agricultural?.lastName,
+                      agricultural?.extensionName,
+                    ]
+                      .filter(Boolean)
+                      .join(" ") ?? ""
+                  }
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -185,7 +187,11 @@ export default function ReviewAgricultural({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  value={agricultural?.dateOfBirth ? new Date(agricultural.dateOfBirth).toLocaleDateString() : ""}
+                  value={
+                    agricultural?.dateOfBirth
+                      ? new Date(agricultural.dateOfBirth).toLocaleDateString()
+                      : ""
+                  }
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -222,7 +228,14 @@ export default function ReviewAgricultural({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  value={agricultural?.naturalBorn === null || agricultural?.naturalBorn === undefined ? "" : (agricultural?.naturalBorn ? "Yes" : "No")}
+                  value={
+                    agricultural?.naturalBorn === null ||
+                    agricultural?.naturalBorn === undefined
+                      ? ""
+                      : agricultural?.naturalBorn
+                        ? "Yes"
+                        : "No"
+                  }
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -397,7 +410,11 @@ export default function ReviewAgricultural({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  value={agricultural?.heirRelationDetails ?? agricultural?.heirDetailsRelation ?? ""}
+                  value={
+                    agricultural?.heirRelationDetails ??
+                    agricultural?.heirDetailsRelation ??
+                    ""
+                  }
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -514,25 +531,23 @@ export default function ReviewAgricultural({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  value={agricultural?.dateFiled ? new Date(agricultural.dateFiled).toLocaleDateString() : ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Applicant's Signature
-                </label>
-                <input
-                  type="text"
-                  value={agricultural?.signatureName ?? ""}
+                  value={
+                    agricultural?.dateFiled
+                      ? new Date(agricultural.dateFiled).toLocaleDateString()
+                      : ""
+                  }
                   className={readOnlyInputClass}
                   readOnly
                 />
               </div>
             </div>
           </div>
-
+          <input
+            type="text"
+            value={display ?? "-"}
+            className={readOnlyInputClass}
+            readOnly
+          />
           {agricultural?.application?.status === "PENDING" && (
             /* Bottom Action Buttons (for the Reviewer) */
             <div className="border rounded-xl p-4 text-black">
@@ -582,7 +597,11 @@ export default function ReviewAgricultural({ data, params }) {
                         {...register("remarks")}
                         type="text"
                         placeholder="Add remarks..."
-                        className="w-full resize-y overflow-auto px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        className="h-9 max-h-80 resize-none overflow-hidden w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        onInput={(e) => {
+                          e.currentTarget.style.height = "auto";
+                          e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                        }}
                       />
                       {errors.remarks && (
                         <div className="text-red-600 text-xs font-medium">
@@ -612,6 +631,12 @@ export default function ReviewAgricultural({ data, params }) {
                   />
                 </div>
               </div>
+              <Link
+                className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700"
+                href={`/application-admin/${agricultural?.application?.status === "APPROVED" ? "approved" : "rejected"}`}
+              >
+                Go back
+              </Link>
             </div>
           ) : null}
         </div>

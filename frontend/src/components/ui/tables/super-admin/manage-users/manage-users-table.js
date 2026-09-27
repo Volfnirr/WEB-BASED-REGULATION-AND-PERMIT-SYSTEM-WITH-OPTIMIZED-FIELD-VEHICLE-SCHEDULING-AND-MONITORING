@@ -31,13 +31,16 @@ import { useState } from "react";
 import EditUser from "@/components/ui/modal/super-admin/actions/edit-user";
 import BanUser from "@/components/ui/modal/super-admin/actions/ban-user";
 import UnBanUser from "@/components/ui/modal/super-admin/actions/unban-user";
+import ChangeUserPassword from "@/components/ui/modal/super-admin/actions/change-pass-user";
+import SetUserRole from "@/components/ui/modal/super-admin/actions/change-role-user";
 
 export default function SuperAdminTable({ columns, rows, View }) {
   const [viewAuditLogs, setViewAuditLogs] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedBanUser, setSelectedBanUser] = useState(null);
   const [selectedUnBanUser, setSelectedUnBanUser] = useState(null);
-
+  const [selectedPasswordUser, setSelectedPasswordUser] = useState(null);
+  const [selectedRoleUser, setSelectedRoleUser] = useState(null);
   return (
     <div className="bg-white rounded">
       <Table>
@@ -96,8 +99,16 @@ export default function SuperAdminTable({ columns, rows, View }) {
                         <DropdownMenuItem onClick={() => setSelectedUser(row)}>
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Set User Role</DropdownMenuItem>
-                        <DropdownMenuItem>Set User Password</DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedRoleUser(row)}
+                        >
+                          Set User Role
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedPasswordUser(row)}
+                        >
+                          Set User Password
+                        </DropdownMenuItem>
                         {row.role === "APPLICATION_ADMIN" ? (
                           <DropdownMenuItem>Assign Services</DropdownMenuItem>
                         ) : null}
@@ -150,6 +161,20 @@ export default function SuperAdminTable({ columns, rows, View }) {
           isOpen={!!selectedUnBanUser}
           userData={selectedUnBanUser}
           onClose={() => setSelectedUnBanUser(null)}
+        />
+      )}
+      {selectedPasswordUser && (
+        <ChangeUserPassword
+          isOpen={!!selectedPasswordUser}
+          userData={selectedPasswordUser}
+          onClose={() => setSelectedPasswordUser(null)}
+        />
+      )}
+      {selectedRoleUser && (
+        <SetUserRole
+          isOpen={!!selectedRoleUser}
+          userData={selectedRoleUser}
+          onClose={() => setSelectedRoleUser(null)}
         />
       )}
     </div>

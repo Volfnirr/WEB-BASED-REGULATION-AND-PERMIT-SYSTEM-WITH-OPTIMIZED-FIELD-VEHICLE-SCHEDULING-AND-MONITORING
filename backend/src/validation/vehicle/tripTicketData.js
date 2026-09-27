@@ -1,6 +1,5 @@
 import { z } from "zod";
 export const tripTicketFormSchema = z.object({
-  tripTicketNo: z.string().trim().min(1, "Trip Ticket is Required"),
   startDate: z.coerce.date({ message: "Departure date is required" }),
   endDate: z.coerce.date({ message: "Return date is required" }),
   driverName: z.string().trim().min(1, "Driver name is Required"),

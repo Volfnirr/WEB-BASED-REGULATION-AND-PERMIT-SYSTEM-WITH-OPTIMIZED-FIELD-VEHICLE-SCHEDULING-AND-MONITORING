@@ -13,6 +13,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import Loading from "@/components/ui/loading";
 import AuthUI from "@/components/landing-page/auth-ui";
+// import { useUser } from "@/lib/context/account-info-context";
 
 const inputDesign =
   "w-full px-2.5 py-2.5 border border-gray-300 rounded text-sm bg-white outline-none shadow-[inset_0_1px_3px_rgba(0,0,0,0.05)] transition-all duration-200 focus:border-green-700 focus:ring-2 focus:ring-green-700/20";
@@ -24,8 +25,9 @@ const loginSchema = z.object({
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
+
+  // const { isLoggedIn, isPending, role } = useUser();
 
   const {
     register: registerLogin,
@@ -35,22 +37,25 @@ export default function LoginForm() {
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
+  // useEffect(() => {
+  //   if (!isPending && isLoggedIn && role) {
+  //     router.replace(getRoleRoute(role));
+  //   }
+  // }, [isPending, isLoggedIn, role, router]);
 
-  useEffect(() => {
-    if (!isPending && session) {
-      router.replace(getRoleRoute(session.user.role));
-    }
-  }, [session, isPending, router]);
+  // if (isPending) {
+  //   return <Loading />;
+  // }
 
-  if (isPending) {
-    return <Loading />;
-  }
+  // if (isLoggedIn) {
+  //   return null;
+  // }
 
   const onLogin = async (data) => {
     try {
       const { email, password } = data;
 
-      const {} = await authClient.signIn.email(
+      await authClient.signIn.email(
         {
           email,
           password,
@@ -59,12 +64,12 @@ export default function LoginForm() {
         },
         {
           onSuccess: (ctx) => {
+            const role = ctx.data.user.role;
+            const route = getRoleRoute(role);
+            router.replace(route);
             toast.success("Signed in successfully", {
               position: "top-center",
             });
-            const role = ctx.data.user.role;
-            const route = getRoleRoute(role);
-            router.push(route);
           },
           onError: (ctx) => {
             setLoginError("root", {
@@ -149,7 +154,7 @@ export default function LoginForm() {
           <button
             disabled={isLoginSubmitting}
             type="submit"
-            className="w-full py-3 mt-2 bg-green-700 text-white font-bold rounded text-sm transition-colors duration-300 hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3 mt-2 bg-green-700 text-white cursor-pointer font-bold rounded text-sm transition-colors duration-300 hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoginSubmitting ? (
               <>
@@ -172,7 +177,10 @@ export default function LoginForm() {
         </div>
         <div className="text-[12px] text-gray-600 mt-3">
           <span>Back to the homepage? </span>{" "}
-          <Link href="/" className="text-blue-600 font-bold hover:underline">
+          <Link
+            href="/"
+            className="text-blue-600 font-bold cursor-pointer hover:underline"
+          >
             Go back
           </Link>
         </div>

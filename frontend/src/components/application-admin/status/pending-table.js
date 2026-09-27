@@ -1,18 +1,19 @@
 "use client";
-import Table from "@/components/ui/tables/table";
+// import Table from "@/components/ui/tables/table";
 import FilterDropdown from "@/components/ui/tables/tools/dropdown";
 import SearchInput from "@/components/ui/tables/tools/search-input";
 import SortDropdown from "@/components/ui/tables/tools/sort-dropdown";
 import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
 import { useState } from "react";
+import ViewApplicationsTable from "./status-table";
 
 export default function PendingTable({ initialData, status }) {
   // const page = {page};
-  console.log("Intial Data", initialData);
+  // console.log("Intial Data", initialData);
 
-  const [data, setData] = useState(initialData);
-  console.log("DATA", data);
+  // const [data, setData] = useState(initialData);
+  // console.log("DATA", data);
   const initialColumn = [
     {
       head: "REF-NO",
@@ -42,10 +43,10 @@ export default function PendingTable({ initialData, status }) {
       head: "Status",
       data: "status",
     },
-    {
-      head: "Action",
-      data: "VIEW",
-    },
+    // {
+    //   head: "Action",
+    //   data: "VIEW",
+    // },
   ];
   const column =
     status === "pending"
@@ -103,7 +104,7 @@ export default function PendingTable({ initialData, status }) {
     paginatedData,
     itemsPerPage,
   } = useDataTable({
-    data,
+    data: initialData,
     searchableFields: [
       "userAccEmail",
       "userAccName",
@@ -124,7 +125,7 @@ export default function PendingTable({ initialData, status }) {
         />
       </div>
 
-      <Table columns={column} rows={paginatedData} />
+      <ViewApplicationsTable columns={column} rows={paginatedData} />
 
       <Pagination
         currentPage={currentPage}

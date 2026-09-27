@@ -1,4 +1,5 @@
 "use client";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { useState } from "react";
 
@@ -27,14 +28,14 @@ export default function ServicesPage() {
       title: "Application for Chainsaw Registration (RO-F-04)",
       hasSubMenu: false,
       description:
-        "To register a chainsaw under Application for Chainsaw Registration (RO-F-04), you must submit a completed application form, Official Receipt of Chainsaw Purchase (one (1) certified copy and 1 original for verification), SPA if the applicant is not the owner of the chainsaw, Stencil Serial Number of Chainsaw, Detailed Specification of Chainsaw (e.g, brand, model, engine capacity, etc), Notarized Deed of Absolute Sale, if transfer of ownersship (1 original), and Chainsaw to be registered ."
+        "To register a chainsaw under Application for Chainsaw Registration (RO-F-04), you must submit a completed application form, Official Receipt of Chainsaw Purchase (one (1) certified copy and 1 original for verification), SPA if the applicant is not the owner of the chainsaw, Stencil Serial Number of Chainsaw, Detailed Specification of Chainsaw (e.g, brand, model, engine capacity, etc), Notarized Deed of Absolute Sale, if transfer of ownersship (1 original), and Chainsaw to be registered .",
     },
     {
       title: "Application for Residential Free Patent (RO-L-04)",
       hasSubMenu: false,
       description:
         "To apply for a residential free patent under Republic Act No. 10023 (RO-L-04), you must submit a completed application form, Technical Description of the land (Lot data computation and Cadastal Map), LRA Clearance/ MTC or RTC Clearance, Deed of Conveyance (EJS/DOS/Deed of donation/Waiver of rights, etc), Zoning Clearance from Municipality Planning and Devt Office, Barangay Posting and four (4) documentary stamp.",
-        },
+    },
   ];
 
   return (
@@ -57,11 +58,15 @@ export default function ServicesPage() {
                   onClick={() => toggleAccordion(index)}
                   className="w-full px-6 py-5 flex justify-between items-center bg-white hover:bg-gray-50 transition-colors"
                 >
-                  <h2 className="text-lg font-bold text-[#1a5c38] text-left">
+                  <h2 className="text-sm font-semibold text-[#1a5c38] text-left md:text-lg md:text-bold">
                     {service.title}
                   </h2>
                   <span className="text-2xl text-gray-800">
-                    {openIndex === index ? "▲" : "▼"}
+                    {openIndex === index ? (
+                      <ChevronUp size={20} />
+                    ) : (
+                      <ChevronDown size={20} />
+                    )}
                   </span>
                 </button>
 

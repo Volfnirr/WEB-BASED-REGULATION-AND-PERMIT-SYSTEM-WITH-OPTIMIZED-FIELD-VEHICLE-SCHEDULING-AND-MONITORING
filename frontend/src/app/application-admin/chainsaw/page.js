@@ -7,8 +7,11 @@ import {
   chainsawApplications,
   getChainsawAppStatus,
 } from "@/lib/api/applications/chainsaw/chainsaw-server";
+import { Suspense } from "react";
+import { TableSkeleton } from "@/components/application-admin/services-dashboard/services-table-skeleton";
+import DashboardSkeletonSwitcher from "@/components/skeleton/skeletons-switcher";
 
-export default async function ChainsawApplicationReview() {
+async function ChainsawApplicationReviewData() {
   const { applications } = await chainsawApplications();
   const { status } = await getChainsawAppStatus();
 
@@ -26,5 +29,26 @@ export default async function ChainsawApplicationReview() {
         {/* <ScheduleCardValue /> */}
       </AssignedServices>
     </div>
+  );
+}
+
+export default function ChainsawApplicationReview() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Title
+            title="Manage "
+            title2="Chainsaw"
+            title3="Applications"
+            description="View and manage all Chainsaw Applications."
+          />
+          <DashboardSkeletonSwitcher />
+          <TableSkeleton />
+        </>
+      }
+    >
+      <ChainsawApplicationReviewData />
+    </Suspense>
   );
 }

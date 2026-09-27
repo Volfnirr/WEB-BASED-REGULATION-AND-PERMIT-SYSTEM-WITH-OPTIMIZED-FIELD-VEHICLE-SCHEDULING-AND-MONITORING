@@ -1,7 +1,36 @@
-import { getLast7DaysRange } from "../../lib/date/get-week.js";
+import { getLast7DaysRange } from "../../lib/date/get-date.js";
 import { prisma } from "../../lib/prisma.js";
 
 //DASHBOARD START
+const TZ = "Asia/Manila";
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const toDay = (date) => date.toLocaleDateString("en-CA", { timeZone: TZ });
+
+export async function getDailyNewUsers(days = 90) {
+  const today = toDay(new Date());
+  const startOfToday = new Date(`${today}T00:00:00+08:00`);
+  const since = new Date(startOfToday.getTime() - (days - 1) * DAY_MS);
+
+  const users = await prisma.user.findMany({
+    where: { createdAt: { gte: since } },
+    select: { createdAt: true },
+  });
+
+  const perDay = {};
+  for (let i = 0; i < days; i++) {
+    const day = toDay(new Date(since.getTime() + i * DAY_MS));
+    perDay[day] = { date: day, newUsers: 0 };
+  }
+
+  for (const user of users) {
+    const day = toDay(user.createdAt);
+    if (perDay[day]) perDay[day].newUsers++;
+  }
+
+  return Object.values(perDay);
+}
+
 export async function listAllUser() {
   const { start: weekStart, end: weekEnd } = getLast7DaysRange();
 
@@ -14,7 +43,7 @@ export async function listAllUser() {
   ] = await Promise.all([
     prisma.user.count({
       where: {
-        updatedAt: { gte: weekStart, lt: weekEnd },
+        createdAt: { gte: weekStart, lt: weekEnd },
       },
     }),
     prisma.user.count({
@@ -38,12 +67,14 @@ export async function listAllUser() {
       },
     }),
   ]);
+  const dailyNewUsers = await getDailyNewUsers(90);
   return {
     newUsersLast7Days,
     applicant,
     applicationAdmin,
     vehicleAdmin,
     superAdmin,
+    dailyNewUsers,
   };
 }
 

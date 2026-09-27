@@ -131,3 +131,25 @@ export function getNext7DaysDateOnlyRange() {
   end.setUTCDate(start.getUTCDate() + 7);
   return { start, end };
 }
+
+// Date (YEAR)
+export function getManilaYear() {
+  return Number(
+    new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
+      year: "numeric",
+    }).format(new Date()),
+  );
+}
+
+// Date
+export function getManilaToday() {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  return new Date(formatter.format(new Date()));
+}

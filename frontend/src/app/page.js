@@ -10,17 +10,18 @@ export default function LandingPage() {
         className="min-h-screen bg-cover bg-center bg-fixed relative"
         style={{ backgroundImage: "url('background.png')" }}
       >
-        <div className="absolute inset-0 bg-green-900/60 mix-blend-multiply pointer-events-none z-0" />
+        <div className="absolute inset-0 bg-green-950/80 pointer-events-none z-0" />
 
         <div className="relative z-10">
           <Navbar />
-          <section id="home" className="scroll-mt-64 ">
+          <section id="home" className="scroll-mt-16">
             <Home />
           </section>
-          {/* <section id="aboutus">
+
+          <section id="aboutus" className="scroll-mt-16">
             <AboutUs />
-          </section> */}
-          <section id="services">
+          </section>
+          <section id="services" className="scroll-mt-16">
             <ServicesPage />
           </section>
         </div>

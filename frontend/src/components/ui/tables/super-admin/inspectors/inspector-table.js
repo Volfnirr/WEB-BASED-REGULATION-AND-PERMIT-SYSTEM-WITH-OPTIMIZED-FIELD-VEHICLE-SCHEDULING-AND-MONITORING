@@ -75,13 +75,13 @@ export default function InspectorTableUI({ columns, rows, View }) {
                     ) : column.data === "isAvailable" ? (
                       row[column.data] === true ? (
                         <span
-                          className={`${StatusColor("AVAILABLE")} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                          className={`${StatusColor("AVAILABLE")} font-bold inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
                         >
                           AVAILABLE
                         </span>
                       ) : (
                         <span
-                          className={`${StatusColor("NOT_AVAILABLE")} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                          className={`${StatusColor("NOT_AVAILABLE")}font-bold inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
                         >
                           NOT AVAILABLE
                         </span>

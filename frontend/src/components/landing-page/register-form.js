@@ -48,9 +48,6 @@ export default function RegisterForm() {
   const [showRegPassword, setRegShowPassword] = useState(false);
   const [showConfirmPassword, setshowConfirmPassword] = useState(false);
 
-  const { data: session, isPending } = authClient.useSession();
-  const router = useRouter();
-
   const {
     register: registerSignUp,
     handleSubmit: handleRegisterSubmit,
@@ -60,16 +57,6 @@ export default function RegisterForm() {
   } = useForm({
     resolver: zodResolver(registerSchema),
   });
-
-  useEffect(() => {
-    if (!isPending && session) {
-      router.replace(getRoleRoute(session.user.role));
-    }
-  }, [session, isPending, router]);
-
-  if (isPending) {
-    return <Loading />;
-  }
 
   const onSignUp = async (data) => {
     try {

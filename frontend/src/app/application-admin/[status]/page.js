@@ -6,11 +6,16 @@ import {
   appAdminApplicationsByStatus,
   assingedApplicationStatus,
 } from "@/lib/api/applications/app-admin-applications-server";
+import { Suspense } from "react";
+import { TableSkeleton } from "@/components/application-admin/services-dashboard/services-table-skeleton";
+
 import { notFound } from "next/navigation";
+import BarLoading from "@/components/application-admin/services-dashboard/service-bar-loading";
+import AssignSkeletonSwitcher from "@/components/skeleton/skeletons-assign-switcher";
 
 const VALID_STATUSES = ["pending", "approved", "rejected"];
 
-export default async function Status({ params }) {
+async function Status({ params }) {
   const { status } = await params;
   const { assignedStatus } = await assingedApplicationStatus();
   if (!VALID_STATUSES.includes(status)) {
@@ -54,5 +59,31 @@ export default async function Status({ params }) {
         <PendingTable initialData={applicationsWithPage} status={status} />
       </AssignedServices>
     </div>
+  );
+}
+
+export default async function StatusSuspense({ params }) {
+  const { status } = await params;
+
+  const statusLabel = status
+    ? status.charAt(0).toUpperCase() + status.slice(1)
+    : "";
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Title
+            title="Manage Your"
+            title2={statusLabel}
+            title3="Applications"
+            description={`View and manage all your ${status} applications.`}
+          />
+          <AssignSkeletonSwitcher />
+          <TableSkeleton />
+        </>
+      }
+    >
+      <Status params={params} />
+    </Suspense>
   );
 }

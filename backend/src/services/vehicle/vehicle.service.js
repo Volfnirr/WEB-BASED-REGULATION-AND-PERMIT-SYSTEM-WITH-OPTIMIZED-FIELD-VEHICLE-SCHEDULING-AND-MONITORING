@@ -3,7 +3,7 @@ import {
   getLast30DaysRange, // Timestamptz
   getTodayDateOnlyRange, // Date
   getNext7DaysDateOnlyRange, // Date
-} from "../../lib/date/get-week.js";
+} from "../../lib/date/get-date.js";
 import { prisma } from "../../lib/prisma.js";
 
 // MANAGE VEHICLE START
@@ -122,7 +122,10 @@ export async function verifyTripTicketTaken(tripTicketNo, db = prisma) {
 // GROUP 1
 export async function verifyScheduleStatus(data, db = prisma) {
   const vehicle = await db.vehicle.findUnique({
-    where: { id: Number(data.vehicleId) },
+    where: {
+      id: Number(data.vehicleId),
+      isUsable: true,
+    },
   });
 
   if (!vehicle) throw new Error("VEHICLE_NOT_FOUND");
@@ -146,10 +149,15 @@ export async function verifyScheduleStatus(data, db = prisma) {
 
 // UNDER TRIP TICKET - SUBMIT TRIP TICKET
 // GROUP 1
-export async function createTripTicket(data, userId, db = prisma) {
+export async function createTripTicket(
+  tripTicketNo,
+  data,
+  userId,
+  db = prisma,
+) {
   return await db.trip_ticket.create({
     data: {
-      tripTicketNo: data.tripTicketNo,
+      tripTicketNo: tripTicketNo,
       vehicleId: Number(data.vehicleId),
       driverName: data.driverName,
       authorizedPassengers: data.authorizedPassengers,

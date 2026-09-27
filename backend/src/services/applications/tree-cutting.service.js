@@ -1,10 +1,16 @@
 import { prisma } from "../../lib/prisma.js";
-import { getLast7DaysRange, getTodayRange } from "../../lib/date/get-week.js";
+import { getLast7DaysRange, getTodayRange } from "../../lib/date/get-date.js";
 // using interactive transaction :<
 // use in all services maybe? ahhhhhhhhhhhhh uhmmmmmmmmmmmmmm wahhhhhhhhhhhhh
 // used db = prisma if use with tx  ,tx
 // if not leave blank since db = prisma in js
-export async function submitTreeCuttingForm(refNo, userId, data, db = prisma) {
+export async function submitTreeCuttingForm(
+  refNo,
+  userEmail,
+  userId,
+  data,
+  db = prisma,
+) {
   return db.application.create({
     data: {
       referenceNo: refNo,
@@ -18,11 +24,10 @@ export async function submitTreeCuttingForm(refNo, userId, data, db = prisma) {
           middleName: data.middleName,
           extensionName: data.extensionName,
           fullAddress: data.fullAddress,
-          email: data.email,
+          email: userEmail,
           contactNo: data.contactNo,
           treeCuttingAddress: data.treeCuttingAddress,
           noTreesToBeRemoved: data.noTreesToBeRemoved,
-          signatureName: data.signatureName,
         },
       },
     },

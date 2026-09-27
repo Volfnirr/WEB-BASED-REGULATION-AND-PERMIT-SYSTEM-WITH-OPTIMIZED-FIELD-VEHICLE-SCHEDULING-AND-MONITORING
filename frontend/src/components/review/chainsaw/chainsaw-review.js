@@ -20,6 +20,7 @@ import {
   approveApplication,
   rejectApplication,
 } from "@/lib/api/applications/app-admin-action";
+import Link from "next/link";
 
 const action = [
   { id: 1, value: "APPROVED" },
@@ -296,7 +297,11 @@ export default function ReviewChainsawApp({ data, params }) {
                       <textarea
                         {...register("remarks")}
                         placeholder="Add remarks..."
-                        className="w-full resize-y overflow-auto px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        className="h-9  max-h-80 resize-none overflow-hidden w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        onInput={(e) => {
+                          e.currentTarget.style.height = "auto";
+                          e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                        }}
                       />
                       {errors.remarks && (
                         <div className="text-red-600 text-xs font-medium">
@@ -313,20 +318,21 @@ export default function ReviewChainsawApp({ data, params }) {
             </div>
           )}
 
-          {chainsaw?.application?.status === "APPROVED" ||
-          chainsaw?.application?.status === "REJECTED" ? (
+          {chainsaw?.chainsawFormData?.application?.status === "APPROVED" ||
+          chainsaw?.chainsawFormData?.application?.status === "REJECTED" ? (
             <div>
               <h2 className="text-sm font-bold text-gray-800 mb-3">Remarks</h2>
               <div className="grid grid-cols-1 gap-4 mb-4">
-                <div>
-                  <input
-                    type="text"
-                    value={chainsaw?.application?.remarks}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
+                <div className={`whitespace-pre-wrap ${readOnlyInputClass} `}>
+                  {chainsaw?.chainsawFormData?.application?.remarks}
                 </div>
               </div>
+              <Link
+                className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700"
+                href={`/application-admin/${chainsaw?.chainsawFormData?.application?.status === "APPROVED" ? "approved" : "rejected"}`}
+              >
+                Go back
+              </Link>
             </div>
           ) : null}
         </div>

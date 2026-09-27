@@ -1,17 +1,19 @@
 const statusColors = {
   //APPLICATION
-  APPROVED: "bg-[#4daa74] text-green-950 hover:bg-green-600  font-bold",
-  REJECTED: "bg-rose-600 text-rose-50 hover:bg-rose-700 font-bold",
-  PENDING: "bg-green-400 text-green-950 hover:bg-green-500 font-bold",
+  // prettier-ignore
+
+  APPROVED:"bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold",
+  REJECTED: "bg-rose-50 text-rose-700 border border-rose-200 font-bold",
+  PENDING: "bg-orange-50 text-orange-700 border border-orange-200 font-bold",
   SELF_ASSIGN: "bg-violet-500 text-violet-100 hover:bg-violet-600 font-bold",
   VIEW: "bg-sky-500 text-sky-950 hover:bg-sky-600 font-bold",
 
   //VEHICLE
-  AVAILABLE: "bg-lime-500 text-lime-950 font-bold",
-  NOT_AVAILABLE: "bg-red-500 text-red-950 font-bold",
-  RESERVED: "bg-cyan-500 text-cyan-950 font-bold",
-  MAINTENANCE: "bg-fuchsia-600 text-fuchsia-50 font-bold",
-  UNUSED: "bg-neutral-400 text-neutral-900 font-bold",
+  AVAILABLE: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  RESERVED: "bg-blue-50 text-blue-700 border border-blue-200",
+  MAINTENANCE: "bg-purple-50 text-purple-700 border border-purple-200",
+  NOT_AVAILABLE: "bg-red-50 text-red-700 border border-red-200",
+  UNUSED: "bg-gray-100 text-gray-600 ring-1 ring-gray-200",
   EDIT: "bg-sky-500 text-sky-950 hover:bg-sky-600 font-bold",
 
   //TRIP-TICKET

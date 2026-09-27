@@ -2,7 +2,7 @@ import rateLimit from "express-rate-limit";
 
 export const rateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 2000, // 100
+  max: 300, // 300
   message: { message: "Too many requests, please try again later." },
 });
 
@@ -17,7 +17,7 @@ export const formSubmitLimiter = rateLimit({
 
 export const vehicleAction = rateLimit({
   windowMs: 60 * 1000,
-  max: 4, //1
+  max: 10, //1
   message: {
     message:
       "You can only add or update vehicle once per minute. Please wait a moment and try again.",
@@ -34,7 +34,7 @@ export const fetchLimit = rateLimit({
 
 export const vehicleSubmitTicketLimit = rateLimit({
   windowMs: 60 * 1000,
-  max: 3,
+  max: 20,
   message: {
     message: "Please wait a moment and try again.",
   },

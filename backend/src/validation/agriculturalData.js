@@ -22,19 +22,15 @@ export const agriculturalFormSchema = z
       .trim()
       .max(50, "Maximum 50 characters allowed")
       .optional(),
-
     contactNumber: z
       .string()
       .trim()
       .regex(/^09\d{9}$/, "Enter a valid 11-digit mobile number")
       .max(11, "Maximum 11 characters allowed"),
-    email: z.email("Invalid email").max(255, "Maximum 255 characters allowed"),
-
     birthday: z.coerce.date({
       required_error: "Date of birth is required",
       invalid_type_error: "Please enter a valid date",
     }),
-
     sex: z.enum(["Male", "Female"], {
       errorMap: () => ({ message: "Please select a sex" }),
     }),
@@ -43,13 +39,12 @@ export const agriculturalFormSchema = z
       .trim()
       .min(1, "Citizenship is required")
       .max(100, "Maximum 100 characters allowed"),
-    naturalBorn: z.enum(["Yes", "No"], {
-      errorMap: () => ({ message: "Please select an option" }),
+    naturalBorn: z.boolean({
+      error: "Please select an option",
     }),
     civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANULLED"], {
       errorMap: () => ({ message: "Please select civil status" }),
     }),
-
     spouse: z
       .string()
       .trim()
@@ -58,9 +53,8 @@ export const agriculturalFormSchema = z
     mailingAddress: z
       .string()
       .trim()
-      .min(5, "Complete mailing address is required")
+      .min(1, "Complete mailing address is required")
       .max(1000, "Maximum 1000 characters allowed"),
-
     province: z
       .string()
       .trim()
@@ -79,8 +73,8 @@ export const agriculturalFormSchema = z
     location: z
       .string()
       .trim()
-      .max(500, "Maximum 500 characters allowed")
-      .optional(),
+      .min(1, "Specific locations is required")
+      .max(500, "Maximum 500 characters allowed"),
     lotNo: z
       .string()
       .trim()
@@ -103,8 +97,11 @@ export const agriculturalFormSchema = z
     cultivationDate: z
       .string()
       .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+      .refine(
+        (val) =>
+          /^(\d{4}|(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4})$/.test(val),
+        { message: "Enter a date as MM/DD/YYYY or just YYYY" },
+      ),
     improvements: z
       .string()
       .trim()
@@ -125,7 +122,6 @@ export const agriculturalFormSchema = z
       .trim()
       .max(1000, "Maximum 1000 characters allowed")
       .optional(),
-
     heir1_name: z
       .string()
       .trim()
@@ -156,7 +152,6 @@ export const agriculturalFormSchema = z
       .trim()
       .max(255, "Maximum 255 characters allowed")
       .optional(),
-
     witness1_name: z
       .string()
       .trim()
@@ -177,20 +172,18 @@ export const agriculturalFormSchema = z
       .trim()
       .min(1, "Witness 2 address is required")
       .max(1000, "Maximum 1000 characters allowed"),
-
     date_filed: z.coerce.date({
       required_error: "Date filed is required",
       invalid_type_error: "Please enter a valid date",
     }),
-    applicant_signature: z
-      .string()
-      .trim()
-      .min(1, "Digital signature is required")
-      .max(255, "Maximum 255 characters allowed"),
-
     privacyConsent: z.literal(true, {
       errorMap: () => ({ message: "Please check this box to proceed" }),
     }),
+    assignedInspector: z
+      .number({ error: "Please assign an inspector" })
+      .int("Invalid inspector")
+      .positive("Invalid inspector")
+      .max(9999, "Invalid inspector"),
   })
   .refine(
     (data) => {

@@ -27,13 +27,13 @@ import {
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateInspector } from "@/lib/api/super-admin/super-admin";
+import { changeUserName } from "@/lib/api/super-admin/super-admin";
 const editUser = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "Last name is required")
-    .max(100, "Last name is too long"),
+    .min(1, "Name is required")
+    .max(100, "Name is too long"),
 });
 
 export default function EditUser({ isOpen, onClose, userData }) {
@@ -53,7 +53,6 @@ export default function EditUser({ isOpen, onClose, userData }) {
     if (user) {
       if (data.name !== userData.name) user.name = data.name;
     }
-    console.log("User name", user);
     try {
       if (Object.keys(user).length === 0) {
         toast.error("You can only submit if you changed something", {
@@ -62,10 +61,11 @@ export default function EditUser({ isOpen, onClose, userData }) {
         return;
       }
       const { id } = userData;
-      //   await updateInspector({
-      //     data: user,
-      //     id,
-      //   });
+      const { name } = user;
+      await changeUserName({
+        userId: id,
+        name: name,
+      });
       toast.success("User updated successfully", {
         position: "top-center",
       });

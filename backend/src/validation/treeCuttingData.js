@@ -16,7 +16,6 @@ export const treeCuttingFormSchema = z.object({
     .trim()
     .max(100, "Extension name is too long")
     .optional(),
-  email: z.email("Invalid email"),
   fullAddress: z
     .string()
     .trim()
@@ -31,11 +30,6 @@ export const treeCuttingFormSchema = z.object({
     .number()
     .min(1, "Must remove at least one tree")
     .max(1000, "Number of trees cannot exceed 1,000"),
-  signatureName: z
-    .string()
-    .trim()
-    .min(1, "Signature name is required")
-    .max(100, "Signature name is too long"),
   privacyConsent: z.literal(true, "Please check this box to proceed"),
   contactNo: z
     .string()

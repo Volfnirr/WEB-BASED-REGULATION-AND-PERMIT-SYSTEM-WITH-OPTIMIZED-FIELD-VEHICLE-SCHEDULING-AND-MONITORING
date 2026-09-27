@@ -112,10 +112,11 @@ export default function ApplicationAdminSidebar({}) {
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <Image
-                  src="/denrlogo.png"
+                  src="/homedenrlogo.png"
                   alt="DENR logo"
                   width={40}
                   height={40}
+                  loading="eager"
                 />
                 <div>
                   <h2 className="font-bold text-xs tracking-wider uppercase text-green-200">
