@@ -145,7 +145,7 @@ export async function updateVehicle(req, res) {
     }
     const checkVehicles = await prisma.vehicle.findFirst({
       where: {
-        id: req.params.id,
+        id: Number(req.params.id),
       },
       select: {
         lastRegistrationDate: true,

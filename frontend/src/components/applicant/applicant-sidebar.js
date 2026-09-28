@@ -93,7 +93,7 @@ export default function ApplicantSidebar() {
                     PENRO Portal
                   </h2>
                   <p className="text-sm font-semibold truncate max-w-37.5">
-                    {user ? user.name : "failed to load username"}
+                    {user ? user?.name : "Loading..."}
                   </p>
                 </div>
               </div>
