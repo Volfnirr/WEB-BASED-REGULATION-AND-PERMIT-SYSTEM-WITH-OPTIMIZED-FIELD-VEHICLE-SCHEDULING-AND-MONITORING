@@ -237,6 +237,50 @@ export async function updateScheduleVehicle(data, tripTicketId, db = prisma) {
   });
 }
 
+
+export async function tripTicketsForCompletionList() {
+  return await prisma.trip_ticket.findMany({
+    select: {
+      id: true,
+      tripTicketNo: true,
+      driverName: true,
+      placesToVisit: true,
+      vehicle: {
+        select: {
+          plateNumber: true,
+        },
+      },
+      vehicle_schedule: {
+        select: {
+          startDate: true,
+          endDate: true,
+        },
+      },
+    },
+  });
+}
+
+ export async function completeTripTicketList() {
+  return await prisma.trip_ticket.findMany({
+    where: {
+      trip_ticket_completion: {
+      is: null,
+      }, 
+    },
+    select: {
+      id: true,
+      tripTicketNo: true,
+      driverName: true,
+      vehicle: {
+        select: {
+          plateNumber: true,
+        },
+      },
+    },
+  });
+}
+
+
 // TRIP TICKET END
 
 // VEHICLE DASHBOARD START
@@ -464,4 +508,213 @@ export async function scheduleVehicleMaintenance(vehicleId, data, db = prisma) {
       status: "MAINTENANCE",
     },
   });
+}
+
+export async function submitCompleteTripTicket(tripTicketId, data, db = prisma) {
+  const id = Number(tripTicketId);
+
+  const ticket = await db.trip_ticket.findUnique({ where: { id } });
+
+  if (!ticket) {
+    throw new Error("TRIP_TICKET_NOT_FOUND");
+  }
+
+  if (ticket.status === "COMPLETED") {
+    throw new Error("TRIP_TICKET_ALREADY_COMPLETED");
+  }
+
+  const completion = await db.trip_ticket_completion.create({
+    data: {
+      tripTicketId: id,
+      timeOfDeparture: new Date(data.timeOfDeparture),
+      timeOfArrivalBack: new Date(data.timeOfArrivalBack),
+      approxDistanceTraveled: data.approxDistance,
+      fuelBalanceInTank: data.fuelBalance,
+      fuelIssuedByOfficeStock: data.fuelIssued,
+      fuelAddPurchasedTrip: data.fuelPurchased,
+      gearOilIssued: data.gearOilIssued,
+      lubOilIssued: data.lubOilIssued,
+      greaseIssued: data.greaseIssued,
+      speedometerStart: data.speedometerStart ?? null,
+      speedometerEnd: data.speedometerEnd ?? null,
+      speedometerDistance: data.computedDistance ?? null,
+      remarks: data.remarks,
+    },
+  });
+
+  if (Array.isArray(data.placesVisited) && data.placesVisited.length > 0) {
+    await db.trip_ticket_place.createMany({
+      data: data.placesVisited.map((p) => ({
+        tripTicketId: id,
+        placeName: p.place,
+        timeOfArrival: p.timeOfArrival ? new Date(p.timeOfArrival) : null,
+        timeOfDeparture: p.timeOfDeparture ? new Date(p.timeOfDeparture) : null,
+      })),
+    });
+  }
+
+  if (Array.isArray(data.passengers) && data.passengers.length > 0) {
+    await db.trip_ticket_passenger.createMany({
+      data: data.passengers.map((p) => ({
+        tripTicketId: id,
+        passengerName: p.name,
+      })),
+    });
+  }
+
+  await db.trip_ticket.update({
+    where: { id },
+    data: { status: "COMPLETED", updatedAt: new Date() },
+  });
+
+  return completion;
+
+  
+}
+
+
+export async function updateCompleteTripTicket(tripTicketId, data, db = prisma) {
+  const id = Number(tripTicketId);
+
+  const ticket = await db.trip_ticket.findUnique({ where: { id } });
+  if (!ticket) {
+    throw new Error("TRIP_TICKET_NOT_FOUND");
+  }
+
+  const completion = await db.trip_ticket_completion.update({
+    where: { tripTicketId: id },
+    data: {
+      timeOfDeparture: data.timeOfDeparture
+        ? new Date(data.timeOfDeparture)
+        : undefined,
+      timeOfArrivalBack: data.timeOfArrivalBack
+        ? new Date(data.timeOfArrivalBack)
+        : undefined,
+      approxDistanceTraveled: data.approxDistance ?? undefined,
+      fuelBalanceInTank: data.fuelBalance ?? undefined,
+      fuelIssuedByOfficeStock: data.fuelIssued ?? undefined,
+      fuelAddPurchasedTrip: data.fuelPurchased ?? undefined,
+      gearOilIssued: data.gearOilIssued ?? undefined,
+      lubOilIssued: data.lubOilIssued ?? undefined,
+      greaseIssued: data.greaseIssued ?? undefined,
+      speedometerStart: data.speedometerStart ?? undefined,
+      speedometerEnd: data.speedometerEnd ?? undefined,
+      speedometerDistance: data.computedDistance ?? undefined,
+      remarks: data.remarks ?? undefined,
+    },
+  });
+
+  if (Array.isArray(data.placesVisited)) {
+    await db.trip_ticket_place.deleteMany({ where: { tripTicketId: id } });
+    if (data.placesVisited.length > 0) {
+      await db.trip_ticket_place.createMany({
+        data: data.placesVisited.map((p) => ({
+          tripTicketId: id,
+          placeName: p.place,
+          timeOfArrival: p.timeOfArrival ? new Date(p.timeOfArrival) : null,
+          timeOfDeparture: p.timeOfDeparture
+            ? new Date(p.timeOfDeparture)
+            : null,
+        })),
+      });
+    }
+  }
+
+  if (Array.isArray(data.passengers)) {
+    await db.trip_ticket_passenger.deleteMany({ where: { tripTicketId: id } });
+    if (data.passengers.length > 0) {
+      await db.trip_ticket_passenger.createMany({
+        data: data.passengers.map((p) => ({
+          tripTicketId: id,
+          passengerName: p.name,
+        })),
+      });
+    }
+  }
+
+  await db.trip_ticket.update({
+    where: { id },
+    data: { updatedAt: new Date() },
+  });
+
+  return completion;
+}
+//for trip ticket B table
+export async function completedTripTicketsList() {
+  const tickets = await prisma.trip_ticket.findMany({
+    where: {
+      trip_ticket_completion: { isNot: null },
+    },
+    include: {
+      vehicle: { select: { plateNumber: true } },
+      trip_ticket_completion: true,
+      trip_ticket_place: true,
+      trip_ticket_passenger: true,
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  return tickets.map((t) => {
+    const completion = t.trip_ticket_completion || {};
+    const totalFuel =
+      Number(completion.fuelBalanceInTank || 0) +
+      Number(completion.fuelIssuedByOfficeStock || 0) +
+      Number(completion.fuelAddPurchasedTrip || 0);
+    const distance =
+      completion.speedometerDistance ?? completion.approxDistanceTraveled ?? null;
+
+    return {
+      id: t.id,
+      tripTicketNo: t.tripTicketNo,
+      driverName: t.driverName,
+      plateNumber: t.vehicle?.plateNumber,
+      authorizedPassengers:
+        t.trip_ticket_passenger?.length > 0
+          ? t.trip_ticket_passenger.map((p) => p.passengerName).join(", ")
+          : t.authorizedPassengers,
+      placesToVisit:
+        t.trip_ticket_place?.length > 0
+          ? t.trip_ticket_place.map((p) => p.placeName).join(", ")
+          : t.placesToVisit,
+      timeOfDeparture: completion.timeOfDeparture,
+      timeOfArrivalBack: completion.timeOfArrivalBack,
+      distance,
+      totalFuel,
+      remarks: completion.remarks,
+      // raw nested data kept for the View/Edit modals, which need full detail
+      trip_ticket_completion: t.trip_ticket_completion,
+      trip_ticket_place: t.trip_ticket_place,
+      trip_ticket_passenger: t.trip_ticket_passenger,
+      vehicle: t.vehicle,
+    };
+  });
+}
+
+export async function completedTripTicketsStatus() {
+  const { start: weekStart, end: weekEnd } = getLast7DaysRange();
+  const { start: monthStart, end: monthEnd } = getLast30DaysRange();
+
+  const [totalCompleted, newLast7Days, newLast30Days] = await Promise.all([
+    prisma.trip_ticket.count({
+      where: { trip_ticket_completion: { isNot: null } },
+    }),
+    prisma.trip_ticket.count({
+      where: {
+        trip_ticket_completion: { isNot: null },
+        updatedAt: { gte: weekStart, lt: weekEnd },
+      },
+    }),
+    prisma.trip_ticket.count({
+      where: {
+        trip_ticket_completion: { isNot: null },
+        updatedAt: { gte: monthStart, lt: monthEnd },
+      },
+    }),
+  ]);
+
+  return {
+    totalCompleted,
+    newLast7Days,
+    newLast30Days,
+  };
 }

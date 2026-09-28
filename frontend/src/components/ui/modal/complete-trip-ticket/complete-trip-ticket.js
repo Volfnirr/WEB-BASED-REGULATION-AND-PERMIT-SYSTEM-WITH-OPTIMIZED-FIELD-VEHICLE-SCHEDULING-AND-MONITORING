@@ -7,13 +7,15 @@ import { useForm, Controller } from "react-hook-form";
 import { X, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { updateTripAndSchedule } from "@/lib/api/vehicle/manage-vehicles";
+// Fetches the list for the dropdown
+import { submitCompleteTripTicket, getTripTickets } from "@/lib/api/vehicle/manage-vehicles";
 
 import { Spinner } from "@/components/ui/spinner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 const driverTripTicketSchema = z.object({
-  timeOfDeparture: z.date({
+  selectedTripTicketId: z.string().min(1, "Please select an available trip ticket"),
+  timeOfDeparture: z.coerce.date({
     required_error: "Departure time is required",
     invalid_type_error: "Departure time is required",
   }),
@@ -21,12 +23,12 @@ const driverTripTicketSchema = z.object({
     .array(
       z.object({
         place: z.string().trim().min(1, "Place name is required"),
-        timeOfArrival: z.date().optional().nullable(),
-        timeOfDeparture: z.date().optional().nullable(),
+        timeOfArrival: z.coerce.date().optional().nullable(),
+        timeOfDeparture: z.coerce.date().optional().nullable(),
       })
     )
     .min(1, "At least one place log is required"),
-  timeOfArrivalBack: z.date({
+  timeOfArrivalBack: z.coerce.date({
     required_error: "Arrival time is required",
     invalid_type_error: "Arrival time is required",
   }),
@@ -65,29 +67,31 @@ const driverTripTicketSchema = z.object({
   speedometerEnd: z.coerce.number().optional().nullable(),
   remarks: z.string().trim().min(1, "Remarks are required"),
 
-  driverSignature: z.string().trim().optional(),
   passengers: z
     .array(
       z.object({
         name: z.string().trim().min(1, "Passenger name is required"),
-        signature: z.string().trim().optional(),
       })
     )
     .optional(),
-  recommendingApproval: z.string().trim().optional(),
-  approvedBy: z.string().trim().optional(),
+
+  totalFuel: z.coerce.number().optional(),
+  computedDistance: z.coerce.number().optional(),
 });
+
 
 export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket }) {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-[10px] font-bold mt-1";
 
+  const [availableTickets, setAvailableTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+
   const [places, setPlaces] = useState([
     { place: "", timeOfArrival: undefined, timeOfDeparture: undefined },
   ]);
 
-  // Start with 0 passengers to avoid empty validation errors on default rows
   const [passengers, setPassengers] = useState([]);
 
   const {
@@ -101,6 +105,7 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
   } = useForm({
     resolver: zodResolver(driverTripTicketSchema),
     defaultValues: {
+      selectedTripTicketId: "",
       placesVisited: places,
       passengers: passengers,
     },
@@ -115,22 +120,53 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
   const speedometerEnd = Number(watch("speedometerEnd")) || 0;
   const computedDistance = Math.max(0, speedometerEnd - speedometerStart);
 
+  // Fetch tickets safely to populate the dropdown (prevents .map error)
   useEffect(() => {
     if (!isOpen) return;
 
-    if (tripTicket?.driverDetails) {
-      reset(tripTicket.driverDetails);
+    const fetchTickets = async () => {
+      try {
+        const response = await getTripTickets();
 
-      if (tripTicket.driverDetails.placesVisited?.length > 0) {
-        setPlaces(tripTicket.driverDetails.placesVisited);
+        // This stops the ".map is not a function" error forever
+        const ticketsArray = Array.isArray(response)
+          ? response
+          : (response?.data || []);
+
+        setAvailableTickets(ticketsArray);
+      } catch (error) {
+        toast.error("Failed to fetch available trip tickets.");
+        setAvailableTickets([]);
+      }
+    };
+
+    fetchTickets();
+  }, [isOpen]);
+
+  // Fill form when ticket is passed from parent OR chosen in dropdown
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const ticketToLoad = selectedTicket || tripTicket;
+
+    if (ticketToLoad?.driverDetails) {
+      reset({
+        ...ticketToLoad.driverDetails,
+        selectedTripTicketId: String(ticketToLoad.id)
+      });
+
+      if (ticketToLoad.driverDetails.placesVisited?.length > 0) {
+        setPlaces(ticketToLoad.driverDetails.placesVisited);
       }
 
-      if (tripTicket.driverDetails.passengers?.length > 0) {
-        setPassengers(tripTicket.driverDetails.passengers);
-        setValue("passengers", tripTicket.driverDetails.passengers);
+      if (ticketToLoad.driverDetails.passengers?.length > 0) {
+        setPassengers(ticketToLoad.driverDetails.passengers);
+        setValue("passengers", ticketToLoad.driverDetails.passengers);
       }
+    } else if (ticketToLoad?.id) {
+      setValue("selectedTripTicketId", String(ticketToLoad.id));
     }
-  }, [tripTicket, isOpen, reset, setValue]);
+  }, [selectedTicket, tripTicket, isOpen, reset, setValue]);
 
   const handlePlaceChange = (index, field, value) => {
     const updatedPlaces = [...places];
@@ -156,7 +192,7 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
   };
 
   const addPassenger = () => {
-    const updatedPassengers = [...passengers, { name: "", signature: "" }];
+    const updatedPassengers = [...passengers, { name: "" }];
     setPassengers(updatedPassengers);
     setValue("passengers", updatedPassengers, { shouldValidate: true });
   };
@@ -170,31 +206,30 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
   };
 
   const onSubmit = async (data) => {
-    if (!tripTicket?.id) {
-      toast.error("Error: Trip Ticket ID is missing.", {
+
+    const { selectedTripTicketId } = data;
+
+    if (!selectedTripTicketId) {
+      toast.error("Error: Please select a Trip Ticket.", {
         position: "top-center",
       });
       return;
     }
 
     const cleanedPassengers =
-      data.passengers?.filter(
-        (p) =>
-          (p.name && p.name.trim() !== "") ||
-          (p.signature && p.signature.trim() !== "")
-      ) || [];
+      data.passengers?.filter((p) => p.name && p.name.trim() !== "") || [];
 
     const payload = {
-      ...data,
+      ...data, // keep selectedTripTicketId in here too — backend requires it
       passengers: cleanedPassengers,
       totalFuel,
       computedDistance,
     };
 
     try {
-      const { message } = await updateTripAndSchedule({
-        id: tripTicket.id,
-        data: { driverDetails: payload },
+      const { message } = await submitCompleteTripTicket({
+        id: selectedTripTicketId,
+        data: payload,
       });
 
       toast.success(message ?? "Driver ticket details updated successfully", {
@@ -241,6 +276,60 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
         <hr className="border-gray-200 mb-8" />
 
         <form className="space-y-2" onSubmit={handleSubmit(onSubmit)}>
+
+          {/* Dropdown for picking the ticket */}
+          <div className="mb-6">
+            <div className="flex flex-col gap-1 text-left">
+              <label
+                htmlFor="selectedTripTicketId"
+                className="text-left text-xs font-bold text-gray-700 mb-1"
+              >
+                Select Trip Ticket to Complete
+              </label>
+
+              <Controller
+                name="selectedTripTicketId"
+                control={control}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    id="selectedTripTicketId"
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      const ticket = availableTickets.find(
+                        (t) => String(t.id) === e.target.value
+                      );
+                      setSelectedTicket(ticket || null);
+                    }}
+                    className={`${inputClass} text-md cursor-pointer text-black`}
+                  >
+                    <option value="" disabled>
+                      Select an available trip ticket
+                    </option>
+                    {availableTickets.length === 0 ? (
+                      <option value="" disabled>
+                        No available trip tickets found
+                      </option>
+                    ) : (
+                      availableTickets.map((ticket) => (
+                        <option key={ticket.id} value={String(ticket.id)}>
+                          Ticket No: {ticket.tripTicketNo} - {ticket.placesToVisit} ({ticket.driverName})
+                        </option>
+                      ))
+                    )}
+                  </select>
+                )}
+              />
+
+              {errors.selectedTripTicketId && (
+                <div className={errorClass}>
+                  {errors.selectedTripTicketId.message}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* END DROPDOWN */}
+
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-2">
               Schedule Details
@@ -628,63 +717,20 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
               </label>
               <textarea
                 {...register("remarks")}
-                rows="2"
-                className={inputClass}
+                className={`h-9 ${inputClass} resize-none overflow-hidden `}
+                onInput={(e) => {
+                  e.currentTarget.style.height = "auto";
+                  e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                }}
                 placeholder="Add remarks here..."
               />
               {errors.remarks && (
                 <div className={errorClass}>{errors.remarks.message}</div>
               )}
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Driver
-                </label>
-                <input
-                  {...register("driverSignature")}
-                  type="text"
-                  placeholder="Type name to sign"
-                  className={inputClass}
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Recommending Approval
-                </label>
-                <input
-                  {...register("recommendingApproval")}
-                  type="text"
-                  placeholder="Type name"
-                  className={inputClass}
-                />
-                <input
-                  type="text"
-                  placeholder="Position (e.g. Chief, Management Services Division)"
-                  className={`${inputClass} !py-1 !text-xs text-gray-500`}
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Approved By
-                </label>
-                <input
-                  {...register("approvedBy")}
-                  type="text"
-                  placeholder="Type name"
-                  className={inputClass}
-                />
-                <input
-                  type="text"
-                  placeholder="Position (e.g. OIC, PENRO)"
-                  className={`${inputClass} !py-1 !text-xs text-gray-500`}
-                />
-              </div>
-            </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
             <button
               type="button"
               onClick={onClose}

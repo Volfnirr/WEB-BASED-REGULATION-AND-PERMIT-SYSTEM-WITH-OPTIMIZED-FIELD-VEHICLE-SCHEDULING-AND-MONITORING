@@ -27,6 +27,7 @@ import { submitResidentialForm } from "@/lib/api/applications/residential/reside
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { toTitleCase } from "@/lib/title-case";
+import AddressFields from "@/components/forms/AddressFields";
 
 const residentialFormSchema = z
   .object({
@@ -599,42 +600,15 @@ export default function ResidentialForm({ inspectors }) {
                   Land Information
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <input
-                    {...register("province")}
-                    type="text"
-                    readOnly
-                    className={`${inputClass} bg-gray-100 pointer-events-none`}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <AddressFields
+                    control={control}
+                    setValue={setValue}
+                    errors={errors}
                   />
-                  <div className="flex flex-col gap-1 text-left">
-                    <input
-                      {...register("municipality")}
-                      type="text"
-                      placeholder="*MUNICIPALITY"
-                      className={inputClass}
-                    />
-                    {errors.municipality && (
-                      <div className={errorClass}>
-                        {errors.municipality.message}
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="flex flex-col gap-1 text-left">
-                    <input
-                      {...register("barangay")}
-                      type="text"
-                      placeholder="*BARANGAY"
-                      className={inputClass}
-                    />
-                    {errors.barangay && (
-                      <div className={errorClass}>
-                        {errors.barangay.message}
-                      </div>
-                    )}
-                  </div>
                   <div className="flex flex-col gap-1 text-left">
                     <input
                       {...register("specificLocation")}

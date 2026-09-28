@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { submitChainsawForm } from "@/lib/api/applications/chainsaw/chainsaw"; 
 import { Spinner } from "@/components/ui/spinner";
+import AddressFields from "@/components/forms/AddressFields";
 import {
   Select,
   SelectContent,
@@ -66,10 +67,14 @@ export default function ChainsawForm() {
     handleSubmit,
     control,
     watch,
+    setValue,
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(chainsawFormSchema),
+    defaultValues: {
+      province: "Pampanga",
+    },
   });
 
   const agreedToPrivacy = watch("privacyConsent");
@@ -193,39 +198,11 @@ export default function ChainsawForm() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("province")}
-                  type="text"
-                  placeholder="*PROVINCE"
-                  className={inputClass}
-                />
-                {errors.province && (
-                  <div className={errorClass}>{errors.province.message}</div>
-                )}
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("municipality")}
-                  type="text"
-                  placeholder="*MUNICIPALITY"
-                  className={inputClass}
-                />
-                {errors.municipality && (
-                  <div className={errorClass}>{errors.municipality.message}</div>
-                )}
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("barangay")}
-                  type="text"
-                  placeholder="*BARANGAY"
-                  className={inputClass}
-                />
-                {errors.barangay && (
-                  <div className={errorClass}>{errors.barangay.message}</div>
-                )}
-              </div>
+              <AddressFields
+                control={control}
+                setValue={setValue}
+                errors={errors}
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-4 mb-4">

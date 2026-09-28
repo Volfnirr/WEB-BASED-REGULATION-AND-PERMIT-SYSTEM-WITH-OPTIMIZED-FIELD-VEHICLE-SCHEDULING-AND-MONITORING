@@ -12,6 +12,10 @@ import { validate } from "../../middleware/validate.js";
 import { attachFile } from "../../middleware/attachment.js";
 import upload from "../../middleware/upload.js";
 import {
+  completeTripTicketSchema,
+  updateCompleteTripTicketSchema,
+} from "../../validation/vehicle/completeTripTicketData.js";
+import {
   vehicleSchema,
   updateVehicleSchema,
   vehicleMaintenaceSchema,
@@ -35,6 +39,11 @@ import {
   vehiclesSchdulesStatus,
   exportTripTicketAsExcel,
   scheduleVehicleMaintenance,
+  getCompleteTripTickets,
+  getCompletedTripTickets,
+  getCompletedTripTicketsStatus,
+  submitCompleteTripTicket,
+  updateCompleteTripTicket,
 } from "../../controller/vehicle/vehicle.controller.js";
 
 // Create a new vehicle
@@ -97,6 +106,24 @@ router.get(
 
 // TRIP TICKET START
 
+router.get(
+  "/complete-trip-ticket",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  getCompleteTripTickets
+);
+
+router.post(
+  "/complete-trip-ticket",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(completeTripTicketSchema),
+  submitCompleteTripTicket
+);
+
+
 router.post(
   "/trip-ticket",
   vehicleSubmitTicketLimit,
@@ -150,12 +177,27 @@ router.get(
   vehicleSchedules,
 );
 
+router.get("/complete-trip-ticket/completed",
+   getCompletedTripTickets);
+
 router.get(
   "/schedules/status",
   fetchLimit,
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
   vehiclesSchdulesStatus,
+);
+
+router.get("/complete-trip-ticket/completed/status",
+ getCompletedTripTicketsStatus);
+
+ router.patch(
+  "/complete-trip-ticket/:id",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(updateCompleteTripTicketSchema),
+  updateCompleteTripTicket
 );
 
 // VEHICLE SCHEDULES END

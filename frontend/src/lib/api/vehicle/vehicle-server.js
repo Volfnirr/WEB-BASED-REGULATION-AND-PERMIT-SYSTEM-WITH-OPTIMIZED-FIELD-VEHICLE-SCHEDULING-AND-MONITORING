@@ -95,6 +95,28 @@ export async function tripTicketStatus() {
   return result;
 }
 
+export async function completetripTicketList() {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+  const response = await fetch(
+    `${process.env.API_URL}/api/v1/vehicles/complete-trip-ticket`,
+    {
+      method: "GET",
+
+      headers: {
+        Cookie: cookieHeader,
+      },
+      cache: "no-store",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieved complete trip ticket list.");
+  }
+
+  return result;
+}
 // TRIP TICKET END
 
 // DASHBOARD START
@@ -151,3 +173,45 @@ export async function vehicleSchedulesStatus() {
 }
 
 // VEHICLES SCHEDULES END
+
+export async function completedTripTicketsList() {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+  const response = await fetch(
+    `${process.env.API_URL}/api/v1/vehicles/complete-trip-ticket/completed`,
+    {
+      method: "GET",
+      headers: {
+        Cookie: cookieHeader,
+      },
+      cache: "no-store",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieve completed trip ticket list.");
+  }
+
+  return result;
+}
+
+export async function completedTripTicketsStatus() {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+  const response = await fetch(
+    `${process.env.API_URL}/api/v1/vehicles/complete-trip-ticket/completed/status`,
+    {
+      method: "GET",
+      headers: { Cookie: cookieHeader },
+      cache: "no-store",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieve completed trip ticket status.");
+  }
+
+  return result;
+}

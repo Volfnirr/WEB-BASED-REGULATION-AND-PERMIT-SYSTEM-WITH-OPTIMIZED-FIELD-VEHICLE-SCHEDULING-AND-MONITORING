@@ -48,7 +48,7 @@ export async function listAvailableVehicles({ startDate, endDate }) {
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.message || "Failed to update vehicle.");
+    throw new Error(result.message || "Failed to list available vehicles.");
   }
 
   return result;
@@ -166,4 +166,91 @@ export async function scheduleVehicleMaintenance(id, data) {
   }
 
   return result;
+}
+
+export async function submitCompleteTripTicket(data) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/complete-trip-ticket`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    },
+  );
+  
+  const result = await response.json(); 
+
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Failed to submit trip ticket.",
+    );
+  }
+  
+  return result;
+}
+
+// Paste this into manage-vehicles.js, right after submitCompleteTripTicket.
+export async function updateCompleteTripTicket({ id, data }) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/complete-trip-ticket/${id}`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Failed to update trip ticket completion.",
+    );
+  }
+
+  return result;
+}
+
+export async function checkTicketNumberExists(tripTicketNo) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/trip-ticket/check-exists?ticketNo=${encodeURIComponent(tripTicketNo)}`,
+    {
+      method: "GET",
+      credentials: "include",
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error("Failed to validate ticket number");
+  }
+  
+  const data = await response.json();
+  return data.exists;
+}
+
+export async function getTripTickets() {
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/complete-trip-ticket`;
+  console.log("1. Requesting trip tickets from:", url);
+
+  const response = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  console.log("2. Response status:", response.status);
+
+  const result = await response.json();
+  console.log("3. Raw data from backend:", result);
+
+  if (!response.ok) {
+    throw new Error(result.message || `Failed with status ${response.status}`);
+  }
+
+  return result.data || result;
 }

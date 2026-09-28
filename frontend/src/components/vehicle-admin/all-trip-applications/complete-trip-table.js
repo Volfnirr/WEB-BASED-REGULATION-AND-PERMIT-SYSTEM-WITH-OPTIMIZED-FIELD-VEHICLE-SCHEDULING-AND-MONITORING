@@ -4,203 +4,201 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Spinner } from "@/components/ui/spinner";
+import { X, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import VehiclesList from "@/components/vehicle-admin/trip-ticket/vehicle-list";
-import {
-  listAvailableVehicles,
-  submitTripAndSchedule,
-  updateTripAndSchedule,
-} from "@/lib/api/vehicle/manage-vehicles";
-import { X } from "lucide-react";
+import { updateTripAndSchedule } from "@/lib/api/vehicle/manage-vehicles";
+import { Spinner } from "@/components/ui/spinner";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 
-const tripTicketFormSchema = z.object({
-  tripTicketNo: z.string().trim().min(1, "Trip Ticket is Required"),
-  scheduleDate: z.object(
-    {
-      from: z.coerce.date({ message: "Departure date is required" }),
-      to: z.coerce.date().optional(),
-    },
-    { message: "Departure date is required" },
-  ),
-  driverName: z.string().trim().min(1, "Driver name is Required"),
-  authorizedPassengers: z
-    .string()
-    .trim()
-    .min(1, "Authorized Passengers is Required"),
-  placesToVisit: z.string().trim().min(1, "Place to visit is Required"),
-  purpose: z.string().trim().min(1, "Purpose is Required"),
-  vehicleId: z.coerce
-    .number({ message: "Plate Number is Required" })
-    .positive(), //2. Government vehicle to be used, Plate No.
+const driverTripTicketSchema = z.object({
+  timeOfDeparture: z.date({
+    required_error: "Departure time is required",
+    invalid_type_error: "Departure time is required",
+  }),
+  placesVisited: z
+    .array(
+      z.object({
+        place: z.string().trim().min(1, "Place name is required"),
+        timeOfArrival: z.date().optional().nullable(),
+        timeOfDeparture: z.date().optional().nullable(),
+      })
+    )
+    .min(1, "At least one place log is required"),
+  timeOfArrivalBack: z.date({
+    required_error: "Arrival time is required",
+    invalid_type_error: "Arrival time is required",
+  }),
+  approxDistance: z.coerce
+    .number({
+      required_error: "Distance is required",
+      invalid_type_error: "Must be a valid number",
+    })
+    .min(0, "Cannot be negative")
+    .max(500, "Distance exceeds typical provincial routes"),
+  fuelBalance: z.coerce
+    .number({ required_error: "Required", invalid_type_error: "Required" })
+    .min(0, "Min 0")
+    .max(100, "Exceeds standard tank capacity"),
+  fuelIssued: z.coerce
+    .number({ required_error: "Required", invalid_type_error: "Required" })
+    .min(0, "Min 0")
+    .max(100, "Exceeds standard tank capacity"),
+  fuelPurchased: z.coerce
+    .number({ required_error: "Required", invalid_type_error: "Required" })
+    .min(0, "Min 0")
+    .max(100, "Exceeds standard tank capacity"),
+  gearOilIssued: z.coerce
+    .number({ required_error: "Required", invalid_type_error: "Required" })
+    .min(0, "Min 0")
+    .max(10, "Amount too high"),
+  lubOilIssued: z.coerce
+    .number({ required_error: "Required", invalid_type_error: "Required" })
+    .min(0, "Min 0")
+    .max(10, "Amount too high"),
+  greaseIssued: z.coerce
+    .number({ required_error: "Required", invalid_type_error: "Required" })
+    .min(0, "Min 0")
+    .max(10, "Amount too high"),
+  speedometerStart: z.coerce.number().optional().nullable(),
+  speedometerEnd: z.coerce.number().optional().nullable(),
+  remarks: z.string().trim().min(1, "Remarks are required"),
+  driverSignature: z.string().trim().optional(),
+  passengers: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1, "Passenger name is required"),
+        signature: z.string().trim().optional(),
+      })
+    )
+    .optional(),
+  recommendingApproval: z.string().trim().optional(),
+  approvedBy: z.string().trim().optional(),
 });
 
-export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
+export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket }) {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
-  const errorClass = "text-red-600 text-xs font-medium";
-  const [vehicles, setVehicles] = useState();
-  const [showVehicles, setShowVehicles] = useState(false);
-  const [loadingVehicles, setLoadingVehicles] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const errorClass = "text-red-600 text-[10px] font-bold mt-1";
+
+  const [places, setPlaces] = useState([
+    { place: "", timeOfArrival: undefined, timeOfDeparture: undefined },
+  ]);
+  const [passengers, setPassengers] = useState([]);
+
   const {
     register,
     handleSubmit,
     control,
     setValue,
-    getValues,
+    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(tripTicketFormSchema),
+    resolver: zodResolver(driverTripTicketSchema),
+    defaultValues: {
+      placesVisited: places,
+      passengers: passengers,
+    },
   });
 
+  const fuelBalance = Number(watch("fuelBalance")) || 0;
+  const fuelIssued = Number(watch("fuelIssued")) || 0;
+  const fuelPurchased = Number(watch("fuelPurchased")) || 0;
+  const totalFuel = fuelBalance + fuelIssued + fuelPurchased;
+
+  const speedometerStart = Number(watch("speedometerStart")) || 0;
+  const speedometerEnd = Number(watch("speedometerEnd")) || 0;
+  const computedDistance = Math.max(0, speedometerEnd - speedometerStart);
+
   useEffect(() => {
-    console.log("use effect running");
-    if (!isOpen) return;
+    if (!isOpen || !tripTicket) return;
 
-    if (tripTicket?.id) {
-      const from = new Date(tripTicket.startDate);
-      const to = tripTicket.endDate ? new Date(tripTicket.endDate) : from;
+    if (tripTicket.driverDetails) {
+      reset({ ...tripTicket.driverDetails });
 
-      reset({
-        tripTicketNo: tripTicket.tripTicketNo,
-        scheduleDate: { from, to },
-        driverName: tripTicket.driverName,
-        authorizedPassengers: tripTicket.authorizedPassengers,
-        placesToVisit: tripTicket.placesToVisit,
-        purpose: tripTicket.purpose,
-        vehicleId: tripTicket.vehicleId,
-      });
+      if (tripTicket.driverDetails.placesVisited?.length > 0) {
+        setPlaces(tripTicket.driverDetails.placesVisited);
+      }
 
-      setSelectedVehicle({ plateNumber: tripTicket.plateNumber ?? null });
+      if (tripTicket.driverDetails.passengers?.length > 0) {
+        setPassengers(tripTicket.driverDetails.passengers);
+        setValue("passengers", tripTicket.driverDetails.passengers);
+      }
     }
-  }, [tripTicket?.id, isOpen]);
-  console.log("VEHICLE PLATE NUMBERT", selectedVehicle);
-  const availableVehiclesButton = async () => {
-    const scheduleDate = getValues("scheduleDate");
+  }, [tripTicket, isOpen, reset, setValue]);
 
-    if (!scheduleDate?.from) {
-      toast.error("Please select a departure date", {
-        position: "top-center",
-      });
-      return;
-    }
+  const handlePlaceChange = (index, field, value) => {
+    const updatedPlaces = [...places];
+    updatedPlaces[index][field] = value;
+    setPlaces(updatedPlaces);
+    setValue("placesVisited", updatedPlaces, { shouldValidate: true });
+  };
 
-    const startDate = format(scheduleDate.from, "yyyy-MM-dd");
-    const endDate = format(scheduleDate.to ?? scheduleDate.from, "yyyy-MM-dd");
+  const addPlace = () => {
+    const updatedPlaces = [
+      ...places,
+      { place: "", timeOfArrival: undefined, timeOfDeparture: undefined },
+    ];
+    setPlaces(updatedPlaces);
+    setValue("placesVisited", updatedPlaces, { shouldValidate: true });
+  };
 
-    try {
-      setLoadingVehicles(true);
-      setShowVehicles(true);
+  const removePlace = (indexToRemove) => {
+    if (places.length <= 1) return;
+    const updatedPlaces = places.filter((_, index) => index !== indexToRemove);
+    setPlaces(updatedPlaces);
+    setValue("placesVisited", updatedPlaces, { shouldValidate: true });
+  };
 
-      const { availableVehicles } = await listAvailableVehicles({
-        startDate,
-        endDate,
-      });
+  const addPassenger = () => {
+    const updatedPassengers = [...passengers, { name: "", signature: "" }];
+    setPassengers(updatedPassengers);
+    setValue("passengers", updatedPassengers, { shouldValidate: true });
+  };
 
-      setVehicles(availableVehicles ?? []);
-    } catch (error) {
-      console.error("Failed to load available vehicles:", error);
-
-      toast.error(
-        `Unable to load available vehicles. ${error?.message || ""}`,
-        {
-          position: "top-center",
-        },
-      );
-
-      setVehicles([]);
-      setShowVehicles(false);
-    } finally {
-      setLoadingVehicles(false);
-    }
+  const removePassenger = (indexToRemove) => {
+    const updatedPassengers = passengers.filter(
+      (_, index) => index !== indexToRemove
+    );
+    setPassengers(updatedPassengers);
+    setValue("passengers", updatedPassengers, { shouldValidate: true });
   };
 
   const onSubmit = async (data) => {
-    console.log("Data", data);
-    console.log("TRIP TICKET DATA", tripTicket);
-
-    const tripData = {};
-
-    if (tripTicket) {
-      if (data.authorizedPassengers !== tripTicket.authorizedPassengers)
-        tripData.authorizedPassengers = data.authorizedPassengers;
-      if (data.driverName !== tripTicket.driverName)
-        tripData.driverName = data.driverName;
-      if (data.purpose !== tripTicket.purpose) tripData.purpose = data.purpose;
-      if (data.placesToVisit !== tripTicket.placesToVisit)
-        tripData.placesToVisit = data.placesToVisit;
-      if (data.tripTicketNo !== tripTicket.tripTicketNo)
-        tripData.tripTicketNo = data.tripTicketNo;
-      if (data.vehicleId !== tripTicket.vehicleId)
-        tripData.vehicleId = data.vehicleId;
-      if (data.scheduleDate.from.toISOString() !== tripTicket.startDate)
-        tripData.startDate = format(data.scheduleDate.from, "yyyy-MM-dd");
-      if (
-        (data.scheduleDate.to.toISOString() ??
-          data.scheduleDate.from.toISOString()) !== tripTicket.endDate
-      )
-        tripData.endDate = format(
-          data.scheduleDate.to ?? data.scheduleDate.from,
-          "yyyy-MM-dd",
-        );
-    } else {
-      tripData.authorizedPassengers = data.authorizedPassengers;
-      tripData.driverName = data.driverName;
-      tripData.purpose = data.purpose;
-      tripData.placesToVisit = data.placesToVisit;
-      tripData.tripTicketNo = data.tripTicketNo;
-      tripData.vehicleId = data.vehicleId;
-      tripData.startDate = format(data.scheduleDate.from, "yyyy-MM-dd");
-      tripData.endDate = format(
-        data.scheduleDate.to ?? data.scheduleDate.from,
-        "yyyy-MM-dd",
-      );
+    if (!tripTicket?.id) {
+      toast.error("Error: Trip Ticket ID is missing.", { position: "top-center" });
+      return;
     }
 
+    const cleanedPassengers =
+      data.passengers?.filter(
+        (p) =>
+          (p.name && p.name.trim() !== "") ||
+          (p.signature && p.signature.trim() !== "")
+      ) || [];
+
+    const payload = {
+      ...data,
+      passengers: cleanedPassengers,
+      totalFuel,
+      computedDistance,
+    };
+
     try {
-      if (tripTicket?.id) {
-        if (Object.keys(tripData).length === 0) {
-          toast.error("Please make your changes before submitting the form.", {
-            position: "top-center",
-          });
-          return;
-        }
-        console.log("Update Details", tripData, tripTicket.id);
-        const { message } = await updateTripAndSchedule({
-          id: tripTicket.id,
-          data: tripData,
-        });
-        toast.success(message ?? "Trip ticket updated", {
-          position: "top-center",
-        });
-      } else {
-        console.log("Submit Details", tripData);
+      const { message } = await updateTripAndSchedule({
+        id: tripTicket.id,
+        data: { driverDetails: payload },
+      });
 
-        const { message } = await submitTripAndSchedule(tripData);
-        toast.success(message, {
-          position: "top-center",
-        });
-      }
+      toast.success(message ?? "Driver ticket details updated successfully", {
+        position: "top-center",
+      });
 
-      reset();
       onClose();
     } catch (err) {
-      toast.error(
-        err.message || "Something went wrong submitting your application.",
-        {
-          position: "top-center",
-        },
-      );
+      toast.error(err.message || "Something went wrong submitting your report.", { 
+        position: "top-center" 
+      });
     }
   };
 
@@ -218,10 +216,10 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
         <div className="flex justify-between items-start mb-2">
           <div className="flex flex-col gap-2">
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-              {tripTicket ? "Edit Trip Ticket" : " Create Trip Ticket"}
+              Complete Trip Ticket
             </h1>
             <p className="text-gray-500 text-sm">
-              B. To be filled by the driver:
+              B. To be filled by the Driver
             </p>
           </div>
           <button
@@ -235,75 +233,44 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
         <hr className="border-gray-200 mb-8" />
 
         <form className="space-y-2" onSubmit={handleSubmit(onSubmit)}>
+          
+          <div className="mb-6">
+            <div className="flex flex-col gap-1 text-left">
+              <label className="text-left text-xs font-bold text-gray-700 mb-1">
+                Trip Ticket Number
+              </label>
+              <div className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-md text-gray-800 font-bold flex justify-between items-center">
+                <span>Ticket No: {tripTicket?.tripTicketNo || "N/A"}</span>
+                <span className="text-xs font-normal text-gray-500">
+                  Destination: {tripTicket?.placesToVisit || "N/A"}
+                </span>
+              </div>
+            </div>
+          </div>
+
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-2">
-              Trip Details
+              Schedule Details
             </h2>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  1. Time of office from Office/garage
+                  Departure from Office
                 </label>
                 <Controller
-                  name="scheduleDate"
+                  name="timeOfDeparture"
                   control={control}
-                  render={({ field }) => {
-                    const range = field.value;
-                    const isSingleDay =
-                      range?.from &&
-                      (!range.to ||
-                        range.to.getTime() === range.from.getTime());
-
-                    return (
-                      <Popover>
-                        <PopoverTrigger
-                          render={
-                            <button
-                              type="button"
-                              id="scheduleDate"
-                              className={`${inputClass} flex items-center justify-between`}
-                            >
-                              <span
-                                className={
-                                  range?.from
-                                    ? "text-gray-800"
-                                    : "text-gray-400"
-                                }
-                              >
-                                {range?.from ? (
-                                  isSingleDay ? (
-                                    format(range.from, "LLL dd, y")
-                                  ) : (
-                                    <>
-                                      {format(range.from, "LLL dd, y")} -{" "}
-                                      {format(range.to, "LLL dd, y")}
-                                    </>
-                                  )
-                                ) : (
-                                  "Pick a date"
-                                )}
-                              </span>
-                              <CalendarIcon className="w-4 h-4 text-gray-400 shrink-0" />
-                            </button>
-                          }
-                        />
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="range"
-                            defaultMonth={range?.from}
-                            selected={range}
-                            onSelect={field.onChange}
-                            numberOfMonths={2}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    );
-                  }}
+                  render={({ field }) => (
+                    <DateTimePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select Departure Date"
+                    />
+                  )}
                 />
-                {errors.scheduleDate && (
+                {errors.timeOfDeparture && (
                   <div className={errorClass}>
-                    {errors.scheduleDate.from?.message ||
-                      errors.scheduleDate.message}
+                    {errors.timeOfDeparture.message}
                   </div>
                 )}
               </div>
@@ -311,124 +278,411 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
           </div>
 
           <div>
-            <div className="grid grid-cols-1 gap-2 mb-2">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Name of Driver of the Vehicle*
-                </label>
-                <input
-                  {...register("driverName")}
-                  type="text"
-                  placeholder="*NAME OF DRIVER"
-                  className={inputClass}
-                />
-                {errors.driverName && (
-                  <div className={errorClass}>{errors.driverName.message}</div>
-                )}
+            <div className="flex justify-between items-center mb-2 mt-4">
+              <h2 className="text-sm font-bold text-gray-800 uppercase mb-2">
+                Places Visited
+              </h2>
+              <button
+                type="button"
+                onClick={addPlace}
+                className="flex items-center gap-1 text-xs font-bold text-[#1a5632] hover:underline"
+              >
+                <Plus size={14} /> Add Place Log
+              </button>
+            </div>
+            {errors.placesVisited?.message && (
+              <div className="text-red-600 text-xs font-bold mb-2">
+                {errors.placesVisited.message}
               </div>
+            )}
+            <div className="space-y-2">
+              {places.map((placeItem, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col xl:flex-row gap-2 items-start"
+                >
+                  <div className="w-full xl:w-1/3 flex flex-col gap-1 text-left">
+                    <label className="block text-[10px] font-bold text-gray-700 uppercase mb-1">
+                      Place
+                    </label>
+                    <input
+                      type="text"
+                      value={placeItem.place}
+                      onChange={(e) =>
+                        handlePlaceChange(index, "place", e.target.value)
+                      }
+                      placeholder="Place"
+                      className={inputClass}
+                    />
+                    {errors.placesVisited?.[index]?.place && (
+                      <div className={errorClass}>
+                        {errors.placesVisited[index].place.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-full xl:flex-1 flex flex-col gap-1 text-left">
+                    <label className="block text-[10px] font-bold text-gray-700 uppercase mb-1">
+                      Arrival
+                    </label>
+                    <DateTimePicker
+                      value={placeItem.timeOfArrival}
+                      onChange={(newDate) =>
+                        handlePlaceChange(index, "timeOfArrival", newDate)
+                      }
+                      placeholder="Arrival"
+                    />
+                  </div>
+                  <div className="w-full xl:flex-1 flex flex-col gap-1 text-left">
+                    <label className="block text-[10px] font-bold text-gray-700 uppercase mb-1">
+                      Departure
+                    </label>
+                    <DateTimePicker
+                      value={placeItem.timeOfDeparture}
+                      onChange={(newDate) =>
+                        handlePlaceChange(index, "timeOfDeparture", newDate)
+                      }
+                      placeholder="Departure"
+                    />
+                  </div>
+                  <div className="pt-6">
+                    <button
+                      type="button"
+                      onClick={() => removePlace(index)}
+                      className="px-3 py-2 h-10 text-[10px] uppercase font-bold text-red-500 hover:bg-red-50 rounded"
+                      disabled={places.length === 1}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1 text-left mt-2 md:w-1/2">
+            <label className="block text-xs font-bold text-gray-700 mb-1">
+              Arrival back to Office
+            </label>
+            <Controller
+              name="timeOfArrivalBack"
+              control={control}
+              render={({ field }) => (
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select Arrival Date"
+                />
+              )}
+            />
+            {errors.timeOfArrivalBack && (
+              <div className={errorClass}>
+                {errors.timeOfArrivalBack.message}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h2 className="text-sm font-bold text-gray-800 uppercase mb-2 mt-4">
+              Distance
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="flex flex-col gap-1 text-left">
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Government Vehicle to Be Used, Plate no*
+                  Approx Distance traveled (to and from)
                 </label>
-                <button
-                  type="button"
-                  onClick={availableVehiclesButton}
-                  className={inputClass}
-                >
-                  {selectedVehicle
-                    ? `Plate number: ${selectedVehicle?.plateNumber}`
-                    : "Select a vehicle"}
-                </button>
-
-                {errors.vehicleId && (
-                  <div className={errorClass}>{errors.vehicleId.message}</div>
-                )}
-                {showVehicles && (
-                  <>
-                    {loadingVehicles ? (
-                      <div className="flex justify-center py-4">
-                        <Spinner data-icon />
-                      </div>
-                    ) : (
-                      <VehiclesList
-                        vehicles={vehicles}
-                        onAssign={(vehicle) => {
-                          setSelectedVehicle(vehicle);
-
-                          setValue("vehicleId", vehicle?.id, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          });
-
-                          setShowVehicles(false);
-                        }}
-                      />
-                    )}
-                  </>
+                <div className="relative">
+                  <input
+                    {...register("approxDistance")}
+                    type="number"
+                    step="0.1"
+                    className={`${inputClass} pr-12`}
+                  />
+                  <span className="absolute right-3 top-2.5 text-xs text-gray-400 font-bold">
+                    kms
+                  </span>
+                </div>
+                {errors.approxDistance && (
+                  <div className={errorClass}>
+                    {errors.approxDistance.message}
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
           <div>
-            <div className="flex flex-col gap-1 text-left">
-              <label className="block text-xs font-bold text-gray-700 mb-1">
-                Name of Authorized Passenger/s
-              </label>
-              <input
-                {...register("authorizedPassengers")}
-                type="text"
-                placeholder="*Name of Authorized Passenger/s"
-                className={inputClass}
-              />
-              {errors.authorizedPassengers && (
-                <div className={errorClass}>
-                  {errors.authorizedPassengers.message}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+              <div>
+                <h2 className="text-sm font-bold text-gray-800 uppercase mb-2">
+                  Fuel issued, purchased and consumed
+                </h2>
+
+                <div className="grid grid-cols-2 gap-2 flex justify-start">
+                  <div className="flex flex-col gap-1 text-left ">
+                    <label className="text-[10px] font-bold text-gray-700 uppercase">
+                      a. Balance in Tank
+                    </label>
+                    <input
+                      {...register("fuelBalance")}
+                      type="number"
+                      step="0.1"
+                      placeholder="Liters"
+                      className={inputClass}
+                    />
+                    {errors.fuelBalance && (
+                      <div className={errorClass}>
+                        {errors.fuelBalance.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 text-left">
+                    <label className="text-[10px] font-bold text-gray-700 uppercase">
+                      b. Issued by office from Stock
+                    </label>
+                    <input
+                      {...register("fuelIssued")}
+                      type="number"
+                      step="0.1"
+                      placeholder="Liters"
+                      className={inputClass}
+                    />
+                    {errors.fuelIssued && (
+                      <div className={errorClass}>
+                        {errors.fuelIssued.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 text-left">
+                    <label className="text-[10px] font-bold text-gray-700 uppercase">
+                      c. Add-Purchased during trip
+                    </label>
+                    <input
+                      {...register("fuelPurchased")}
+                      type="number"
+                      step="0.1"
+                      placeholder="Liters"
+                      className={inputClass}
+                    />
+                    {errors.fuelPurchased && (
+                      <div className={errorClass}>
+                        {errors.fuelPurchased.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 text-left">
+                    <label className="text-[10px] font-bold text-gray-700 uppercase">
+                      Total Fuel
+                    </label>
+                    <div className={`${inputClass} flex items-center bg-gray-50`}>
+                      <span className="font-mono font-bold text-[#1a5632]">
+                        {Number.isNaN(totalFuel) ? "0.0" : totalFuel.toFixed(1)} L
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 text-left">
+                    <label className="text-[10px] font-bold text-gray-700 uppercase">
+                      Gear Oil Issued
+                    </label>
+                    <input
+                      {...register("gearOilIssued")}
+                      type="number"
+                      step="0.1"
+                      placeholder="Liters"
+                      className={inputClass}
+                    />
+                    {errors.gearOilIssued && (
+                      <div className={errorClass}>
+                        {errors.gearOilIssued.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 text-left">
+                    <label className="text-[10px] font-bold text-gray-700 uppercase">
+                      Lub. Oil Issued
+                    </label>
+                    <input
+                      {...register("lubOilIssued")}
+                      type="number"
+                      step="0.1"
+                      placeholder="Liters"
+                      className={inputClass}
+                    />
+                    {errors.lubOilIssued && (
+                      <div className={errorClass}>
+                        {errors.lubOilIssued.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 text-left col-span-2 md:col-span-1">
+                    <label className="text-[10px] font-bold text-gray-700 uppercase">
+                      Grease Issued
+                    </label>
+                    <input
+                      {...register("greaseIssued")}
+                      type="number"
+                      step="0.1"
+                      placeholder="Liters"
+                      className={inputClass}
+                    />
+                    {errors.greaseIssued && (
+                      <div className={errorClass}>
+                        {errors.greaseIssued.message}
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </div>
+
+              <div>
+                <h2 className="text-sm font-bold text-gray-800 uppercase mb-2">
+                  Speedometer Readings
+                </h2>
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1 text-left">
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Beginning:
+                    </label>
+                    <input
+                      {...register("speedometerStart")}
+                      type="number"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1 text-left">
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      End:
+                    </label>
+                    <input
+                      {...register("speedometerEnd")}
+                      type="number"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1 text-left mt-2">
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Distance:
+                    </label>
+                    <div className={`${inputClass} flex items-center bg-gray-50`}>
+                      <span className="font-mono font-bold text-[#1a5632]">
+                        {Number.isNaN(computedDistance) ? 0 : computedDistance} kms
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-2 mt-4">
+              <h2 className="text-sm font-bold text-gray-800 uppercase mb-2">
+                Passengers
+              </h2>
+              <button
+                type="button"
+                onClick={addPassenger}
+                className="flex items-center gap-1 text-xs font-bold text-[#1a5632] hover:underline"
+              >
+                <Plus size={14} /> Add Passenger
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {passengers.map((passenger, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div className="flex-1 flex flex-col gap-1">
+                    <input
+                      {...register(`passengers.${index}.name`)}
+                      type="text"
+                      placeholder={`Passenger ${index + 1} Name`}
+                      className={inputClass}
+                    />
+                    {errors.passengers?.[index]?.name && (
+                      <div className={errorClass}>
+                        {errors.passengers[index].name.message}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removePassenger(index)}
+                    className="px-3 py-2 h-10 text-[10px] uppercase font-bold text-red-500 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-bold text-gray-800 uppercase mb-2 mt-4">
+              Remarks
+            </h2>
+
+            <div className="flex flex-col gap-1 text-left mb-4">
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                Remarks
+              </label>
+              <textarea
+                {...register("remarks")}
+                rows="2"
+                className={inputClass}
+                placeholder="Add remarks here..."
+              />
+              {errors.remarks && (
+                <div className={errorClass}>{errors.remarks.message}</div>
               )}
             </div>
-          </div>
 
-          <div>
-            <div className="grid grid-cols-1 gap-2 mb-2">
-              <div>
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
-                    Place or Places to Be Visited/Inspected*
-                  </label>
-                  <input
-                    {...register("placesToVisit")}
-                    type="text"
-                    placeholder="*e.g. ANGELES,ARAYAT & STA. RITA, PAMPANGA"
-                    className={inputClass}
-                  />
-                  {errors.placesToVisit && (
-                    <div className={errorClass}>
-                      {errors.placesToVisit.message}
-                    </div>
-                  )}
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Driver
+                </label>
+                <input
+                  {...register("driverSignature")}
+                  type="text"
+                  placeholder="Type name to sign"
+                  className={inputClass}
+                />
               </div>
-              <div>
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
-                    Purpose*
-                  </label>
-                  <textarea
-                    {...register("purpose")}
-                    type="text"
-                    placeholder="*PURPOSE OF THE TRIP"
-                    className={inputClass}
-                  />
-                  {errors.purpose && (
-                    <div className={errorClass}>{errors.purpose.message}</div>
-                  )}
-                </div>
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Recommending Approval
+                </label>
+                <input
+                  {...register("recommendingApproval")}
+                  type="text"
+                  placeholder="Type name"
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  placeholder="Position (e.g. Chief, Management Services Division)"
+                  className={`${inputClass} !py-1 !text-xs text-gray-500`}
+                />
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Approved By
+                </label>
+                <input
+                  {...register("approvedBy")}
+                  type="text"
+                  placeholder="Type name"
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  placeholder="Position (e.g. OIC, PENRO)"
+                  className={`${inputClass} !py-1 !text-xs text-gray-500`}
+                />
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
             <button
               type="button"
               onClick={onClose}
@@ -436,21 +690,12 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
             >
               Cancel
             </button>
-
             <button
               type="submit"
               disabled={isSubmitting}
               className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              {isSubmitting ? (
-                <>
-                  <Spinner data-icon />
-                </>
-              ) : tripTicket?.id ? (
-                "Update"
-              ) : (
-                "Submit Trip Ticket"
-              )}
+              {isSubmitting ? <Spinner data-icon /> : "Save Driver Report"}
             </button>
           </div>
         </form>

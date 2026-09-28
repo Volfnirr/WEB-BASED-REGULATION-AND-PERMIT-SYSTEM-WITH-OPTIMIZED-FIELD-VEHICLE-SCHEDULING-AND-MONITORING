@@ -6,33 +6,35 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
 export default function CompleteTripApplicationInfo({ status }) {
   const infocardstatus = [
     {
       label: "Total Trips",
-      total: status?.totalTrips ?? "-",
+      total: status?.totalCompleted ?? "-",
       icon: <Route />,
       bg: "bg-blue-100 text-blue-600",
       mainBg: "bg-blue-100",
-      tooltip: "All trips",
+      tooltip: "All completed trips",
     },
     {
       label: "New Trips (30 Days)",
-      total: status?.monthlyTrips ?? "-",
+      total: status?.newLast30Days ?? "-",
       icon: <CalendarDays />,
       mainBg: "bg-green-100",
       bg: "bg-green-100 text-green-600",
-      tooltip: "New trips this past 30 days",
+      tooltip: "Trips completed in the past 30 days",
     },
     {
       label: "New Trips (7 Days)",
-      total: status?.newTrips ?? "-",
+      total: status?.newLast7Days ?? "-",
       icon: <CirclePlus />,
       mainBg: "bg-green-100",
       bg: "bg-green-100 text-green-600",
-      tooltip: "New trips this past 7 days",
+      tooltip: "Trips completed in the past 7 days",
     },
   ];
+
   return (
     <div>
       <InfoCardContainer title="Status">

@@ -25,6 +25,7 @@ import { CalendarDays } from "lucide-react";
 
 import { submitAgriculturalForm } from "@/lib/api/applications/agricultural/agricultural";
 import { Spinner } from "@/components/ui/spinner";
+import AddressFields from "@/components/forms/AddressFields";
 
 const agriculturalFormSchema = z
   .object({
@@ -52,7 +53,7 @@ const agriculturalFormSchema = z
     naturalBorn: z.enum(["Yes", "No"], {
       errorMap: () => ({ message: "Please select an option" }),
     }),
-    civilStatus: z.enum(["Single", "Married", "Widowed", "Anulled"], {
+    civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANULLED"], {
       errorMap: () => ({ message: "Please select civil status" }),
     }),
 
@@ -112,7 +113,7 @@ const agriculturalFormSchema = z
   })
   .refine(
     (data) => {
-      if (data.civilStatus === "Married") return !!data.spouse?.trim();
+      if (data.civilStatus === "MARRIED") return !!data.spouse?.trim();
       return true;
     },
     {
@@ -122,7 +123,7 @@ const agriculturalFormSchema = z
   )
   .refine(
     (data) => {
-      if (data.civilStatus !== "Married") return !data.spouse?.trim();
+      if (data.civilStatus !== "MARRIED") return !data.spouse?.trim();
       return true;
     },
     {
@@ -132,10 +133,10 @@ const agriculturalFormSchema = z
   );
 
 const civilStatusChoices = [
-  { id: 1, value: "Single" },
-  { id: 2, value: "Married" },
-  { id: 3, value: "Widowed" },
-  { id: 4, value: "Anulled" },
+  { id: 1, value: "SINGLE" },
+  { id: 2, value: "MARRIED" },
+  { id: 3, value: "WIDOWED" },
+  { id: 4, value: "ANULLED" },
 ];
 
 export default function AgriculturalForm() {
@@ -167,7 +168,7 @@ export default function AgriculturalForm() {
   const civilStatus = watch("civilStatus");
 
   useEffect(() => {
-    if (civilStatus !== "Married") {
+    if (civilStatus !== "MARRIED") {
       setValue("spouse", "", { shouldValidate: true, shouldDirty: false });
     }
   }, [civilStatus, setValue]);
@@ -178,6 +179,7 @@ export default function AgriculturalForm() {
       reset();
       setShowModal(true);
     } catch (err) {
+      console.error("Form submission failed:", err);
       toast.error("Something went wrong submitting your application.", {
         position: "top-center",
       });
@@ -496,38 +498,15 @@ export default function AgriculturalForm() {
               Location of Agricultural Land Applied For
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <input
-                {...register("province")}
-                type="text"
-                readOnly
-                className={`${inputClass} bg-gray-100 pointer-events-none`}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <AddressFields
+                control={control}
+                setValue={setValue}
+                errors={errors}
               />
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("municipality")}
-                  type="text"
-                  placeholder="*MUNICIPALITY"
-                  className={inputClass}
-                />
-                {errors.municipality && (
-                  <div className={errorClass}>{errors.municipality.message}</div>
-                )}
-              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("barangay")}
-                  type="text"
-                  placeholder="*BARANGAY"
-                  className={inputClass}
-                />
-                {errors.barangay && (
-                  <div className={errorClass}>{errors.barangay.message}</div>
-                )}
-              </div>
               <div className="flex flex-col gap-1 text-left">
                 <input
                   {...register("location")}
