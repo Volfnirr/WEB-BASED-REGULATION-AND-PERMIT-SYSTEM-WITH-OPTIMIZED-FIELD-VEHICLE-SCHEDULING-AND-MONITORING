@@ -37,6 +37,10 @@ export default function TripApplicationTable({ initialData }) {
       data: "startDate",
     },
     {
+      head: "Created at",
+      data: "createdAt",
+    },
+    {
       head: "Purpose",
       data: "purpose",
     },

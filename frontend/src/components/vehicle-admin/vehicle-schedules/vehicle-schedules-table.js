@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import TableContainerUI from "@/components/ui/tables/table-container";
 import VehicleSchedulesTableUI from "@/components/ui/tables/weekly-table";
 import VehicleSchedulesTableSkeleton from "./schedules-table-skele";
@@ -35,44 +35,60 @@ export default function VehicleSchedulesTable() {
 
   const [date, setDate] = useState(null);
 
-  const [rowData, setRowData] = useState([]);
+  // const [rowData, setRowData] = useState([]);
 
-  const [weekDates, setWeekDates] = useState([]);
+  // const [weekDates, setWeekDates] = useState([]);
 
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
 
   // Set current date only on client
   useEffect(() => {
     setDate(new Date());
   }, []);
 
-  useEffect(() => {
-    if (!date) return;
+  // useEffect(() => {
+  //   if (!date) return;
 
-    const fetchSchedules = async () => {
-      setIsLoading(true);
+  //   const fetchSchedules = async () => {
+  //     setIsLoading(true);
 
-      const startDate = localDate(date);
+  //     const startDate = localDate(date);
 
-      const endDate = localDate(
-        new Date(date.getTime() + 6 * 24 * 60 * 60 * 1000),
-      );
+  //     const endDate = localDate(
+  //       new Date(date.getTime() + 6 * 24 * 60 * 60 * 1000),
+  //     );
 
-      const { schedules } = await listVehiclesSchedules({
-        startDate,
-        endDate,
-      });
+  //     const { schedules } = await listVehiclesSchedules({
+  //       startDate,
+  //       endDate,
+  //     });
 
-      setRowData(schedules ?? []);
+  //     setRowData(schedules ?? []);
 
-      setWeekDates(getNextDaysUtc8(7, date) ?? []);
+  //     setWeekDates(getNextDaysUtc8(7, date) ?? []);
 
-      setIsLoading(false);
-    };
+  //     setIsLoading(false);
+  //   };
 
-    fetchSchedules();
-  }, [date]);
+  //   fetchSchedules();
+  // }, [date]);
+  const startDate = date ? localDate(date) : null;
+  const endDate = date
+    ? localDate(new Date(date.getTime() + 6 * 24 * 60 * 60 * 1000))
+    : null;
 
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: ["vehicle-schedules", startDate, endDate],
+    queryFn: () => listVehiclesSchedules({ startDate, endDate }),
+    enabled: !!date,
+  });
+
+  const rowData = data?.schedules ?? [];
+
+  const weekDates = useMemo(
+    () => (date ? (getNextDaysUtc8(7, date) ?? []) : []),
+    [date],
+  );
   return (
     <div className="mb-4">
       <div className="mb-5 flex items-center justify-between rounded-xl border bg-white p-4 shadow-sm ">
@@ -104,18 +120,18 @@ export default function VehicleSchedulesTable() {
           </Popover>
         )}
       </div>
-
-      {isLoading ? (
+      {isPending ? (
         <VehicleSchedulesTableSkeleton days={7} rows={5} />
+      ) : isError ? (
+        <p className="text-sm text-red-600">{error.message}</p>
       ) : (
-        // <TableContainerUI>
         <VehicleSchedulesTableUI
           date={weekDates}
           columns={column}
           rows={rowData}
         />
-        // </TableContainerUI>
-      )}
+      )}{" "}
+      {/* New */}
     </div>
   );
 }
