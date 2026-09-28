@@ -61,9 +61,9 @@ export default function Topbar() {
         >
           <UserRoundCog size={20} className="text-green-600" />
         </button>
-        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors shrink-0 ml-2">
+        {/* <button className="p-2 rounded-full hover:bg-gray-100 transition-colors shrink-0 ml-2">
           <Bell size={20} className="text-gray-600" />
-        </button>
+        </button> */}
       </div>
       <ManageProfileUI
         isOpen={manageUserOpen}
