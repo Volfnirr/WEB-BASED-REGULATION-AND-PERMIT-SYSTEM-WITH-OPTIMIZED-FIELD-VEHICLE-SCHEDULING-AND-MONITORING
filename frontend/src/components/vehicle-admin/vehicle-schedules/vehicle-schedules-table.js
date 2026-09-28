@@ -108,13 +108,13 @@ export default function VehicleSchedulesTable() {
       {isLoading ? (
         <VehicleSchedulesTableSkeleton days={7} rows={5} />
       ) : (
-        <TableContainerUI>
-          <VehicleSchedulesTableUI
-            date={weekDates}
-            columns={column}
-            rows={rowData}
-          />
-        </TableContainerUI>
+        // <TableContainerUI>
+        <VehicleSchedulesTableUI
+          date={weekDates}
+          columns={column}
+          rows={rowData}
+        />
+        // </TableContainerUI>
       )}
     </div>
   );
