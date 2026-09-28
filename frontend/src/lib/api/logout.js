@@ -1,6 +1,10 @@
 import { authClient } from "@/lib/auth-client";
+
 export async function logout(router) {
   await authClient.signOut();
 
-  router.push("/login");
+  localStorage.setItem("logout", Date.now().toString());
+
+  router.refresh();
+  window.location.replace("/login");
 }

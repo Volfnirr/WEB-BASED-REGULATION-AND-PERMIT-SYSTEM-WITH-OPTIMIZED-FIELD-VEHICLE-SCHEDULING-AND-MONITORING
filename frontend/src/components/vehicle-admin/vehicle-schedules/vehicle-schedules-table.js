@@ -1,52 +1,23 @@
 "use client";
+
+import { useEffect, useState } from "react";
+
 import TableContainerUI from "@/components/ui/tables/table-container";
 import VehicleSchedulesTableUI from "@/components/ui/tables/weekly-table";
-import Title from "@/components/ui/title";
-import { getNextDaysUtc8 } from "@/lib/date";
-import InfoCard from "@/components/ui/infocard";
-import InfoCardContainer from "@/components/ui/infocardcontainer";
-import { Wrench, CalendarCheck, CircleCheck } from "lucide-react";
-import { useState, useEffect } from "react";
-import { listVehiclesSchedules } from "@/lib/api/vehicle/manage-vehicles";
-import { Spinner } from "@/components/ui/spinner";
-import { Calendar } from "@/components/ui/calendar";
-import { Skeleton } from "@/components/ui/skeleton";
+import VehicleSchedulesTableSkeleton from "./schedules-table-skele";
 
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+import { listVehiclesSchedules } from "@/lib/api/vehicle/manage-vehicles";
+import { getNextDaysUtc8 } from "@/lib/date";
 import { localDate } from "@/lib/local-date";
 
 export default function VehicleSchedulesTable() {
-  // function groupSchedulesByVehicle(schedules) {
-  //   const map = new Map();
-
-  //   schedules.forEach((s) => {
-  //     const vehicleId = s.vehicleId;
-  //     if (!map.has(vehicleId)) {
-  //       map.set(vehicleId, {
-  //         id: vehicleId,
-  //         vehicle: `${s.vehicle.brand} ${s.vehicle.model}`,
-  //         vehicle_schedules: [],
-  //       });
-  //     }
-  //     map.get(vehicleId).vehicle_schedules.push({
-  //       date: s.startDate.split("T")[0], // "2026-08-01"
-  //       status: s.status,
-  //     });
-  //   });
-
-  //   return Array.from(map.values());
-  // }
-  // const today = new Date("2026-08-02");
-  //   today.setDate(today.getDate() + 6);
-
-  // const lastDay = today.toISOString().split("T")[0];
-
-  // const custom = "2026-07-02";
-  // const date = getNextDaysUtc8(7, today);
   const column = [
     {
       head: "Brand",
@@ -61,17 +32,28 @@ export default function VehicleSchedulesTable() {
       data: "plateNumber",
     },
   ];
-  const today = new Date();
 
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(null);
+
   const [rowData, setRowData] = useState([]);
+
   const [weekDates, setWeekDates] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
+
+  // Set current date only on client
   useEffect(() => {
+    setDate(new Date());
+  }, []);
+
+  useEffect(() => {
+    if (!date) return;
+
     const fetchSchedules = async () => {
       setIsLoading(true);
 
       const startDate = localDate(date);
+
       const endDate = localDate(
         new Date(date.getTime() + 6 * 24 * 60 * 60 * 1000),
       );
@@ -81,8 +63,10 @@ export default function VehicleSchedulesTable() {
         endDate,
       });
 
-      setRowData(schedules);
+      setRowData(schedules ?? []);
+
       setWeekDates(getNextDaysUtc8(7, date) ?? []);
+
       setIsLoading(false);
     };
 
@@ -90,53 +74,48 @@ export default function VehicleSchedulesTable() {
   }, [date]);
 
   return (
-    <div>
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-sm text-gray-500">
-          Select a start date to view the next 7 days
-        </span>
+    <div className="mb-4">
+      <div className="mb-5 flex items-center justify-between rounded-xl border bg-white p-4 shadow-sm ">
+        <div>
+          <h2 className=" text-lg font-bold text-gray-900">Vehicle Schedule</h2>
 
-        <Popover>
-          <PopoverTrigger>
-            <div className="cursor-pointer rounded-md border bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
-              {localDate(date)}
-            </div>
-          </PopoverTrigger>
-
-          <PopoverContent className="w-auto p-0" align="end">
-            <Calendar mode="single" selected={date} onSelect={setDate} />
-          </PopoverContent>
-        </Popover>
-      </div>
-      {isLoading ? (
-        <div className="flex w-full flex-col gap-2">
-          <div className="flex flex-col gap-2 rounded-lg border p-4">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div className="flex gap-4" key={index}>
-                <Skeleton className="h-7 flex-1 bg-gray-300" />
-                <Skeleton className="h-7 w-24 bg-gray-300" />
-                <Skeleton className="h-7 w-20 bg-gray-300" />
-              </div>
-            ))}
-          </div>
+          <p className=" text-sm  text-gray-500 ">
+            Select a starting date to view the next 7 days
+          </p>
         </div>
+
+        {date && (
+          <Popover>
+            <PopoverTrigger className="rounded-lg border bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50">
+              {localDate(date)}
+            </PopoverTrigger>
+
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(value) => {
+                  if (value) {
+                    setDate(value);
+                  }
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+
+      {isLoading ? (
+        <VehicleSchedulesTableSkeleton days={7} rows={5} />
       ) : (
-        <TableContainerUI>
-          <VehicleSchedulesTableUI
-            date={weekDates}
-            columns={column}
-            rows={rowData}
-          />
-        </TableContainerUI>
-      )}
-      {/* {data.map((vehicle) => (
-        <WeeklyScheduleCardInfo
-          key={vehicle?.id}
-          name={vehicle?.vehicle}
-          // dates={vehicle?.date}
-          schedules={vehicle?.vehicle_schedules}
+        // <TableContainerUI>
+        <VehicleSchedulesTableUI
+          date={weekDates}
+          columns={column}
+          rows={rowData}
         />
-      ))} */}
+        // </TableContainerUI>
+      )}
     </div>
   );
 }

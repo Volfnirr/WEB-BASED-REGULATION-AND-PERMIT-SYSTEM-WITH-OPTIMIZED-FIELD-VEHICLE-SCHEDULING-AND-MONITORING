@@ -5,6 +5,22 @@ import { fromNodeHeaders } from "better-auth/node";
 import { createAuditLog } from "../../services/audit.service.js";
 import * as superAdmin from "../../services/super-admin/super-admin.js";
 
+// DASHBOARD START
+
+export async function dashboard(req, res) {
+  try {
+    const userDashboard = await superAdmin.listAllUser();
+    res.status(200).json({
+      message: "Successfully retrieved dashboard",
+      userDashboard,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+// DASHBOARD END
+
 // AUDIT LOGS START
 // GET ALL AUDIT LOGS DESC (createdAt)
 export async function listAllAuditLogs(req, res) {
@@ -25,7 +41,7 @@ export async function listAllAuditLogs(req, res) {
 // Create user using better auth
 export async function createUser(req, res) {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role } = req.validatedData;
     const newUser = await auth.api.createUser({
       body: {
         email, // required, The email of the user.
@@ -37,6 +53,35 @@ export async function createUser(req, res) {
           termsAndCondition: true,
         }, // Extra fields for the user. Including custom additional fields.
       },
+      headers: fromNodeHeaders(req.headers),
+    });
+
+    res.status(201).json({
+      message: "Account created successfully",
+      newUser,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error instanceof APIError) {
+      return res.status(error.statusCode).json({
+        message: error.body?.message ?? error.message,
+        error: error.body?.message ?? error.message,
+      });
+    }
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+// BAN USER USING BETTER AUTH LOL AHGDHGSAD
+export async function banUser(req, res) {
+  try {
+    const { userId, banReason, banExpiresIn } = req.validatedData;
+    const banUser = await auth.api.banUser({
+      body: {
+        userId: userId, // required, The user id which you want to ban.
+        banReason: banReason, // The reason for the ban.
+        banExpiresIn: banExpiresIn, // The number of seconds until the ban expires. If not provided, the ban will never expire.
+      },
+      headers: fromNodeHeaders(req.headers),
     });
 
     await createAuditLog(
@@ -44,16 +89,172 @@ export async function createUser(req, res) {
         actorId: req.user.id,
         actorName: req.user.name,
         actorRole: req.user.role,
-        action: "Create new account",
-        target: "Create Account",
-        details: `Created a new account with ID: ${newUser.user.id} ROLE: ${newUser.user.role}`,
+        action: "Ban User",
+        target: "User",
+        details: `${req.user.name} ban user with id: (${userId}) with expiration of (${banExpiresIn} seconds)`,
+      },
+      // tx,
+    );
+    res.status(201).json({
+      message: "Account banned successfully",
+      banUser,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error instanceof APIError) {
+      return res.status(error.statusCode).json({
+        message: error.body?.message ?? error.message,
+        error: error.body?.message ?? error.message,
+      });
+    }
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// UNBAN THE USER HUHUH
+export async function UnbanUser(req, res) {
+  try {
+    const { userId } = req.validatedData;
+    const UnbanUser = await auth.api.unbanUser({
+      body: {
+        userId: userId, // required, The user id which you want to unban.
+      },
+      headers: fromNodeHeaders(req.headers),
+    });
+
+    await createAuditLog(
+      {
+        actorId: req.user.id,
+        actorName: req.user.name,
+        actorRole: req.user.role,
+        action: "Unban User",
+        target: "User",
+        details: `${req.user.name} Unban user with id: (${userId})`,
+      },
+      // tx,
+    );
+    res.status(201).json({
+      message: "Account banned successfully",
+      UnbanUser,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error instanceof APIError) {
+      return res.status(error.statusCode).json({
+        message: error.body?.message ?? error.message,
+        error: error.body?.message ?? error.message,
+      });
+    }
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// CHANGE USER NAME THE USER HUHUH
+export async function ChangeUserName(req, res) {
+  try {
+    const { userId, name } = req.validatedData;
+    const updatedName = auth.api.adminUpdateUser({
+      body: {
+        userId: userId, // required, The user id which you want to update.
+        data: { name: name }, // required, The data to update.
+      },
+      headers: fromNodeHeaders(req.headers),
+    });
+
+    await createAuditLog(
+      {
+        actorId: req.user.id,
+        actorName: req.user.name,
+        actorRole: req.user.role,
+        action: "Update User",
+        target: "User",
+        details: `${req.user.name} updated user with id: (${userId})`,
+      },
+      // tx,
+    );
+    res.status(201).json({
+      message: "Account name updated successfully",
+      updatedName,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error instanceof APIError) {
+      return res.status(error.statusCode).json({
+        message: error.body?.message ?? error.message,
+        error: error.body?.message ?? error.message,
+      });
+    }
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// CHANGE USER ROLE  HUHUH
+export async function ChangeUserRole(req, res) {
+  try {
+    const { userId, role } = req.validatedData;
+    const updatedRole = await auth.api.setRole({
+      body: {
+        userId: userId, // The user id which you want to set the role for.
+        role: role, // required, The role to set, this can be a string or an array of strings.
+      },
+      // This endpoint requires session cookies.
+      headers: fromNodeHeaders(req.headers),
+    });
+    await createAuditLog(
+      {
+        actorId: req.user.id,
+        actorName: req.user.name,
+        actorRole: req.user.role,
+        action: "Set User Role",
+        target: "User",
+        details: `${req.user.name} set role to "${role}" for user with id: (${userId})`,
       },
       // tx,
     );
 
     res.status(201).json({
-      message: "Account created successfully",
-      newUser,
+      message: "User role updated successfully",
+      updatedRole,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error instanceof APIError) {
+      return res.status(error.statusCode).json({
+        message: error.body?.message ?? error.message,
+        error: error.body?.message ?? error.message,
+      });
+    }
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// CHANGE USER ROLE  HUHUH
+export async function ChangeUserPassword(req, res) {
+  try {
+    const { userId, password } = req.validatedData;
+    const updatePassword = await auth.api.setUserPassword({
+      body: {
+        userId: userId, // required, The user id which you want to set the password for.
+        newPassword: password, // required, The new password.
+      },
+      // This endpoint requires session cookies.
+      headers: fromNodeHeaders(req.headers),
+    });
+    await createAuditLog(
+      {
+        actorId: req.user.id,
+        actorName: req.user.name,
+        actorRole: req.user.role,
+        action: "Set User Password",
+        target: "User",
+        details: `${req.user.name} set a new password for user with id: (${userId})`,
+      },
+      // tx,
+    );
+
+    res.status(201).json({
+      message: "User password updated successfully",
+      updatePassword,
     });
   } catch (error) {
     console.log(error);
@@ -147,7 +348,7 @@ export async function createInspector(req, res) {
   try {
     const createInspector = await prisma.$transaction(async (tx) => {
       console.log(req.validatedData);
-      const inspector = await superAdmin.createInspector(req.validatedData);
+      const inspector = await superAdmin.createInspector(req.validatedData, tx);
       await createAuditLog(
         {
           actorId: req.user.id,
@@ -164,6 +365,53 @@ export async function createInspector(req, res) {
     res.status(201).json({
       message: "Successfully created inspector",
       createInspector,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function updateInspector(req, res) {
+  try {
+    const updatedInspector = await prisma.$transaction(async (tx) => {
+      if (
+        !Number.isSafeInteger(Number(req.params.id)) ||
+        Number(req.params.id) < 1
+      ) {
+        return res.status(400).json({ message: "Invalid id" });
+      }
+      const { id } = req.params;
+      console.log(req.validatedData);
+
+      const inspector = await superAdmin.validateInspectorExist(id, tx);
+
+      if (!inspector) {
+        return res.status(404).json({ message: "Inspector not found" });
+      }
+
+      const updateInspector = await superAdmin.updateInspector(
+        id,
+        req.validatedData,
+        tx,
+      );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Update Inspector",
+          target: "Inspector",
+          details: `Updated an inspector with ID: ${inspector.id} and email: ${inspector.email}.`,
+        },
+        tx,
+      );
+      return updateInspector;
+    });
+    res.status(201).json({
+      message: "Successfully created inspector",
+      updatedInspector,
     });
   } catch (error) {
     console.log(error);

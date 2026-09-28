@@ -25,7 +25,6 @@ const treeCuttingFormSchema = z.object({
     .trim()
     .max(100, "Extension name is too long")
     .optional(),
-  email: z.email("Invalid email"),
   fullAddress: z
     .string()
     .trim()
@@ -40,11 +39,6 @@ const treeCuttingFormSchema = z.object({
     .number()
     .min(1, "Must remove at least one tree")
     .max(1000, "Number of trees cannot exceed 1,000"),
-  signatureName: z
-    .string()
-    .trim()
-    .min(1, "Signature name is required")
-    .max(100, "Signature name is too long"),
   privacyConsent: z.literal(true, "Please check this box to proceed"),
   contactNo: z
     .string()
@@ -183,8 +177,12 @@ export default function TreeCuttingForm() {
                 <input
                   {...register("fullAddress")}
                   type="text"
-                  placeholder="*MAILING ADDRESS"
-                  className={inputClass}
+                  placeholder="*COMPLETE ADDRESS"
+                  className={`h-9 ${inputClass} resize-none overflow-hidden h-3`}
+                  onInput={(e) => {
+                    e.currentTarget.style.height = "auto";
+                    e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                  }}
                 />
                 {errors.fullAddress && (
                   <div className="text-red-600 text-xs font-medium">
@@ -193,26 +191,15 @@ export default function TreeCuttingForm() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("email")}
-                    type="email"
-                    placeholder="*EMAIL"
-                    className={inputClass}
-                    required
-                  />
-                  {errors.email && (
-                    <div className="text-red-600 text-xs font-medium">
-                      {errors.email.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    CONTACT NUMBER*
+                  </label>
                   <input
                     {...register("contactNo")}
                     type="text"
-                    placeholder="*CONTACT NO."
+                    placeholder="*09XXXXXXXX"
                     className={inputClass}
                   />
                   {errors.contactNo && (
@@ -260,23 +247,6 @@ export default function TreeCuttingForm() {
             </div>
           </div>
 
-          {/* Signature Section */}
-          <div className="flex flex-col items-center pt-8 mt-8">
-            <div className="flex flex-col gap-1 text-left">
-              <input
-                {...register("signatureName")}
-                type="text"
-                placeholder="SIGNATURE OVER PRINTED NAME"
-                className={`${inputClass} text-center border-t-0 border-r-0 border-l-0 rounded-none border-b-2 border-gray-800 w-64 md:w-80 shadow-none focus:ring-0`}
-              />
-              {errors.signatureName && (
-                <div className="text-red-600 text-xs font-medium">
-                  {errors.signatureName.message}
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* DATA PRIVACY CONSENT SECTION */}
           <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
             <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">
@@ -292,31 +262,31 @@ export default function TreeCuttingForm() {
               and will not be shared with unauthorized third parties without my
               express written consent.
             </p>
-            <label className="flex items-start gap-3 cursor-pointer select-none">
-              <div className="flex flex-col gap-1 text-left">
+            <div className="flex flex-col gap-1 text-left">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   {...register("privacyConsent")}
                   className="mt-0.5 h-4 w-4 text-[#1a5632] border-gray-300 rounded focus:ring-2 focus:ring-[#1a5632] cursor-pointer"
                 />
+                <span className="font-semibold text-gray-800 text-xs md:text-sm">
+                  I have read and agree to the Data Privacy Consent statement
+                  above.*
+                </span>
                 {errors.privacyConsent && (
                   <div className="text-red-600 text-xs font-medium">
                     {errors.privacyConsent.message}
                   </div>
                 )}
-              </div>
-              <span className="font-semibold text-gray-800 text-xs md:text-sm">
-                I have read and agree to the Data Privacy Consent statement
-                above.*
-              </span>
-            </label>
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-end pt-4">
             <button
               type="submit"
-              disabled={!agreedToPrivacy}
-              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              disabled={isSubmitting || !agreedToPrivacy}
+              className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? (
                 <>

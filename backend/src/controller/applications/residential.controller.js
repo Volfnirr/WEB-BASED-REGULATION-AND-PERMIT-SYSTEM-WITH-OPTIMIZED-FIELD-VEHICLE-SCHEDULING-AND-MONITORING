@@ -4,11 +4,18 @@ import { createAuditLog } from "../../services/audit.service.js";
 // to use residentialService.exportName
 import * as residentialService from "../../services/applications/residential.service.js";
 import { SERVICE_ID, SERVICE_PREFIX } from "../../lib/services.js";
+import { getManilaYear } from "../../lib/date/get-date.js";
+function toTitleCase(str) {
+  return str
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
 
 export async function submitResidentialForm(req, res) {
   try {
     const application = await prisma.$transaction(async (tx) => {
-      const year = new Date().getFullYear();
+      const year = getManilaYear();
       const serviceId = SERVICE_ID.RESIDENTIAL;
 
       const incrementRow = await tx.service_increment.upsert({
@@ -23,6 +30,7 @@ export async function submitResidentialForm(req, res) {
 
       const newApplication = await residentialService.submitResidentialForm(
         refNo,
+        req.user.email,
         req.user.id,
         req.validatedData,
         tx,
@@ -68,7 +76,7 @@ export async function listResidentialApplications(req, res) {
       serviceName: app.service.name,
       userAccName: app.user_application_userIdTouser.name,
       userAccEmail: app.user_application_userIdTouser.email,
-      action: "SELF_ASSIGN",
+      // action: "SELF_ASSIGN",
     }));
 
     return res.status(200).json({
@@ -84,10 +92,11 @@ export async function listResidentialApplications(req, res) {
 // view an application by the selected id
 export async function viewResidentialFormById(req, res) {
   try {
-    if (!req.params.id || isNaN(Number(req.params.id))) {
-      res.status(200).json({
-        message: "Invalid params",
-      });
+    if (
+      !Number.isSafeInteger(Number(req.params.id)) ||
+      Number(req.params.id) < 1
+    ) {
+      return res.status(400).json({ message: "Invalid id" });
     }
     const applicationData =
       await residentialService.listAssignedResidentialApplications(
@@ -103,9 +112,30 @@ export async function viewResidentialFormById(req, res) {
     const residentialFormData = await residentialService.viewResidentialById(
       req.params.id,
     );
+
+    const inspectorName = await prisma.inspectors.findUnique({
+      where: {
+        id: Number(residentialFormData.assignedInspector),
+      },
+    });
+
+    const displayName = `${toTitleCase(
+      [
+        inspectorName.firstName,
+        inspectorName.middleName,
+        inspectorName.lastName,
+        inspectorName.extensionName,
+      ]
+        .filter(Boolean)
+        .join(" "),
+    )} (${inspectorName.email})`;
+    const newResi = {
+      residentialFormData,
+      displayName,
+    };
     return res.status(200).json({
       message: "Successfully get the Form data",
-      residentialFormData,
+      residentialFormData: newResi,
     });
   } catch (error) {
     console.log(error);

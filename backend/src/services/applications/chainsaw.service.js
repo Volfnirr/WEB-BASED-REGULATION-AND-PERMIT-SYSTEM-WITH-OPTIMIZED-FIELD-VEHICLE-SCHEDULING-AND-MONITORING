@@ -1,7 +1,13 @@
 import { prisma } from "../../lib/prisma.js";
-import { getLast7DaysRange, getTodayRange } from "../../lib/date/get-week.js";
+import { getLast7DaysRange, getTodayRange } from "../../lib/date/get-date.js";
 
-export async function submitChainsawForm(refNo, userId, data, db = prisma) {
+export async function submitChainsawForm(
+  refNo,
+  userEmail,
+  userId,
+  data,
+  db = prisma,
+) {
   return db.application.create({
     data: {
       referenceNo: refNo,
@@ -10,42 +16,28 @@ export async function submitChainsawForm(refNo, userId, data, db = prisma) {
       dataPrivacyConsent: data.privacyConsent,
       chainsaw_registration_form: {
         create: {
-        
-          registrationType: data.registrationType.toUpperCase(), 
-          
+          registrationType: data.registrationType.toUpperCase(),
           lastName: data.lastname,
           firstName: data.firstname,
           middleName: data.middlename,
-          extensionName: data.extension, 
+          extensionName: data.extension,
           province: data.province,
           municipality: data.municipality,
           barangay: data.barangay,
-          
-          
-          fullAddress: data.completeAddress, 
-          email: data.email,
-          
-          
-          contactNo: data.contactNumber, 
-          
+          fullAddress: data.completeAddress,
+          email: userEmail,
+          contactNo: data.contactNumber,
           brand: data.brand,
           model: data.model,
-          
-          
-          dateOfAcquisition: new Date(data.dateAcquisition), 
-          
+          dateOfAcquisition: data.dateAcquisition,
           serialNumber: data.serialNumber,
-          
-          
-          horsePower: parseFloat(data.horsePower), 
-          
-          
-          maxGuideBarLength: parseFloat(data.guideBarLength), 
+          horsePower: parseFloat(data.horsePower),
+          maxGuideBarLength: parseFloat(data.guideBarLength),
         },
       },
     },
     include: {
-      chainsaw_registration_form: true, 
+      chainsaw_registration_form: true,
     },
   });
 }

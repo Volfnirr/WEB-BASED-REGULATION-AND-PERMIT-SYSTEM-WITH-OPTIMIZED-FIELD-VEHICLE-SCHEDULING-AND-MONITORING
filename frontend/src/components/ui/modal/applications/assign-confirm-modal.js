@@ -7,12 +7,6 @@ import { Spinner } from "@/components/ui/spinner.js";
 import { assignUserToApplication } from "@/lib/api/applications/app-admin-action";
 import { useRouter } from "next/navigation";
 
-const confirmSchema = z.object({
-  confirm: z
-    .string()
-    .trim()
-    .regex(/^CONFIRM$/, `Type "CONFIRM" to proceed`),
-});
 export default function AssignApplication({
   onClose,
   refNo,
@@ -29,18 +23,15 @@ export default function AssignApplication({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: zodResolver(confirmSchema),
-  });
+  } = useForm({});
   const onSubmit = async (_) => {
     try {
       const response = await assignUserToApplication(serviceId);
       toast.success(`${response.message}`, {
         position: "top-center",
       });
-      router.refresh();
-
       onClose();
+      router.refresh();
     } catch (err) {
       toast.error(err.message, {
         position: "top-center",
@@ -113,20 +104,8 @@ export default function AssignApplication({
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-2 mb-4">
               <label className="block text-xs font-bold text-gray-700 mb-1">
-                TYPE "CONFIRM" TO PROCEED
+                CLICK "ASSIGN" TO PROCEED
               </label>
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("confirm")}
-                  type="text"
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors"
-                />
-                {errors.confirm && (
-                  <div className="text-red-600 text-xs font-medium">
-                    {errors.confirm.message}
-                  </div>
-                )}
-              </div>
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button

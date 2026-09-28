@@ -63,12 +63,12 @@ export default function VehicleAdminSiderbar() {
       )}
 
       {isOpen && (
-        <aside className="fixed z-99 md:relative w-64 min-h-screen bg-[#005221] text-white flex flex-col justify-between shrink-0 shadow-xl z-99">
-          <div>
+        <aside className="fixed z-99 md:relative w-64 h-dvh bg-[#005221] text-white flex flex-col inset-y-0 left-0 shrink-0 shadow-xl md:h-auto md:min-h-screen">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="p-6 border-b border-green-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <Image
-                  src="/denrlogo.png"
+                  src="/homedenrlogo.png"
                   alt="DENR logo"
                   width={40}
                   height={40}
@@ -78,7 +78,7 @@ export default function VehicleAdminSiderbar() {
                     PENRO Portal
                   </h2>
                   <p className="text-sm font-semibold truncate max-w-37.5">
-                    {user ? user.name : "Failed to load username"}
+                    {user ? user?.name : "Loading..."}
                   </p>
                 </div>
               </div>
@@ -152,7 +152,7 @@ export default function VehicleAdminSiderbar() {
             </nav>
           </div>
 
-          <div className="p-4 border-t border-green-800">
+          <div className="shrink-0 p-4 border-t border-green-800">
             <button
               onClick={() => logout(router)}
               className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium bg-red-700 hover:bg-red-800 text-white rounded-lg transition-colors shadow cursor-pointer"

@@ -4,11 +4,12 @@ import { createAuditLog } from "../../services/audit.service.js";
 // to use residentialService.exportName
 import * as residentialService from "../../services/applications/chainsaw.service.js";
 import { SERVICE_ID, SERVICE_PREFIX } from "../../lib/services.js";
+import { getManilaYear } from "../../lib/date/get-date.js";
 
 export async function submitChainsawForm(req, res) {
   try {
     const application = await prisma.$transaction(async (tx) => {
-      const year = new Date().getFullYear();
+      const year = getManilaYear();
       const serviceId = SERVICE_ID.CHAINSAW;
 
       const incrementRow = await tx.service_increment.upsert({
@@ -23,6 +24,7 @@ export async function submitChainsawForm(req, res) {
 
       const newApplication = await residentialService.submitChainsawForm(
         refNo,
+        req.user.email,
         req.user.id,
         req.validatedData,
         tx,
@@ -68,7 +70,7 @@ export async function listChainsawApplications(req, res) {
       serviceName: app.service.name,
       userAccName: app.user_application_userIdTouser.name,
       userAccEmail: app.user_application_userIdTouser.email,
-      action: "SELF_ASSIGN",
+      // action: "SELF_ASSIGN",
     }));
 
     return res.status(200).json({
@@ -84,10 +86,11 @@ export async function listChainsawApplications(req, res) {
 // view an application by the selected id
 export async function viewChainsawFormById(req, res) {
   try {
-    if (!req.params.id || isNaN(Number(req.params.id))) {
-      res.status(200).json({
-        message: "Invalid params",
-      });
+    if (
+      !Number.isSafeInteger(Number(req.params.id)) ||
+      Number(req.params.id) < 1
+    ) {
+      return res.status(400).json({ message: "Invalid id" });
     }
     const applicationData =
       await residentialService.listAssignedChainsawApplications(req.params.id);

@@ -28,10 +28,10 @@ import { localDateTime } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
 import { FileSearchCorner } from "lucide-react";
 import { useState } from "react";
+import EditInspector from "@/components/ui/modal/super-admin/inspectors/edit-inspectos";
 
 export default function InspectorTableUI({ columns, rows, View }) {
-  const [viewAuditLogs, setViewAuditLogs] = useState(null);
-
+  const [selectedInspector, setSelectedInspector] = useState(null);
   return (
     <div className="bg-white rounded">
       <Table className="rounded">
@@ -75,13 +75,13 @@ export default function InspectorTableUI({ columns, rows, View }) {
                     ) : column.data === "isAvailable" ? (
                       row[column.data] === true ? (
                         <span
-                          className={`${StatusColor("AVAILABLE")} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                          className={`${StatusColor("AVAILABLE")} font-bold inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
                         >
                           AVAILABLE
                         </span>
                       ) : (
                         <span
-                          className={`${StatusColor("NOT_AVAILABLE")} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                          className={`${StatusColor("NOT_AVAILABLE")}font-bold inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
                         >
                           NOT AVAILABLE
                         </span>
@@ -102,7 +102,10 @@ export default function InspectorTableUI({ columns, rows, View }) {
                     <DropdownMenuContent>
                       <DropdownMenuGroup>
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem className=" cursor-pointer">
+                        <DropdownMenuItem
+                          onClick={() => setSelectedInspector(row)}
+                          className=" cursor-pointer"
+                        >
                           Edit
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
@@ -114,7 +117,13 @@ export default function InspectorTableUI({ columns, rows, View }) {
           )}
         </TableBody>
       </Table>
-
+      {selectedInspector && (
+        <EditInspector
+          isOpen={!!selectedInspector}
+          inspectorData={selectedInspector}
+          onClose={() => setSelectedInspector(null)}
+        />
+      )}
       {/* {viewAuditLogs && View && (
         <View
           isOpen={!!viewAuditLogs}

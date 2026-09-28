@@ -4,13 +4,20 @@ import * as agriculturalService from "../../services/applications/agricultural.s
 import * as AssignService from "../../services/applications/assign-user.service.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import { SERVICE_ID, SERVICE_PREFIX } from "../../lib/services.js";
+import { getManilaYear } from "../../lib/date/get-date.js";
+function toTitleCase(str) {
+  return str
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
 
 export async function submitAgriculturalFormMW(req, res) {
   try {
     console.log("userId being sent:", req.user.id);
 
     const application = await prisma.$transaction(async (tx) => {
-      const year = new Date().getFullYear();
+      const year = getManilaYear();
       const serviceId = SERVICE_ID.AGRICULTURAL;
 
       const incrementRow = await tx.service_increment.upsert({
@@ -22,9 +29,12 @@ export async function submitAgriculturalFormMW(req, res) {
       });
 
       const refNo = `${SERVICE_PREFIX[serviceId]}-${year}-${String(incrementRow.count).padStart(5, "0")}`;
+      const isTransferee = req.validatedData.transferee_info ? true : false;
 
       const newApplication = await agriculturalService.submitAgriculturalForm(
         refNo,
+        isTransferee,
+        req.user.email,
         req.user.id,
         req.validatedData,
         tx,
@@ -69,7 +79,7 @@ export async function listAgriculturalApplications(req, res) {
       serviceName: app.service.name,
       userAccName: app.user_application_userIdTouser.name,
       userAccEmail: app.user_application_userIdTouser.email,
-      action: "SELF_ASSIGN",
+      // action: "SELF_ASSIGN",
     }));
 
     return res.status(200).json({
@@ -84,10 +94,11 @@ export async function listAgriculturalApplications(req, res) {
 
 export async function viewAgriculturalFormById(req, res) {
   try {
-    if (!req.params.id || isNaN(Number(req.params.id))) {
-      res.status(200).json({
-        message: "Invalid params",
-      });
+    if (
+      !Number.isSafeInteger(Number(req.params.id)) ||
+      Number(req.params.id) < 1
+    ) {
+      return res.status(400).json({ message: "Invalid id" });
     }
     const applicationData =
       await agriculturalService.listAssignedAgriculturalApplications(
@@ -104,9 +115,32 @@ export async function viewAgriculturalFormById(req, res) {
       req.params.id,
     );
 
+    const inspectorName = await prisma.inspectors.findUnique({
+      where: {
+        id: Number(agriculturalFormData.assignedInspector),
+      },
+    });
+
+    console.log(inspectorName);
+    const displayName = `${toTitleCase(
+      [
+        inspectorName.firstName,
+        inspectorName.middleName,
+        inspectorName.lastName,
+        inspectorName.extensionName,
+      ]
+        .filter(Boolean)
+        .join(" "),
+    )} (${inspectorName.email})`;
+    console.log(displayName);
+
+    const newAgri = {
+      agriculturalFormData,
+      displayName,
+    };
     return res.status(200).json({
       message: "Successfully get the Form data",
-      agriculturalFormData,
+      agriculturalFormData: newAgri,
     });
   } catch (error) {
     console.log(error);

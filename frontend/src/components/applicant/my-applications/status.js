@@ -13,7 +13,7 @@ import { ScrollText, SquarePlus } from "lucide-react";
 import Link from "next/link";
 
 export default function ApplicationStatusPage({ initialData }) {
-  const [data, setData] = useState(initialData);
+  // const [data, setData] = useState(initialData);
 
   // useEffect(() => {
   //   async function loadApplications() {
@@ -78,7 +78,7 @@ export default function ApplicationStatusPage({ initialData }) {
     paginatedData,
     itemsPerPage,
   } = useDataTable({
-    data,
+    data: initialData,
     searchableFields: ["service?.name", "status", "remarks"],
     itemsPerPage: 8,
   });
@@ -91,7 +91,7 @@ export default function ApplicationStatusPage({ initialData }) {
     { label: "Date Created", key: "submittedAt" },
   ];
 
-  if (data.length === 0) {
+  if (initialData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 text-center bg-white rounded-lg border-3 border-gray-300">
         <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
@@ -239,7 +239,7 @@ export default function ApplicationStatusPage({ initialData }) {
                   <p className="text-gray-500 font-medium">No remarks yet</p>
                 </div>
               ) : (
-                <span>{d?.remarks}</span>
+                <span className="whitespace-pre-wrap">{d?.remarks}</span>
               )}
             </div>
           ))

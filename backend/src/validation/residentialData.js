@@ -23,7 +23,6 @@ export const residentialFormSchema = z
       .trim()
       .max(20, "Extension name is too long")
       .optional(),
-    email: z.email("Invalid email address"),
     fullAddress: z
       .string()
       .trim()
@@ -58,14 +57,12 @@ export const residentialFormSchema = z
     province: z.string().trim().min(1, "Province is required").max(100),
     municipality: z.string().trim().min(1, "Municipality is required").max(100),
     barangay: z.string().trim().min(1, "Barangay is required").max(100),
-
     specificLocation: z
       .string()
       .trim()
       .min(1, "Specific Location / Sitio is required")
       .max(255),
     lotNo: z.string().trim().min(1, "Lot No. is required").max(50),
-
     landAreaSqm: z.coerce
       .number("Land area is required")
       .positive("Land area must be greater than 0")
@@ -74,7 +71,6 @@ export const residentialFormSchema = z
         (val) => Math.round(val * 100) === val * 100,
         "Land area can only have up to 2 decimal places",
       ),
-
     // AFFIDAVIT
     affidavitProvince: z
       .string()
@@ -122,13 +118,6 @@ export const residentialFormSchema = z
       .trim()
       .min(1, "Affidavit location is required")
       .max(100, "Affidavit location is too long"),
-    signatureAffiantName: z
-      .string()
-      .trim()
-      .min(1, "Full name signature is required")
-      .max(150, "Full name signature  is too long")
-      .regex(/^[a-zA-Z\s.'-]+$/, "Full name signature can only contain letters")
-      .max(100, "Full name signature  is too long"),
     //Inspector
     assignedInspector: z
       .number({ error: "Please assign an inspector" })

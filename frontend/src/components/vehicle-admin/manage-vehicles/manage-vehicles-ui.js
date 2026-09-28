@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import InfoCard from "@/components/ui/infocard";
 import InfoCardContainer from "@/components/ui/infocardcontainer";
 import FilterDropdown from "@/components/ui/tables/tools/dropdown";
@@ -34,23 +34,23 @@ import { Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ManageVehicleUI({ children, initialData }) {
-  const [data, setData] = useState(initialData);
+  // const [data, setData] = useState(initialData);
   const [isVehicleMaintenanceOpen, setIsVehicleMaintenanceOpen] =
     useState(false);
   const [isAddEditVehicleOpen, setisAddEditVehicleOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-  useEffect(() => {
-    setData(initialData);
-  }, [initialData]);
+  // useEffect(() => {
+  //   setData(initialData);
+  // }, [initialData]);
 
   function openVehicleMaintenance(id) {
-    const vehicle = data.find((d) => d.id === id);
+    const vehicle = initialData.find((d) => d.id === id);
 
     setSelectedVehicle(vehicle);
     setIsVehicleMaintenanceOpen(true);
   }
   function openVehicleEdit(id) {
-    const vehicle = data.find((d) => d.id === id);
+    const vehicle = initialData.find((d) => d.id === id);
 
     setSelectedVehicle(vehicle);
     setisAddEditVehicleOpen(true);
@@ -138,7 +138,7 @@ export default function ManageVehicleUI({ children, initialData }) {
     paginatedData,
     itemsPerPage,
   } = useDataTable({
-    data,
+    data: initialData,
     searchableFields: [
       "brand",
       "model",
@@ -155,7 +155,7 @@ export default function ManageVehicleUI({ children, initialData }) {
 
   return (
     <div className="">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col items-start justify-start mb-2 md:flex-row md:items-center md:justify-between">
         <Title
           title="Manage"
           title2="Vehicles"

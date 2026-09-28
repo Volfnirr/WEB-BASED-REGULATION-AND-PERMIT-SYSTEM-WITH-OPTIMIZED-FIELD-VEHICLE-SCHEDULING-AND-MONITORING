@@ -28,10 +28,19 @@ import { localDateTime } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
 import { FileSearchCorner } from "lucide-react";
 import { useState } from "react";
+import EditUser from "@/components/ui/modal/super-admin/actions/edit-user";
+import BanUser from "@/components/ui/modal/super-admin/actions/ban-user";
+import UnBanUser from "@/components/ui/modal/super-admin/actions/unban-user";
+import ChangeUserPassword from "@/components/ui/modal/super-admin/actions/change-pass-user";
+import SetUserRole from "@/components/ui/modal/super-admin/actions/change-role-user";
 
 export default function SuperAdminTable({ columns, rows, View }) {
   const [viewAuditLogs, setViewAuditLogs] = useState(null);
-
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedBanUser, setSelectedBanUser] = useState(null);
+  const [selectedUnBanUser, setSelectedUnBanUser] = useState(null);
+  const [selectedPasswordUser, setSelectedPasswordUser] = useState(null);
+  const [selectedRoleUser, setSelectedRoleUser] = useState(null);
   return (
     <div className="bg-white rounded">
       <Table>
@@ -87,18 +96,34 @@ export default function SuperAdminTable({ columns, rows, View }) {
                     <DropdownMenuContent>
                       <DropdownMenuGroup>
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Set User Role</DropdownMenuItem>
-                        <DropdownMenuItem>Set User Password</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSelectedUser(row)}>
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedRoleUser(row)}
+                        >
+                          Set User Role
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedPasswordUser(row)}
+                        >
+                          Set User Password
+                        </DropdownMenuItem>
                         {row.role === "APPLICATION_ADMIN" ? (
                           <DropdownMenuItem>Assign Services</DropdownMenuItem>
                         ) : null}
                       </DropdownMenuGroup>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem variant="destructive">
+                      <DropdownMenuItem
+                        onClick={() => setSelectedBanUser(row)}
+                        variant="destructive"
+                      >
                         Ban User
                       </DropdownMenuItem>
-                      <DropdownMenuItem variant="destructive">
+                      <DropdownMenuItem
+                        onClick={() => setSelectedUnBanUser(row)}
+                        variant="destructive"
+                      >
                         Unban User
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -115,6 +140,41 @@ export default function SuperAdminTable({ columns, rows, View }) {
           isOpen={!!viewAuditLogs}
           onClose={() => setViewAuditLogs(null)}
           data={viewAuditLogs}
+        />
+      )}
+      {selectedUser && (
+        <EditUser
+          isOpen={!!selectedUser}
+          userData={selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
+      {selectedBanUser && (
+        <BanUser
+          isOpen={!!selectedBanUser}
+          userData={selectedBanUser}
+          onClose={() => setSelectedBanUser(null)}
+        />
+      )}
+      {selectedUnBanUser && (
+        <UnBanUser
+          isOpen={!!selectedUnBanUser}
+          userData={selectedUnBanUser}
+          onClose={() => setSelectedUnBanUser(null)}
+        />
+      )}
+      {selectedPasswordUser && (
+        <ChangeUserPassword
+          isOpen={!!selectedPasswordUser}
+          userData={selectedPasswordUser}
+          onClose={() => setSelectedPasswordUser(null)}
+        />
+      )}
+      {selectedRoleUser && (
+        <SetUserRole
+          isOpen={!!selectedRoleUser}
+          userData={selectedRoleUser}
+          onClose={() => setSelectedRoleUser(null)}
         />
       )}
     </div>

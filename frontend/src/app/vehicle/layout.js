@@ -3,11 +3,19 @@ import Topbar from "@/components/ui/top-bar";
 import VehicleAdminSiderbar from "@/components/vehicle-admin/sidebar";
 import { UserProvider } from "@/lib/context/account-info-context";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { getUserInfo } from "@/lib/api/userinfo-server-only";
+import { redirect } from "next/navigation";
+import LogoutSync from "@/components/route-protection/logoutSync";
+import { requireRole } from "@/components/route-protection/check-role-server";
 
-export default function VehicleAdminLayout({ children }) {
+export default async function VehicleAdminLayout({ children }) {
+  await requireRole(["VEHICLE_ADMIN"]);
+
   return (
-    <UserProvider>
-      <CheckRole userRoles={["VEHICLE_ADMIN"]}>
+    <>
+      <UserProvider>
+        <LogoutSync />
+        {/* <CheckRole userRoles={["VEHICLE_ADMIN"]}> */}
         <TooltipProvider>
           <div className="flex h-screen bg-[#b1b1b1]">
             <VehicleAdminSiderbar />
@@ -17,7 +25,8 @@ export default function VehicleAdminLayout({ children }) {
             </main>
           </div>
         </TooltipProvider>
-      </CheckRole>
-    </UserProvider>
+        {/* </CheckRole> */}
+      </UserProvider>
+    </>
   );
 }

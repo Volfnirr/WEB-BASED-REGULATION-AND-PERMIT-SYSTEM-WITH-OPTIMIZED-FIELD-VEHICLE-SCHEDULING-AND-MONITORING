@@ -20,6 +20,7 @@ import {
   approveApplication,
   rejectApplication,
 } from "@/lib/api/applications/app-admin-action";
+import Link from "next/link";
 
 const action = [
   { id: 1, value: "APPROVED" },
@@ -33,7 +34,7 @@ const submitFormSchema = z.object({
 
 export default function ReviewChainsawApp({ data, params }) {
   const chainsaw = data;
-
+  console.log(chainsaw);
   const {
     register,
     handleSubmit,
@@ -60,7 +61,7 @@ export default function ReviewChainsawApp({ data, params }) {
         formData.action === "APPROVED"
           ? "Successfully approved application"
           : "Successfully rejected application",
-        { position: "top-center" }
+        { position: "top-center" },
       );
     } catch (err) {
       toast.error(
@@ -69,7 +70,7 @@ export default function ReviewChainsawApp({ data, params }) {
         }`,
         {
           position: "top-center",
-        }
+        },
       );
     }
   };
@@ -98,16 +99,18 @@ export default function ReviewChainsawApp({ data, params }) {
             <p className="text-sm text-gray-600">
               Date Submitted:{" "}
               <span className="font-medium text-gray-900">
-                {localDate(chainsaw?.chainsawFormData?.application?.submittedAt)}
+                {localDate(
+                  chainsaw?.chainsawFormData?.application?.submittedAt,
+                )}
               </span>
             </p>
           </div>
           <div
             className={`${StatusColor(
-              chainsaw?.application?.status
-            )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg border border-yellow-200 shadow-sm`}
+              chainsaw?.chainsawFormData?.application?.status,
+            )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg border shadow-sm`}
           >
-            {chainsaw?.application?.status}
+            {chainsaw?.chainsawFormData?.application?.status}
           </div>
         </div>
 
@@ -200,7 +203,9 @@ export default function ReviewChainsawApp({ data, params }) {
                 </label>
                 <input
                   type="text"
-                  value={localDate(chainsaw?.chainsawFormData?.dateOfAcquisition)}
+                  value={localDate(
+                    chainsaw?.chainsawFormData?.dateOfAcquisition,
+                  )}
                   className={readOnlyInputClass}
                   readOnly
                 />
@@ -292,7 +297,11 @@ export default function ReviewChainsawApp({ data, params }) {
                       <textarea
                         {...register("remarks")}
                         placeholder="Add remarks..."
-                        className="w-full resize-y overflow-auto px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        className="h-9  max-h-80 resize-none overflow-hidden w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        onInput={(e) => {
+                          e.currentTarget.style.height = "auto";
+                          e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                        }}
                       />
                       {errors.remarks && (
                         <div className="text-red-600 text-xs font-medium">
@@ -309,20 +318,21 @@ export default function ReviewChainsawApp({ data, params }) {
             </div>
           )}
 
-          {(chainsaw?.application?.status === "APPROVED" ||
-            chainsaw?.application?.status === "REJECTED") ? (
+          {chainsaw?.chainsawFormData?.application?.status === "APPROVED" ||
+          chainsaw?.chainsawFormData?.application?.status === "REJECTED" ? (
             <div>
               <h2 className="text-sm font-bold text-gray-800 mb-3">Remarks</h2>
               <div className="grid grid-cols-1 gap-4 mb-4">
-                <div>
-                  <input
-                    type="text"
-                    value={chainsaw?.application?.remarks}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
+                <div className={`whitespace-pre-wrap ${readOnlyInputClass} `}>
+                  {chainsaw?.chainsawFormData?.application?.remarks}
                 </div>
               </div>
+              <Link
+                className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700"
+                href={`/application-admin/${chainsaw?.chainsawFormData?.application?.status === "APPROVED" ? "approved" : "rejected"}`}
+              >
+                Go back
+              </Link>
             </div>
           ) : null}
         </div>

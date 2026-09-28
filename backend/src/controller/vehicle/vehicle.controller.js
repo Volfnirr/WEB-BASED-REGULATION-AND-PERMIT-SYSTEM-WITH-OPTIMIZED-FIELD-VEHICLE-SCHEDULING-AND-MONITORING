@@ -3,11 +3,22 @@ import { supabase } from "../../lib/supabase.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import * as vehicleAdmin from "../../services/vehicle/vehicle.service.js";
 import { tripTicketExcelExport } from "../../lib/excel-templates/vehicle/tripTicketExport.js";
+import { getManilaToday, getManilaYear } from "../../lib/date/get-date.js";
 
 // VEHICLE START
 
 export async function createVehicle(req, res) {
   try {
+    const { registrationExpiration, lastRegistrationDate } = req.validatedData;
+    if (registrationExpiration && lastRegistrationDate) {
+      if (registrationExpiration <= lastRegistrationDate) {
+        return res.status(400).json({
+          message:
+            "Registration expiration must be after the last registration date",
+        });
+      }
+    }
+
     const createVehicle = await prisma.$transaction(async (tx) => {
       const { imageUrl, ...vehicleData } = req.validatedData;
 
@@ -128,6 +139,37 @@ export async function listAllVehicles(req, res) {
 
 export async function updateVehicle(req, res) {
   try {
+    if (!req.params.id || isNaN(Number(req.params.id))) {
+      res.status(200).json({
+        message: "Invalid params",
+      });
+    }
+    const checkVehicles = await prisma.vehicle.findFirst({
+      where: {
+        id: Number(req.params.id),
+      },
+      select: {
+        lastRegistrationDate: true,
+        registrationExpiration: true,
+      },
+    });
+
+    const lastRegistrationDate =
+      req.validatedData.lastRegistrationDate ??
+      checkVehicles.lastRegistrationDate;
+    const registrationExpiration =
+      req.validatedData.registrationExpiration ??
+      checkVehicles.registrationExpiration;
+
+    if (registrationExpiration && lastRegistrationDate) {
+      if (registrationExpiration <= lastRegistrationDate) {
+        return res.status(400).json({
+          message:
+            "Registration expiration must be after the last registration date",
+        });
+      }
+    }
+
     const updateVehicle = await prisma.$transaction(async (tx) => {
       const { imageUrl, ...vehicleData } = req.validatedData;
       if (vehicleData.plateNumber) {
@@ -288,11 +330,29 @@ export async function availableVehicles(req, res) {
 export async function submitTripAndSchedule(req, res) {
   try {
     const submitTripAndAssignVehicle = await prisma.$transaction(async (tx) => {
+      const year = getManilaYear();
+      const incrementRow = await tx.trip_ticket_increment.upsert({
+        where: {
+          year,
+        },
+        create: { year, count: 1 },
+        update: { count: { increment: 1 } },
+      });
+      const today = getManilaToday();
+      if (req.validatedData.startDate < today) {
+        return res.status(400).json({
+          message: "Trip ticket start date can't be earlier than today",
+        });
+      }
+      if (req.validatedData.startDate > req.validatedData.endDate) {
+        return res.status(400).json({
+          message: "Trip ticket start date can't be greater than end date",
+        });
+      }
+
+      const tripTicketNo = `TR-TIX-${year}-${String(incrementRow.count).padStart(5, "0")}`;
       console.log("Testing 1");
-      await vehicleAdmin.verifyTripTicketTaken(
-        req.validatedData.tripTicketNo,
-        tx,
-      );
+      await vehicleAdmin.verifyTripTicketTaken(tripTicketNo, tx);
       console.log("Testing 2");
 
       const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
@@ -307,6 +367,7 @@ export async function submitTripAndSchedule(req, res) {
       console.log("Testing 4");
 
       const createTicket = await vehicleAdmin.createTripTicket(
+        tripTicketNo,
         req.validatedData,
         req.user.id,
         tx,
@@ -466,8 +527,6 @@ export async function tripTicketList(req, res) {
       plateNumber: trip.vehicle.plateNumber,
       startDate: trip.vehicle_schedule.startDate,
       endDate: trip.vehicle_schedule.endDate,
-      view: "VIEW",
-      edit: "EDIT",
     }));
     res.status(200).json({
       message: "Successfuly retrieved trip ticket list",

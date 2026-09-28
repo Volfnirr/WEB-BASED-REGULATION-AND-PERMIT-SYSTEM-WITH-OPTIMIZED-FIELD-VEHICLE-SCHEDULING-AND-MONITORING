@@ -9,9 +9,8 @@ import Pagination from "@/components/ui/tables/tools/pagination";
 import { useState } from "react";
 import TripTicketView from "@/components/ui/modal/trip-ticket/trip-ticket-view";
 import TripTicketModal from "@/components/ui/modal/trip-ticket/trip-ticket";
+import TripsTable from "./trip-table-ui";
 export default function TripApplicationTable({ initialData }) {
-  const [data, setData] = useState(initialData);
-  const [isOpen, setIsOpen] = useState(false);
   const column = [
     {
       head: "Trip Ticket No.",
@@ -41,14 +40,14 @@ export default function TripApplicationTable({ initialData }) {
       head: "Purpose",
       data: "purpose",
     },
-    {
-      head: "View",
-      data: "view",
-    },
-    {
-      head: "Edit",
-      data: "edit",
-    },
+    // {
+    //   head: "View",
+    //   data: "VIEW",
+    // },
+    // {
+    //   head: "Edit",
+    //   data: "EDIT",
+    // },
   ];
 
   // const data = [
@@ -86,7 +85,7 @@ export default function TripApplicationTable({ initialData }) {
     paginatedData,
     itemsPerPage,
   } = useDataTable({
-    data,
+    data: initialData,
     searchableFields: [
       "authorizedPassengers",
       "plateNumber",
@@ -114,13 +113,13 @@ export default function TripApplicationTable({ initialData }) {
           options={sortOptions}
         />
       </div>
-      <Table
+      <TripsTable
         columns={column}
         rows={paginatedData}
         ViewTicket={TripTicketView}
         EditTicket={TripTicketModal}
       />
-      <CardContainer title="Pending Applications">
+      {/* <CardContainer title="Pending Applications">
         {paginatedData.map((data) => {
           return (
             <ScheduleCardInfo
@@ -135,7 +134,7 @@ export default function TripApplicationTable({ initialData }) {
             />
           );
         })}
-      </CardContainer>
+      </CardContainer> */}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

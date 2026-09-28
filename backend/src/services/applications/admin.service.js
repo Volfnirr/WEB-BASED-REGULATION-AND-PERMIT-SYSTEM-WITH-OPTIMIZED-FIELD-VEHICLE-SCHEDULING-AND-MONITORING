@@ -2,7 +2,7 @@ import { prisma } from "../../lib/prisma.js";
 import {
   getLast30DaysRange,
   getLast7DaysRange,
-} from "../../lib/date/get-week.js";
+} from "../../lib/date/get-date.js";
 import { SERVICE_ID } from "../../lib/services.js";
 //For application features
 export async function listAppAdminAssignedApplications(userId, status) {
@@ -11,13 +11,13 @@ export async function listAppAdminAssignedApplications(userId, status) {
       status,
       assignedToId: userId,
     },
-    orderBy: {
-      submittedAt: "desc",
-    },
+    orderBy:
+      status === "PENDING" ? { submittedAt: "desc" } : { reviewedAt: "desc" },
     select: {
       id: true,
       status: true,
       submittedAt: true,
+      reviewedAt: true,
       referenceNo: true,
       assignedToId: true,
       service: {
@@ -295,7 +295,7 @@ export async function listAllApplicationsStatus() {
     // Chainsaw End
     //4 Services End
   ]);
-
+  // const daily = await getDailyActivity();
   return {
     all: {
       newApplications: newApplications,
@@ -327,6 +327,7 @@ export async function listAllApplicationsStatus() {
       approved: approvedChainsawApplications,
       rejected: rejectedChainsawApplications,
     },
+    // daily: daily,
   };
 }
 

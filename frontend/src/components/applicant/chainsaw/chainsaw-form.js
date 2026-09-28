@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
-import { submitChainsawForm } from "@/lib/api/applications/chainsaw/chainsaw"; 
+import { submitChainsawForm } from "@/lib/api/applications/chainsaw/chainsaw";
 import { Spinner } from "@/components/ui/spinner";
 import AddressFields from "@/components/forms/AddressFields";
 import {
@@ -22,34 +22,86 @@ const chainsawFormSchema = z.object({
   registrationType: z.enum(["New", "Renewal"], {
     errorMap: () => ({ message: "Please select a registration type" }),
   }),
-  lastname: z.string().trim().min(1, "Last name is required").max(255, "Maximum 255 characters allowed"),
-  firstname: z.string().trim().min(1, "First name is required").max(255, "Maximum 255 characters allowed"),
-  middlename: z.string().trim().min(1, "Middle name is required").max(255, "Maximum 255 characters allowed"),
-  extension: z.string().trim().max(50, "Maximum 50 characters allowed").optional(),
-  
-  province: z.string().trim().min(1, "Province is required").max(255, "Maximum 255 characters allowed"),
-  municipality: z.string().trim().min(1, "Municipality is required").max(255, "Maximum 255 characters allowed"),
-  barangay: z.string().trim().min(1, "Barangay is required").max(255, "Maximum 255 characters allowed"),
-  completeAddress: z.string().trim().min(5, "Complete address is required").max(1000, "Maximum 1000 characters allowed"),
-  
-  email: z.email("Invalid email").max(255, "Maximum 255 characters allowed"),
-  
-  contactNumber: z 
-     .string()
-     .trim()
-     .regex(/^09\d{9}$/, "Enter a valid 11-digit Philippine mobile number")
-     .max(11, "Maximum 11 characters allowed"),
+  lastname: z
+    .string()
+    .trim()
+    .min(1, "Last name is required")
+    .max(255, "Maximum 255 characters allowed"),
+  firstname: z
+    .string()
+    .trim()
+    .min(1, "First name is required")
+    .max(255, "Maximum 255 characters allowed"),
+  middlename: z
+    .string()
+    .trim()
+    .min(1, "Middle name is required")
+    .max(255, "Maximum 255 characters allowed"),
+  extension: z
+    .string()
+    .trim()
+    .max(50, "Maximum 50 characters allowed")
+    .optional(),
 
-  brand: z.string().trim().min(1, "Brand is required").max(255, "Maximum 255 characters allowed"),
-  model: z.string().trim().min(1, "Model is required").max(255, "Maximum 255 characters allowed"),
+  province: z
+    .string()
+    .trim()
+    .min(1, "Province is required")
+    .max(255, "Maximum 255 characters allowed"),
+  municipality: z
+    .string()
+    .trim()
+    .min(1, "Municipality is required")
+    .max(255, "Maximum 255 characters allowed"),
+  barangay: z
+    .string()
+    .trim()
+    .min(1, "Barangay is required")
+    .max(255, "Maximum 255 characters allowed"),
+  completeAddress: z
+    .string()
+    .trim()
+    .min(5, "Complete address is required")
+    .max(1000, "Maximum 1000 characters allowed"),
+  contactNumber: z
+    .string()
+    .trim()
+    .regex(/^09\d{9}$/, "Enter a valid 11-digit Philippine mobile number")
+    .max(11, "Maximum 11 characters allowed"),
+
+  brand: z
+    .string()
+    .trim()
+    .min(1, "Brand is required")
+    .max(255, "Maximum 255 characters allowed"),
+  model: z
+    .string()
+    .trim()
+    .min(1, "Model is required")
+    .max(255, "Maximum 255 characters allowed"),
   dateAcquisition: z
     .string()
     .trim()
-    .regex(/^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/, "Please use MM/DD/YYYY format")
+    .regex(
+      /^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/,
+      "Please use MM/DD/YYYY format",
+    )
     .max(20, "Maximum 20 characters allowed"),
-  serialNumber: z.string().trim().min(1, "Serial number is required").max(255, "Maximum 255 characters allowed"),
-  horsePower: z.string().trim().min(1, "Horse power is required").max(100, "Maximum 100 characters allowed"),
-  guideBarLength: z.string().trim().min(1, "Guide bar length is required").max(100, "Maximum 100 characters allowed"),
+  serialNumber: z
+    .string()
+    .trim()
+    .min(1, "Serial number is required")
+    .max(255, "Maximum 255 characters allowed"),
+  horsePower: z
+    .string()
+    .trim()
+    .min(1, "Horse power is required")
+    .max(100, "Maximum 100 characters allowed"),
+  guideBarLength: z
+    .string()
+    .trim()
+    .min(1, "Guide bar length is required")
+    .max(100, "Maximum 100 characters allowed"),
 
   privacyConsent: z.literal(true, {
     errorMap: () => ({ message: "Please check this box to proceed" }),
@@ -61,7 +113,7 @@ export default function ChainsawForm() {
   const errorClass = "text-red-600 text-xs font-medium";
 
   const [showModal, setShowModal] = useState(false);
-  
+
   const {
     register,
     handleSubmit,
@@ -73,6 +125,9 @@ export default function ChainsawForm() {
   } = useForm({
     resolver: zodResolver(chainsawFormSchema),
     defaultValues: {
+      registrationType: "New",
+    },
+    defaultValues: {
       province: "Pampanga",
     },
   });
@@ -81,7 +136,7 @@ export default function ChainsawForm() {
 
   const onSubmit = async (data) => {
     try {
-      await submitChainsawForm(data); 
+      await submitChainsawForm(data);
       reset();
       setShowModal(true);
     } catch (err) {
@@ -138,7 +193,9 @@ export default function ChainsawForm() {
                   )}
                 />
                 {errors.registrationType && (
-                  <div className={errorClass}>{errors.registrationType.message}</div>
+                  <div className={errorClass}>
+                    {errors.registrationType.message}
+                  </div>
                 )}
               </div>
             </div>
@@ -198,6 +255,41 @@ export default function ChainsawForm() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("province")}
+                  type="text"
+                  placeholder="*PROVINCE"
+                  className={inputClass}
+                />
+                {errors.province && (
+                  <div className={errorClass}>{errors.province.message}</div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("municipality")}
+                  type="text"
+                  placeholder="*MUNICIPALITY"
+                  className={inputClass}
+                />
+                {errors.municipality && (
+                  <div className={errorClass}>
+                    {errors.municipality.message}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("barangay")}
+                  type="text"
+                  placeholder="*BARANGAY"
+                  className={inputClass}
+                />
+                {errors.barangay && (
+                  <div className={errorClass}>{errors.barangay.message}</div>
+                )}
+              </div>
               <AddressFields
                 control={control}
                 setValue={setValue}
@@ -210,32 +302,22 @@ export default function ChainsawForm() {
                 <textarea
                   {...register("completeAddress")}
                   rows="3"
-                  placeholder="*COMPLETE ADDRESS (House No., Street, Subdivision)"
-                  className={inputClass}
+                  placeholder="*COMPLETE ADDRESS"
+                  className={`h-9 ${inputClass} resize-none overflow-hidden h-3`}
+                  onInput={(e) => {
+                    e.currentTarget.style.height = "auto";
+                    e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                  }}
                 ></textarea>
                 {errors.completeAddress && (
-                  <div className={errorClass}>{errors.completeAddress.message}</div>
+                  <div className={errorClass}>
+                    {errors.completeAddress.message}
+                  </div>
                 )}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  EMAIL ADDRESS*
-                </label>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("email")}
-                    type="email"
-                    placeholder="*EMAIL ADDRESS"
-                    className={inputClass}
-                  />
-                  {errors.email && (
-                    <div className={errorClass}>{errors.email.message}</div>
-                  )}
-                </div>
-              </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
                   CONTACT NUMBER*
@@ -248,7 +330,9 @@ export default function ChainsawForm() {
                     className={inputClass}
                   />
                   {errors.contactNumber && (
-                    <div className={errorClass}>{errors.contactNumber.message}</div>
+                    <div className={errorClass}>
+                      {errors.contactNumber.message}
+                    </div>
                   )}
                 </div>
               </div>
@@ -292,7 +376,9 @@ export default function ChainsawForm() {
                   className={inputClass}
                 />
                 {errors.dateAcquisition && (
-                  <div className={errorClass}>{errors.dateAcquisition.message}</div>
+                  <div className={errorClass}>
+                    {errors.dateAcquisition.message}
+                  </div>
                 )}
               </div>
             </div>
@@ -306,7 +392,9 @@ export default function ChainsawForm() {
                   className={inputClass}
                 />
                 {errors.serialNumber && (
-                  <div className={errorClass}>{errors.serialNumber.message}</div>
+                  <div className={errorClass}>
+                    {errors.serialNumber.message}
+                  </div>
                 )}
               </div>
               <div className="flex flex-col gap-1 text-left">
@@ -328,7 +416,9 @@ export default function ChainsawForm() {
                   className={inputClass}
                 />
                 {errors.guideBarLength && (
-                  <div className={errorClass}>{errors.guideBarLength.message}</div>
+                  <div className={errorClass}>
+                    {errors.guideBarLength.message}
+                  </div>
                 )}
               </div>
             </div>
@@ -374,7 +464,7 @@ export default function ChainsawForm() {
             <button
               type="submit"
               disabled={isSubmitting || !agreedToPrivacy}
-              className="px-8 py-3 bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? (
                 <>

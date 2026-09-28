@@ -1,16 +1,41 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import InfoCard from "@/components/ui/infocard";
 import InfoCardContainer from "@/components/ui/infocardcontainer";
 import { BadgeCheck, CircleX, ClipboardCheck } from "lucide-react";
+
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-export default async function PendingInfo({ status }) {
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { AssignedStatusOverview } from "./status-bar-chart";
+
+export default function PendingInfo({ status }) {
+  const [tab, setTab] = useState("chart");
+
+  useEffect(() => {
+    const savedTab = localStorage.getItem("tabPreference");
+
+    if (savedTab === "cards" || savedTab === "chart") {
+      setTab(savedTab);
+    }
+  }, []);
+
+  const handleTabChange = (value) => {
+    setTab(value);
+    localStorage.setItem("tabPreference", value);
+  };
+
   const info = [
     {
       label: "Approved",
-      total: status.approved ?? "-",
+      total: status?.approved ?? "-",
       icon: <BadgeCheck />,
       bg: "bg-green-200 text-green-600",
       mainBg: "bg-green-100",
@@ -33,16 +58,27 @@ export default async function PendingInfo({ status }) {
       tooltip: "All Pending applications assigned to you",
     },
   ];
+
   return (
-    <div>
-      <InfoCardContainer title="Assigned Applications Status">
-        {info.map((d) => {
-          return (
+    <Tabs value={tab} onValueChange={handleTabChange} className="w-full">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-green-700">
+          Assigned Applications Status
+        </h2>
+
+        <TabsList>
+          <TabsTrigger value="cards">Cards</TabsTrigger>
+          <TabsTrigger value="chart">Chart</TabsTrigger>
+        </TabsList>
+      </div>
+
+      <TabsContent value="cards" className="mb-4">
+        <InfoCardContainer>
+          {info.map((d) => (
             <Tooltip key={d.label}>
               <TooltipTrigger
                 render={
                   <InfoCard
-                    key={d.label}
                     mainBg={d.mainBg}
                     icon={d.icon}
                     label={d.label}
@@ -50,14 +86,19 @@ export default async function PendingInfo({ status }) {
                     bg={d.bg}
                   />
                 }
-              ></TooltipTrigger>
+              />
+
               <TooltipContent>
                 <p>{d.tooltip}</p>
               </TooltipContent>
             </Tooltip>
-          );
-        })}
-      </InfoCardContainer>
-    </div>
+          ))}
+        </InfoCardContainer>
+      </TabsContent>
+
+      <TabsContent value="chart" className="mb-4">
+        <AssignedStatusOverview status={status ?? []} />
+      </TabsContent>
+    </Tabs>
   );
 }

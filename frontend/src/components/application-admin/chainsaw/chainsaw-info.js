@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import InfoCard from "@/components/ui/infocard";
 import InfoCardContainer from "@/components/ui/infocardcontainer";
 import {
@@ -13,7 +17,27 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export default async function ChainsawInfo({ status }) {
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { WeeklyStatus } from "../services-dashboard/status-overview-pie-chart";
+import { StatusOverview } from "../services-dashboard/status-overview-bar-chart";
+
+export default function ChainsawInfo({ status }) {
+  const [tab, setTab] = useState("chart");
+
+  useEffect(() => {
+    const savedTab = localStorage.getItem("tabPreference");
+
+    if (savedTab === "cards" || savedTab === "chart") {
+      setTab(savedTab);
+    }
+  }, []);
+
+  const handleTabChange = (value) => {
+    setTab(value);
+    localStorage.setItem("tabPreference", value);
+  };
+
   const infoCardStatusThisWeek = [
     {
       label: "Pending",
@@ -41,7 +65,7 @@ export default async function ChainsawInfo({ status }) {
       tooltip: "Rejected applications in the past 7 days",
     },
   ];
-  
+
   const infoCardStatusToday = [
     {
       label: "New Applications",
@@ -86,53 +110,78 @@ export default async function ChainsawInfo({ status }) {
   ];
 
   return (
-    <div>
-      <InfoCardContainer title="Weekly Status (Past 7 Days)">
-        {infoCardStatusThisWeek.map((status) => {
-          return (
-            <Tooltip key={status.label}>
-              <TooltipTrigger
-                render={
-                  <InfoCard
-                    key={status.label}
-                    mainBg={status.mainBg}
-                    icon={status.icon}
-                    label={status.label}
-                    total={status.total}
-                    bg={status.bg}
-                  />
-                }
-              ></TooltipTrigger>
-              <TooltipContent>
-                <p>{status.tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </InfoCardContainer>
+    <Tabs value={tab} onValueChange={handleTabChange} className="w-full">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-green-700">
+          Chainsaw Applications Status
+        </h2>
 
-      <InfoCardContainer title="Status Overview">
-        {infoCardStatusToday.map((today) => {
-          return (
-            <Tooltip key={today.label}>
-              <TooltipTrigger
-                render={
-                  <InfoCard
-                    mainBg={today.mainBg}
-                    icon={today.icon}
-                    label={today.label}
-                    total={today.total}
-                    bg={today.bg}
-                  />
-                }
-              />
-              <TooltipContent>
-                <p>{today.tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </InfoCardContainer>
-    </div>
+        <TabsList>
+          <TabsTrigger value="cards">Cards</TabsTrigger>
+          <TabsTrigger value="chart">Chart</TabsTrigger>
+        </TabsList>
+      </div>
+
+      <TabsContent value="cards" className="mb-4">
+        <InfoCardContainer title="Weekly Status (Past 7 Days)">
+          {infoCardStatusThisWeek.map((status) => {
+            return (
+              <Tooltip key={status.label}>
+                <TooltipTrigger
+                  render={
+                    <InfoCard
+                      key={status.label}
+                      mainBg={status.mainBg}
+                      icon={status.icon}
+                      label={status.label}
+                      total={status.total}
+                      bg={status.bg}
+                    />
+                  }
+                ></TooltipTrigger>
+                <TooltipContent>
+                  <p>{status.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </InfoCardContainer>
+
+        <InfoCardContainer title="Status Overview">
+          {infoCardStatusToday.map((today) => {
+            return (
+              <Tooltip key={today.label}>
+                <TooltipTrigger
+                  render={
+                    <InfoCard
+                      mainBg={today.mainBg}
+                      icon={today.icon}
+                      label={today.label}
+                      total={today.total}
+                      bg={today.bg}
+                    />
+                  }
+                />
+                <TooltipContent>
+                  <p>{today.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </InfoCardContainer>
+      </TabsContent>
+
+      <TabsContent value="chart" className="mb-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
+          <div className="w-full lg:w-[35%]">
+            <WeeklyStatus status={status ?? []} />
+          </div>
+
+          <div className="w-full lg:w-[65%]">
+            <StatusOverview status={status ?? []} />
+          </div>
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 }

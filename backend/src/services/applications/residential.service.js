@@ -1,7 +1,13 @@
 import { prisma } from "../../lib/prisma.js";
-import { getLast7DaysRange, getTodayRange } from "../../lib/date/get-week.js";
+import { getLast7DaysRange, getTodayRange } from "../../lib/date/get-date.js";
 
-export async function submitResidentialForm(refNo, userId, data, db = prisma) {
+export async function submitResidentialForm(
+  refNo,
+  userEmail,
+  userId,
+  data,
+  db = prisma,
+) {
   return db.application.create({
     data: {
       referenceNo: refNo,
@@ -14,7 +20,7 @@ export async function submitResidentialForm(refNo, userId, data, db = prisma) {
           firstName: data.firstName,
           middleName: data.middleName,
           extensionName: data.extensionName,
-          email: data.email,
+          email: userEmail,
           fullAddress: data.fullAddress,
           contactNo: data.contactNo,
           citizenship: data.citizenship,
@@ -38,7 +44,6 @@ export async function submitResidentialForm(refNo, userId, data, db = prisma) {
           purposeOfUse: data.purposeOfUse,
           affidavitDate: data.affidavitDate,
           affidavitLocation: data.affidavitLocation,
-          signatureAffiantName: data.signatureAffiantName,
           assignedInspector: data.assignedInspector,
         },
       },

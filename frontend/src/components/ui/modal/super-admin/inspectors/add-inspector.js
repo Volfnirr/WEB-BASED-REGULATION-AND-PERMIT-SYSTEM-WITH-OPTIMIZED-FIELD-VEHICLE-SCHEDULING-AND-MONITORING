@@ -151,7 +151,7 @@ export default function AddInspector({ open, onClose }) {
                   <Spinner data-icon />
                 </>
               ) : (
-                "Submit Application"
+                "Submit inspector"
               )}
             </button>
           </div>

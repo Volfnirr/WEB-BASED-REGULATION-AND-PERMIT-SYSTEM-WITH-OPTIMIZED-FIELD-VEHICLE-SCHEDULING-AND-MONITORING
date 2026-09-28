@@ -7,8 +7,11 @@ import {
   residentialApplications,
   getResidentialAppStatus,
 } from "@/lib/api/applications/residential/residential-server";
+import { Suspense } from "react";
+import { TableSkeleton } from "@/components/application-admin/services-dashboard/services-table-skeleton";
+import DashboardSkeletonSwitcher from "@/components/skeleton/skeletons-switcher";
 
-export default async function ResidentialApplicationReview() {
+async function ResidentialApplicationReviewData() {
   const { applications } = await residentialApplications();
   const { status } = await getResidentialAppStatus();
 
@@ -23,8 +26,28 @@ export default async function ResidentialApplicationReview() {
         />
         <ResidentialInfo status={status} />
         <ResidentialTable initialData={applications} />
-        <ScheduleCardValue />
+        {/* <ScheduleCardValue /> */}
       </AssignedServices>
     </div>
+  );
+}
+export default function ResidentialApplicationReview() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Title
+            title="Manage "
+            title2="Residential"
+            title3="Applications"
+            description="View and manage all Residential Applications."
+          />
+          <DashboardSkeletonSwitcher />
+          <TableSkeleton />
+        </>
+      }
+    >
+      <ResidentialApplicationReviewData />
+    </Suspense>
   );
 }

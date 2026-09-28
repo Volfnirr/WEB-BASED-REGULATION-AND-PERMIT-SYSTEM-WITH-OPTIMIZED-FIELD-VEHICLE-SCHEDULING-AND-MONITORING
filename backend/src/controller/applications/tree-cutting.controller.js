@@ -5,26 +5,14 @@ import * as AssignService from "../../services/applications/assign-user.service.
 import { createAuditLog } from "../../services/audit.service.js";
 import { SERVICE_ID, SERVICE_PREFIX } from "../../lib/services.js";
 import { promise } from "zod";
+import { getManilaYear } from "../../lib/date/get-date.js";
 
 // Submit tree cutting application
 export async function submitTreeCuttingForm(req, res) {
   try {
-    // const lastId = await getApplicationNumber();
-    // const nextId = lastId + 1;
-    // const year = new Date().getFullYear();
-    // const refNo = `TCPF-${year}-${String(nextId).padStart(5, "0")}`;
-    // console.log("userId being sent:", req.user.id);
-
-    // apply interactive transaction of prisma uhmmmmmmmmmm
-    // two types of  transaction 1. Sequential 2. Interactive
-    // interactive when when queries depend on each other
-    // if one faill all fail no insert lol
-    // wahhhhhhh guide sleep
     const application = await prisma.$transaction(async (tx) => {
-      // use
-      const year = new Date().getFullYear();
+      const year = getManilaYear();
       const serviceId = SERVICE_ID.TREE_CUTTING;
-
       const incrementRow = await tx.service_increment.upsert({
         where: {
           serviceId_year: { serviceId, year },
@@ -34,18 +22,14 @@ export async function submitTreeCuttingForm(req, res) {
       });
 
       const refNo = `${SERVICE_PREFIX[serviceId]}-${year}-${String(incrementRow.count).padStart(5, "0")}`;
-      // if i forgot to explain
-      // parameters in order when you use them in the services sleepppppppppppppppppppppppppp
       const newApplication = await treeCuttingService.submitTreeCuttingForm(
         refNo,
+        req.user.email,
         req.user.id,
         req.validatedData,
         tx,
       );
 
-      // interative so if one fail all fail, buwahhhhh }:<
-      // need it so you can keep track of all
-      // first version lol
       await createAuditLog(
         {
           actorId: req.user.id,
@@ -56,11 +40,7 @@ export async function submitTreeCuttingForm(req, res) {
           details: `Submitted Tree Cutting Permit application (${newApplication.referenceNo})`,
         },
         tx,
-        // this thing is here because i do ({}),
-        // db = prisma outside the destructuring but in the submitTreeCuttingForm theres no need to destructure
       );
-
-      // only returnign newApplication here since we dont want to pass the auditlog to user
       return newApplication;
     });
 
@@ -89,7 +69,6 @@ export async function listTreeCuttingApplications(req, res) {
       serviceName: app.service.name,
       userAccName: app.user_application_userIdTouser.name,
       userAccEmail: app.user_application_userIdTouser.email,
-      action: "SELF_ASSIGN",
     }));
 
     return res.status(200).json({
@@ -105,10 +84,11 @@ export async function listTreeCuttingApplications(req, res) {
 // view an application by the selected id
 export async function viewTreeCuttingFormById(req, res) {
   try {
-    if (!req.params.id || isNaN(Number(req.params.id))) {
-      res.status(200).json({
-        message: "Invalid params",
-      });
+    if (
+      !Number.isSafeInteger(Number(req.params.id)) ||
+      Number(req.params.id) < 1
+    ) {
+      return res.status(400).json({ message: "Invalid id" });
     }
     const applicationData =
       await treeCuttingService.listAssignedToTreeCuttingApplications(
