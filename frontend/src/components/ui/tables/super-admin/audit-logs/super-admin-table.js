@@ -16,6 +16,15 @@ import { localDateTime } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
 import { FileSearchCorner } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function SuperAdminTable({ columns, rows, View }) {
   const [viewAuditLogs, setViewAuditLogs] = useState(null);
@@ -66,12 +75,22 @@ export default function SuperAdminTable({ columns, rows, View }) {
                         <TooltipContent>{row[column.data]}</TooltipContent>
                       </Tooltip>
                     ) : column.data === "VIEW" ? (
-                      <button
-                        onClick={() => setViewAuditLogs(row)}
-                        className={`block cursor-pointer ${StatusColor(column.data)} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm transition-colors`}
-                      >
-                        VIEW
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          className="border border-gray-400"
+                          render={<Button variant="outline">...</Button>}
+                        />
+                        <DropdownMenuContent>
+                          <DropdownMenuGroup>
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              onClick={() => setViewAuditLogs(row)}
+                            >
+                              View Details
+                            </DropdownMenuItem>
+                          </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     ) : column.data === "logDate" ? (
                       <span>{localDateTime(row[column.data])}</span>
                     ) : column.data === "target" || column.data === "action" ? (

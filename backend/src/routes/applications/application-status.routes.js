@@ -5,7 +5,7 @@ import { requireAuthorization } from "../../middleware/requireAuthorization.js";
 import { requireAuthentication } from "../../middleware/requireAuthentication.js";
 import {
   getUserApplicationStatus,
-  logUserCreate,
+  // logUserCreate,
 } from "../../controller/applications/user-application-status.js";
 router.get(
   "/status",
@@ -13,5 +13,5 @@ router.get(
   requireAuthorization("USER"),
   getUserApplicationStatus,
 );
-router.post("/users/create", logUserCreate);
+// router.post("/users/create", logUserCreate);
 export default router;

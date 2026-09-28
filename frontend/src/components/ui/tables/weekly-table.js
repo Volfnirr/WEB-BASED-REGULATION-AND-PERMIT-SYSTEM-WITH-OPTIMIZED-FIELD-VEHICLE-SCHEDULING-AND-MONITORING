@@ -25,7 +25,7 @@ export default function VehicleSchedulesTableUI({ date, rows }) {
               key={vehicle.id}
               className="grid min-h-24 grid-cols-[180px_repeat(7,minmax(130px,1fr))] border-b last:border-b-0"
             >
-              <div className="border-r p-4">
+              <div className="sticky left-0 bg-white border-r p-4">
                 <p className="text-sm font-bold text-gray-900">
                   {vehicle.brand} {vehicle.model}
                 </p>
