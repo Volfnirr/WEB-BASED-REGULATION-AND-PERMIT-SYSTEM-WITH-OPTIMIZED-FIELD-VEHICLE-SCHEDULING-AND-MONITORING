@@ -87,6 +87,9 @@ export async function selfAssignApplication(req, res) {
         req.user.id,
         tx,
       );
+      if (assignedUserTo.count === 0) {
+        throw new Error("APPLICATION_ALREADY_ASSIGNED");
+      }
 
       await createAuditLog(
         {
@@ -109,6 +112,13 @@ export async function selfAssignApplication(req, res) {
     });
   } catch (error) {
     console.log(error);
+
+    if (error.message === "APPLICATION_ALREADY_ASSIGNED") {
+      return res.status(409).json({
+        message: "Application already assigned",
+      });
+    }
+
     res.status(500).json({ message: "Internal server error" });
   }
 }

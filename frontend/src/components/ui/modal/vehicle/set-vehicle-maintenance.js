@@ -64,6 +64,7 @@ export default function VehicleMaintenance({ isOpen, onClose, vehicle }) {
         queryClient.invalidateQueries({ queryKey: ["vehicles"] }),
         queryClient.invalidateQueries({ queryKey: ["vehicles-status"] }),
         queryClient.invalidateQueries({ queryKey: ["vehicle-dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["vehicle-schedules"] }),
       ]);
       onClose();
     } catch (error) {

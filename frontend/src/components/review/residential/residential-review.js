@@ -15,12 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 import {
   approveApplication,
   rejectApplication,
 } from "@/lib/api/applications/app-admin-action";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 const action = [
   { id: 1, value: "APPROVED" },
@@ -60,6 +60,7 @@ export default function ReviewResidential({ data, params }) {
           remarks: formData.remarks,
         });
       }
+      router.replace("/application-admin/pending");
       toast.success(
         formData.action === "APPROVED"
           ? "Successfully approved application"

@@ -229,7 +229,7 @@ export default function ChainsawForm() {
                 <input
                   {...register("middlename")}
                   type="text"
-                  placeholder="*MIDDLE NAME"
+                  placeholder="MIDDLE NAME"
                   className={inputClass}
                 />
                 {errors.middlename && (

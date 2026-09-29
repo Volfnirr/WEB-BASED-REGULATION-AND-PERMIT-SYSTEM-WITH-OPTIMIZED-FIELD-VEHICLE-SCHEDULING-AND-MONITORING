@@ -120,20 +120,33 @@ export async function verifyTripTicketTaken(tripTicketNo, db = prisma) {
 
 // UNDER TRIP TICKET - SUBMIT TRIP TICKET
 // GROUP 1
-export async function verifyScheduleStatus(data, db = prisma) {
+export async function verifyScheduleStatus(
+  data,
+  db = prisma,
+  excludeTripTicketId = null,
+) {
   const vehicle = await db.vehicle.findUnique({
     where: {
       id: Number(data.vehicleId),
-      isUsable: true,
     },
   });
-
-  if (!vehicle) throw new Error("VEHICLE_NOT_FOUND");
-  if (!vehicle.isUsable) throw new Error("VEHICLE_NOT_USABLE");
+  if (!vehicle) {
+    throw new Error("VEHICLE_NOT_FOUND");
+  }
+  if (!vehicle.isUsable) {
+    throw new Error("VEHICLE_NOT_USABLE");
+  }
 
   const existingSchedule = await db.vehicle_schedule.findFirst({
     where: {
       vehicleId: vehicle.id,
+      ...(excludeTripTicketId
+        ? {
+            tripTicketId: {
+              not: Number(excludeTripTicketId),
+            },
+          }
+        : {}),
       startDate: {
         lte: new Date(data.endDate),
       },

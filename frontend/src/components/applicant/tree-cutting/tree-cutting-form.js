@@ -149,7 +149,7 @@ export default function TreeCuttingForm() {
                   <input
                     {...register("middleName")}
                     type="text"
-                    placeholder="*MIDDLE NAME"
+                    placeholder="MIDDLE NAME"
                     className={inputClass}
                   />
                   {errors.middleName && (
@@ -163,7 +163,7 @@ export default function TreeCuttingForm() {
                   <input
                     {...register("extensionName")}
                     type="text"
-                    placeholder="*NAME EXTENSION"
+                    placeholder="NAME EXTENSION"
                     className={inputClass}
                   />
                   {errors.extensionName && (

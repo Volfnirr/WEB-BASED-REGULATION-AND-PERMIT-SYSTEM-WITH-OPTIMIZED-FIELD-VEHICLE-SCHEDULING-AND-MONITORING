@@ -29,7 +29,7 @@ export async function submitChainsawForm(
           contactNo: data.contactNumber,
           brand: data.brand,
           model: data.model,
-          dateOfAcquisition: data.dateAcquisition,
+          dateOfAcquisition: new Date(data.dateAcquisition),
           serialNumber: data.serialNumber,
           horsePower: parseFloat(data.horsePower),
           maxGuideBarLength: parseFloat(data.guideBarLength),

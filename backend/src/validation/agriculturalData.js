@@ -42,7 +42,7 @@ export const agriculturalFormSchema = z
     naturalBorn: z.boolean({
       error: "Please select an option",
     }),
-    civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANULLED"], {
+    civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANNULLED"], {
       errorMap: () => ({ message: "Please select civil status" }),
     }),
     spouse: z
@@ -125,33 +125,33 @@ export const agriculturalFormSchema = z
     heir1_name: z
       .string()
       .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+      .min(1, "Heir 1 name is required")
+      .max(255, "Maximum 255 characters allowed"),
     heir1_address: z
       .string()
       .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
+      .min(1, "Heir 1 adaress is required")
+      .max(1000, "Maximum 1000 characters allowed"),
     heir2_name: z
       .string()
       .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+      .min(1, "Heir 2 name is required")
+      .max(255, "Maximum 255 characters allowed"),
     heir2_address: z
       .string()
       .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
+      .min(1, "Heir 2 name is required")
+      .max(1000, "Maximum 1000 characters allowed"),
     heir_rep_name: z
       .string()
       .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+      .min(1, "Name is required")
+      .max(255, "Maximum 255 characters allowed"),
     heirs_of: z
       .string()
       .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+      .min(1, "Ancestor name is required")
+      .max(255, "Maximum 255 characters allowed"),
     witness1_name: z
       .string()
       .trim()

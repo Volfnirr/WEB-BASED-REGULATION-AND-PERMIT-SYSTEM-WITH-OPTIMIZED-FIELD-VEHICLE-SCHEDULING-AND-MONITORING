@@ -73,6 +73,7 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
       queryClient.invalidateQueries({ queryKey: ["trip-ticket-list"] }),
       queryClient.invalidateQueries({ queryKey: ["trip-ticket-status"] }),
       queryClient.invalidateQueries({ queryKey: ["vehicle-dashboard"] }),
+      queryClient.invalidateQueries({ queryKey: ["vehicle-schedules"] }),
     ]);
   // const router = useRouter();
 

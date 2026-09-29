@@ -21,6 +21,7 @@ import {
   rejectApplication,
 } from "@/lib/api/applications/app-admin-action";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const action = [
   { id: 1, value: "APPROVED" },
@@ -35,6 +36,7 @@ const submitFormSchema = z.object({
 export default function ReviewAgricultural({ data, params }) {
   const agricultural = data.agriculturalFormData.agriculturalFormData;
   const display = data.agriculturalFormData.displayName;
+  const router = useRouter();
   console.log(agricultural);
   const {
     register,
@@ -62,6 +64,7 @@ export default function ReviewAgricultural({ data, params }) {
           remarks: formData.remarks,
         });
       }
+      router.replace("/application-admin/pending");
       toast.success(
         formData.action === "APPROVED"
           ? "Successfully approved application"
@@ -623,13 +626,8 @@ export default function ReviewAgricultural({ data, params }) {
             <div>
               <h2 className="text-sm font-bold text-gray-800 mb-3">Remarks</h2>
               <div className="grid grid-cols-1 gap-4 mb-4">
-                <div>
-                  <input
-                    type="text"
-                    value={agricultural?.application?.remarks ?? ""}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
+                <div className={`whitespace-pre-wrap ${readOnlyInputClass} `}>
+                  {agricultural?.application?.remarks}
                 </div>
               </div>
               <Link

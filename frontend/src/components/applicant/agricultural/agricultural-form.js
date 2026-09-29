@@ -69,7 +69,7 @@ const agriculturalFormSchema = z
     naturalBorn: z.boolean({
       error: "Please select an option",
     }),
-    civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANULLED"], {
+    civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANNULLED"], {
       errorMap: () => ({ message: "Please select civil status" }),
     }),
     spouse: z
@@ -151,33 +151,33 @@ const agriculturalFormSchema = z
     heir1_name: z
       .string()
       .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+      .min(1, "Heir 1 name is required")
+      .max(255, "Maximum 255 characters allowed"),
     heir1_address: z
       .string()
       .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
+      .min(1, "Heir 1 adaress is required")
+      .max(1000, "Maximum 1000 characters allowed"),
     heir2_name: z
       .string()
       .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+      .min(1, "Heir 2 name is required")
+      .max(255, "Maximum 255 characters allowed"),
     heir2_address: z
       .string()
       .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
+      .min(1, "Heir 2 name is required")
+      .max(1000, "Maximum 1000 characters allowed"),
     heir_rep_name: z
       .string()
       .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+      .min(1, "Name is required")
+      .max(255, "Maximum 255 characters allowed"),
     heirs_of: z
       .string()
       .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+      .min(1, "Ancestor name is required")
+      .max(255, "Maximum 255 characters allowed"),
     witness1_name: z
       .string()
       .trim()
@@ -236,7 +236,7 @@ const civilStatusChoices = [
   { id: 1, value: "SINGLE" },
   { id: 2, value: "MARRIED" },
   { id: 3, value: "WIDOWED" },
-  { id: 4, value: "ANULLED" },
+  { id: 4, value: "ANNULLED" },
 ];
 
 export default function AgriculturalForm({ inspectors }) {
@@ -634,7 +634,7 @@ export default function AgriculturalForm({ inspectors }) {
                 <input
                   {...register("location")}
                   type="text"
-                  placeholder="SPECIFIC LOCATION / SITIO / STREET"
+                  placeholder="*SPECIFIC LOCATION / SITIO / STREET"
                   className={inputClass}
                 />
                 {errors.location && (
@@ -791,6 +791,11 @@ export default function AgriculturalForm({ inspectors }) {
                     placeholder="HEIR 1 NAME"
                     className={inputClass}
                   />
+                  {errors.heir1_name && (
+                    <div className={errorClass}>
+                      {errors.heir1_name.message}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1 text-left">
                   <input
@@ -799,6 +804,11 @@ export default function AgriculturalForm({ inspectors }) {
                     placeholder="HEIR 1 ADDRESS"
                     className={inputClass}
                   />
+                  {errors.heir1_address && (
+                    <div className={errorClass}>
+                      {errors.heir1_address.message}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1 text-left">
                   <input
@@ -807,6 +817,11 @@ export default function AgriculturalForm({ inspectors }) {
                     placeholder="HEIR 2 NAME"
                     className={inputClass}
                   />
+                  {errors.heir2_name && (
+                    <div className={errorClass}>
+                      {errors.heir2_name.message}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1 text-left">
                   <input
@@ -815,6 +830,11 @@ export default function AgriculturalForm({ inspectors }) {
                     placeholder="HEIR 2 ADDRESS"
                     className={inputClass}
                   />
+                  {errors.heir2_address && (
+                    <div className={errorClass}>
+                      {errors.heir2_address.message}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -827,6 +847,11 @@ export default function AgriculturalForm({ inspectors }) {
                     placeholder="NAME"
                     className={`${inputClass} w-48`}
                   />
+                  {errors.heir_rep_name && (
+                    <div className={errorClass}>
+                      {errors.heir_rep_name.message}
+                    </div>
+                  )}
                 </div>
                 <span>, the only heir/representative of the heirs of</span>
                 <div className="flex flex-col gap-1 text-left">
@@ -836,6 +861,9 @@ export default function AgriculturalForm({ inspectors }) {
                     placeholder="ANCESTOR NAME"
                     className={`${inputClass} w-48`}
                   />
+                  {errors.heirs_of && (
+                    <div className={errorClass}>{errors.heirs_of.message}</div>
+                  )}
                 </div>
               </div>
 
