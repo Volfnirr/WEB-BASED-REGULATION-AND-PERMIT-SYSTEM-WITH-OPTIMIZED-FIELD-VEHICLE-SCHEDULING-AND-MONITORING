@@ -33,11 +33,11 @@ const trip = [
     name: "Trip Ticket",
     href: "/vehicle/trip-applications",
   },
-  {
-    icon: <FileText />,
-    name: "Complete Trip Ticket",
-    href: "/vehicle/complete-trip-applications",
-  },
+  // {
+  //   icon: <FileText />,
+  //   name: "Complete Trip Ticket",
+  //   href: "/vehicle/complete-trip-applications",
+  // },
 ];
 
 export default function VehicleAdminSiderbar() {
