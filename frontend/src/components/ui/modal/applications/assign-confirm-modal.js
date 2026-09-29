@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { Spinner } from "@/components/ui/spinner.js";
 import { assignUserToApplication } from "@/lib/api/applications/app-admin-action";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function AssignApplication({
   onClose,
@@ -18,6 +19,7 @@ export default function AssignApplication({
   assignedService,
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -27,6 +29,14 @@ export default function AssignApplication({
   const onSubmit = async (_) => {
     try {
       const response = await assignUserToApplication(serviceId);
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["agricultural"] }),
+        queryClient.invalidateQueries({ queryKey: ["residential"] }),
+        queryClient.invalidateQueries({ queryKey: ["tree-cutting"] }),
+        queryClient.invalidateQueries({ queryKey: ["chainsaw"] }),
+        queryClient.invalidateQueries({ queryKey: ["applications-dashboard"] }),
+      ]);
       toast.success(`${response.message}`, {
         position: "top-center",
       });
@@ -38,6 +48,7 @@ export default function AssignApplication({
       });
     }
   };
+
   return (
     <div className="fixed inset-y-0 left-0 right-0 md:left-64 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-96 rounded-lg bg-white p-6 shadow-lg">

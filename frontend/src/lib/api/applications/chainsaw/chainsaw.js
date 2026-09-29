@@ -19,3 +19,41 @@ export async function submitChainsawForm(data) {
 
   return result;
 }
+
+export async function getChainsawApplications() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/chainsaw`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Failed to retrieve chainsaw applications.",
+    );
+  }
+
+  return result;
+}
+
+export async function getChainsawStatus() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/chainsaw/status`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Failed to retrieve chainsaw application status.",
+    );
+  }
+
+  return result;
+}

@@ -58,3 +58,21 @@ export async function rejectApplication({ id, remarks }) {
     throw new Error(result.message || "Failed to reject application form.");
   }
 }
+
+export async function getAdminlistAllApplicationsStatus() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/dashboard/status`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieve applications.");
+  }
+
+  return result;
+}

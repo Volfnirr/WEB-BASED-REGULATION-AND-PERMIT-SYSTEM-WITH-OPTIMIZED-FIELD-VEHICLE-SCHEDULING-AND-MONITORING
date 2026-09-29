@@ -19,3 +19,39 @@ export async function submitResidentialForm(data) {
 
   return result;
 }
+
+export async function getResidentialApplications() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/residential`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Failed to retrieve residential applications.",
+    );
+  }
+
+  return result;
+}
+
+export async function getResidentialStatus() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/residential/status`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieve residential status.");
+  }
+
+  return result;
+}

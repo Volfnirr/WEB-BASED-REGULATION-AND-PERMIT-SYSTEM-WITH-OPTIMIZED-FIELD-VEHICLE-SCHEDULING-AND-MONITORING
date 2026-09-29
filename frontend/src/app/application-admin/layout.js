@@ -9,27 +9,30 @@ import { getUserInfo } from "@/lib/api/userinfo-server-only";
 import LogoutSync from "@/components/route-protection/logoutSync";
 import AutoRefresh from "@/lib/router-refresh";
 import { requireRole } from "@/components/route-protection/check-role-server";
+import QueryProvider from "@/components/providers/query-provider";
 
 export default async function ApplicationAdminLayout({ children }) {
   await requireRole(["APPLICATION_ADMIN"]);
 
   return (
     <UserProvider>
-      <LogoutSync />
-      {/* <AutoRefresh /> */}
-      {/* <CheckRole userRoles={["APPLICATION_ADMIN"]}> */}
-      <ServicesProvider>
-        <TooltipProvider>
-          <div className="flex h-screen bg-[#b1b1b1]">
-            <ApplicationAdminSidebar />
-            <main className="flex-1 pt-16 md:pt-4 px-4 overflow-auto bg-[#F2F2F4]">
-              <Topbar />
-              {children}
-            </main>
-          </div>
-        </TooltipProvider>
-      </ServicesProvider>
-      {/* </CheckRole> */}
+      <QueryProvider>
+        <LogoutSync />
+        {/* <AutoRefresh /> */}
+        {/* <CheckRole userRoles={["APPLICATION_ADMIN"]}> */}
+        <ServicesProvider>
+          <TooltipProvider>
+            <div className="flex h-screen bg-[#b1b1b1]">
+              <ApplicationAdminSidebar />
+              <main className="flex-1 pt-16 md:pt-4 px-4 overflow-auto bg-[#F2F2F4]">
+                <Topbar />
+                {children}
+              </main>
+            </div>
+          </TooltipProvider>
+        </ServicesProvider>
+        {/* </CheckRole> */}
+      </QueryProvider>
     </UserProvider>
   );
 }
