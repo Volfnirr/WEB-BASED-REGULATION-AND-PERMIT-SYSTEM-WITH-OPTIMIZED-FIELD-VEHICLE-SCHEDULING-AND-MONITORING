@@ -56,3 +56,7 @@
 //     </Suspense>
 //   );
 // }
+import { redirect } from "next/navigation";
+export default function CompletedApplications() {
+  return redirect("vehicle/dashboard");
+}
