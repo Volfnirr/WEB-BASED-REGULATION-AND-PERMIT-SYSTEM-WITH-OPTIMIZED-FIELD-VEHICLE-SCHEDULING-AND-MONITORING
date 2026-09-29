@@ -112,7 +112,7 @@ export default function ReviewAgricultural({ data, params }) {
           <div
             className={`${StatusColor(
               agricultural?.application?.status,
-            )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg border border-yellow-200 shadow-sm`}
+            )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg border shadow-sm`}
           >
             {agricultural?.application?.status ?? "UNKNOWN"}
           </div>
@@ -546,12 +546,18 @@ export default function ReviewAgricultural({ data, params }) {
               </div>
             </div>
           </div>
-          <input
-            type="text"
-            value={display ?? "-"}
-            className={readOnlyInputClass}
-            readOnly
-          />
+          <div className="flex flex-col text-left gap-2">
+            <p className="text-xs font-bold text-gray-700 mb-1 mt-4">
+              Inspector info
+            </p>
+
+            <div
+              className={`${readOnlyInputClass} whitespace-normal wrap-break-words min-w-0`}
+            >
+              {display ?? "-"}
+            </div>
+          </div>
+
           {agricultural?.application?.status === "PENDING" && (
             /* Bottom Action Buttons (for the Reviewer) */
             <div className="border rounded-xl p-4 text-black">

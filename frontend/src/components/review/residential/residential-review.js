@@ -491,12 +491,17 @@ export default function ReviewResidential({ data, params }) {
               </div>
             </div>
           </div>
-          <input
-            type="text"
-            value={display ?? "-"}
-            className={readOnlyInputClass}
-            readOnly
-          />
+          <div className="flex flex-col text-left gap-2">
+            <p className="text-xs font-bold text-gray-700 mb-1 mt-4">
+              Inspector info
+            </p>
+
+            <div
+              className={`${readOnlyInputClass} whitespace-normal wrap-break-words min-w-0`}
+            >
+              {display ?? "-"}
+            </div>
+          </div>
           {residential?.application?.status === "PENDING" && (
             /* Bottom Action Buttons (for the Reviewer) */
             <div className="border rounded-xl p-4 text-black">
