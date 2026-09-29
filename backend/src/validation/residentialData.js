@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getBarangays } from "@/lib/ph-pampanga/ph-address";
+import { getBarangays } from "../lib/ph-pampanga/ph-address.js";
 
 export const residentialFormSchema = z
   .object({
@@ -150,7 +150,8 @@ export const residentialFormSchema = z
     },
   )
   .refine(
-    (data) => getBarangays(data.province, data.municipality).includes(data.barangay),
+    (data) =>
+      getBarangays(data.province, data.municipality).includes(data.barangay),
     {
       path: ["barangay"],
       message: "Selected barangay does not belong to the selected municipality",
