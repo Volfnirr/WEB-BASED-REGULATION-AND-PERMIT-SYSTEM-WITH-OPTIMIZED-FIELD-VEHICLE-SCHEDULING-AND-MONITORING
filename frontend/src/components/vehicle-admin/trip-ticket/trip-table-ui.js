@@ -18,7 +18,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { localDateFormat } from "@/lib/local-date";
+import { localDateFormat, localDateTime } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
 
 export default function TripsTable({ columns, rows, ViewTicket, EditTicket }) {
@@ -74,6 +74,8 @@ export default function TripsTable({ columns, rows, ViewTicket, EditTicket }) {
                       <div className="whitespace-nowrap">
                         {localDateFormat(row[column.data])}
                       </div>
+                    ) : column.data === "createdAt" ? (
+                      localDateTime(row[column.data])
                     ) : column.data === "purpose" ||
                       column.data === "placesToVisit" ||
                       column.data === "authorizedPassengers" ||

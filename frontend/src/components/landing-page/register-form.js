@@ -74,7 +74,7 @@ export default function RegisterForm() {
             // await logNewUser(ctx);
 
             toast.success(
-              "Check your email for verification valid for only 1 hour",
+              "Check your email for the verification link. It is valid for only 1 hour.",
               {
                 position: "top-center",
               },

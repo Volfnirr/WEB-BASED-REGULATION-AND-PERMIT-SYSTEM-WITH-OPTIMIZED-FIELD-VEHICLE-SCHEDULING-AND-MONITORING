@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import VehiclesList from "@/components/vehicle-admin/trip-ticket/vehicle-list";
 import {
   listAvailableVehicles,
@@ -24,6 +24,8 @@ import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import TripTicketResult from "@/components/vehicle-admin/trip-ticket/trip-ticket-result";
+import { useQueryClient } from "@tanstack/react-query";
+
 import {
   Select,
   SelectContent,
@@ -63,7 +65,17 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
   const [submittedTrip, setSubmittedTrip] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [hasFetchedVehicles, setHasFetchedVehicles] = useState(false);
-  const router = useRouter();
+  const isInitializingEdit = useRef(false);
+
+  const queryClient = useQueryClient();
+  const refreshTripData = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["trip-ticket-list"] }),
+      queryClient.invalidateQueries({ queryKey: ["trip-ticket-status"] }),
+      queryClient.invalidateQueries({ queryKey: ["vehicle-dashboard"] }),
+    ]);
+  // const router = useRouter();
+
   const resetVehiclePicker = () => {
     setVehicles([]);
     setSelectedVehicle(null);
@@ -89,6 +101,8 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
     if (!isOpen) return;
 
     if (tripTicket?.id) {
+      isInitializingEdit.current = true;
+
       const from = new Date(tripTicket.startDate);
       const to = tripTicket.endDate ? new Date(tripTicket.endDate) : from;
 
@@ -101,14 +115,29 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
         purpose: tripTicket.purpose,
         vehicleId: tripTicket.vehicleId,
       });
+      setTimeout(() => {
+        ["placesToVisit", "purpose"].forEach((id) => {
+          const textarea = document.getElementById(id);
 
-      setSelectedVehicle({ plateNumber: tripTicket.plateNumber ?? null });
+          if (textarea) {
+            textarea.style.height = "auto";
+            textarea.style.height = `${textarea.scrollHeight}px`;
+          }
+        });
+      }, 0);
+      setSelectedVehicle({
+        id: tripTicket.vehicleId,
+        plateNumber: tripTicket.plateNumber ?? null,
+      });
     }
   }, [tripTicket?.id, isOpen]);
 
   useEffect(() => {
     if (!scheduleDate?.from) return;
-
+    if (isInitializingEdit.current) {
+      isInitializingEdit.current = false;
+      return;
+    }
     setValue("vehicleId", undefined, { shouldValidate: false });
     setSelectedVehicle(null);
     setVehicles([]);
@@ -169,8 +198,8 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
       if (data.scheduleDate.from.toISOString() !== tripTicket.startDate)
         tripData.startDate = format(data.scheduleDate.from, "yyyy-MM-dd");
       if (
-        (data.scheduleDate.to.toISOString() ??
-          data.scheduleDate.from.toISOString()) !== tripTicket.endDate
+        (data.scheduleDate.to ?? data.scheduleDate.from).toISOString() !==
+        tripTicket.endDate
       )
         tripData.endDate = format(
           data.scheduleDate.to ?? data.scheduleDate.from,
@@ -205,19 +234,21 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
         toast.success(message ?? "Trip ticket updated", {
           position: "top-center",
         });
+        await refreshTripData();
+        onClose();
       } else {
         console.log("Submit Details", tripData);
 
         const response = await submitTripAndSchedule(tripData);
 
+        await refreshTripData();
         toast.success(response.message, {
           position: "top-center",
         });
         setSubmittedTrip(response.trip);
+
         setShowResult(true);
-        return;
       }
-      router.refresh();
     } catch (err) {
       toast.error(
         err.message || "Something went wrong submitting your application.",
@@ -515,11 +546,16 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
                     <label className="block text-xs font-bold text-gray-700 mb-1">
                       Place or Places to Be Visited/Inspected*
                     </label>
-                    <input
+                    <textarea
                       {...register("placesToVisit")}
+                      id="placesToVisit"
                       type="text"
                       placeholder="*e.g. ANGELES,ARAYAT & STA. RITA, PAMPANGA"
-                      className={inputClass}
+                      className={`h-auto max-h-80 ${inputClass} resize-none overflow-hidden `}
+                      onInput={(e) => {
+                        e.currentTarget.style.height = "auto";
+                        e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                      }}
                     />
                     {errors.placesToVisit && (
                       <div className={errorClass}>
@@ -535,9 +571,10 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
                     </label>
                     <textarea
                       {...register("purpose")}
+                      id="purpose"
                       type="text"
                       placeholder="*PURPOSE OF THE TRIP"
-                      className={`h-9 ${inputClass} resize-none overflow-hidden `}
+                      className={`h-auto ${inputClass} resize-none overflow-hidden `}
                       onInput={(e) => {
                         e.currentTarget.style.height = "auto";
                         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;

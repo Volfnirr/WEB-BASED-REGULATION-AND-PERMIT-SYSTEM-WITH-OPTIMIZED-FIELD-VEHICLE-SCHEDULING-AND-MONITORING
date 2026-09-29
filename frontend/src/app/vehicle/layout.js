@@ -7,6 +7,7 @@ import { getUserInfo } from "@/lib/api/userinfo-server-only";
 import { redirect } from "next/navigation";
 import LogoutSync from "@/components/route-protection/logoutSync";
 import { requireRole } from "@/components/route-protection/check-role-server";
+import QueryProvider from "@/components/providers/query-provider";
 
 export default async function VehicleAdminLayout({ children }) {
   await requireRole(["VEHICLE_ADMIN"]);
@@ -14,18 +15,20 @@ export default async function VehicleAdminLayout({ children }) {
   return (
     <>
       <UserProvider>
-        <LogoutSync />
-        {/* <CheckRole userRoles={["VEHICLE_ADMIN"]}> */}
-        <TooltipProvider>
-          <div className="flex h-screen bg-[#b1b1b1]">
-            <VehicleAdminSiderbar />
-            <main className="flex-1 pt-16 md:pt-4 px-4 overflow-auto bg-[#F2F2F4]">
-              <Topbar />
-              {children}
-            </main>
-          </div>
-        </TooltipProvider>
-        {/* </CheckRole> */}
+        <QueryProvider>
+          <LogoutSync />
+          {/* <CheckRole userRoles={["VEHICLE_ADMIN"]}> */}
+          <TooltipProvider>
+            <div className="flex h-screen bg-[#b1b1b1]">
+              <VehicleAdminSiderbar />
+              <main className="flex-1 pt-16 md:pt-4 px-4 overflow-auto bg-[#F2F2F4]">
+                <Topbar />
+                {children}
+              </main>
+            </div>
+          </TooltipProvider>
+          {/* </CheckRole> */}
+        </QueryProvider>
       </UserProvider>
     </>
   );

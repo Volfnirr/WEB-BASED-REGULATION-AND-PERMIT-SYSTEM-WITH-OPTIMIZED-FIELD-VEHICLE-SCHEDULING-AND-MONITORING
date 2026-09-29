@@ -26,7 +26,8 @@ import {
   createVehicle,
   updateVehicle,
 } from "@/lib/api/vehicle/manage-vehicles";
-import { useRouter } from "next/navigation";
+// import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 const vehicleSchema = z.object({
   brand: z.string().trim().min(1, "Brand name is required"),
@@ -78,8 +79,8 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
   const [isDragActive, setIsDragActive] = useState(false);
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
-  const router = useRouter();
-
+  // const router = useRouter();
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -221,7 +222,11 @@ export default function AddEditVehicleModal({ open, onClose, vehicle }) {
         });
       }
 
-      router.refresh();
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["vehicles"] }),
+        queryClient.invalidateQueries({ queryKey: ["vehicles-status"] }),
+        queryClient.invalidateQueries({ queryKey: ["vehicle-dashboard"] }),
+      ]);
       onClose();
     } catch (err) {
       toast.error(

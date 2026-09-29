@@ -167,6 +167,115 @@ export async function scheduleVehicleMaintenance(id, data) {
 
   return result;
 }
+// For react query - HEHE
+export async function getVehicleDashboard() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/dashboard`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieve dashboard.");
+  }
+
+  return result;
+}
+
+export async function getTripTicketList() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/trip-ticket`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieved trip ticket list.");
+  }
+
+  return result;
+}
+
+export async function getTripTicketStatus() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/trip-ticket/status`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Failed to retrieved trip ticket status.",
+    );
+  }
+
+  return result;
+}
+
+export async function getVehicleSchedulesStatus() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/schedules/status`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Failed to retrieve vehicle schedules status.",
+    );
+  }
+
+  return result;
+}
+
+export async function getListAllVehicles() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles`,
+    {
+      method: "GET",
+
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieved vehicles.");
+  }
+
+  return result;
+}
+
+export async function getVehiclesStatus() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/vehicles/status`,
+    {
+      method: "GET",
+
+      credentials: "include",
+    },
+  );
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to retrieved vehicles status.");
+  }
+
+  return result;
+}
 
 export async function submitCompleteTripTicket(data) {
   const response = await fetch(

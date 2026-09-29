@@ -1,6 +1,7 @@
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import LoginSuccessToast from "@/components/providers/login-success-toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -66,7 +67,7 @@ export default function RootLayout({ children }) {
       className={`${inter.variable} ${geist.variable} h-full antialiased`}
     >
       <body className="min-h-full min-w-full flex flex-col">
-        {children} <Toaster />
+        {children} <Toaster /> <LoginSuccessToast />
       </body>
     </html>
   );

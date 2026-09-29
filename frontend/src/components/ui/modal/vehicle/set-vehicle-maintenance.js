@@ -21,8 +21,8 @@ import {
   updateTripAndSchedule,
 } from "@/lib/api/vehicle/manage-vehicles";
 import { Button } from "@/components/ui/button";
-
 import { X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const vehicleMaintenaceSchema = z.object({
   scheduleDate: z.object(
@@ -38,6 +38,8 @@ export default function VehicleMaintenance({ isOpen, onClose, vehicle }) {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-xs font-medium";
+  const queryClient = useQueryClient();
+
   const {
     handleSubmit,
     control,
@@ -58,6 +60,11 @@ export default function VehicleMaintenance({ isOpen, onClose, vehicle }) {
       toast.success("Successfully scheduled vehicle for maintenance", {
         position: "top-center",
       });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["vehicles"] }),
+        queryClient.invalidateQueries({ queryKey: ["vehicles-status"] }),
+        queryClient.invalidateQueries({ queryKey: ["vehicle-dashboard"] }),
+      ]);
       onClose();
     } catch (error) {
       toast.error(

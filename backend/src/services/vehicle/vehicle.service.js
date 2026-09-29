@@ -184,6 +184,7 @@ export async function scheduleVehicle(data, tripTicketId, db = prisma) {
 // UNDER TRIP TICKET - VIEW TRIP TICKET
 export async function tripTicketList() {
   return await prisma.trip_ticket.findMany({
+    orderBy: { createdAt: "desc" },
     include: {
       vehicle: {
         select: {
@@ -484,15 +485,10 @@ export async function listTripTicketFormA(tripTicketId) {
       year: "numeric",
     });
   } else {
-    tripDate.date = `${startDate.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    })}-${endDate.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    })}`;
+    const formatDate = (date) =>
+      `${date.getMonth() + 1}/${date.getDate()}/${String(date.getFullYear()).slice(-2)}`;
+
+    tripDate.date = `${formatDate(startDate)}-${formatDate(endDate)}`;
   }
 
   return {

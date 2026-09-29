@@ -52,6 +52,7 @@ const residentialFormSchema = z
       .trim()
       .max(20, "Extension name is too long")
       .optional(),
+    email: z.email("Invalid email address"),
     fullAddress: z
       .string()
       .trim()
@@ -99,7 +100,7 @@ const residentialFormSchema = z
       .positive("Land area must be greater than 0")
       .max(99999999.99, "Land area cannot exceed 99,999,999.99 sqm")
       .refine(
-        (val) => Math.round(val * 100) === val * 100,
+        (val) => Math.abs(val * 100 - Math.round(val * 100)) < 1e-6,
         "Land area can only have up to 2 decimal places",
       ),
 
@@ -150,6 +151,13 @@ const residentialFormSchema = z
       .trim()
       .min(1, "Affidavit location is required")
       .max(100, "Affidavit location is too long"),
+    signatureAffiantName: z
+      .string()
+      .trim()
+      .min(1, "Full name signature is required")
+      .max(150, "Full name signature  is too long")
+      .regex(/^[a-zA-Z\s.'-]+$/, "Full name signature can only contain letters")
+      .max(100, "Full name signature  is too long"),
     //Inspector
     assignedInspector: z
       .number({ error: "Please assign an inspector" })
@@ -217,7 +225,6 @@ export default function ResidentialForm({ inspectors }) {
   });
 
   const civilStatus = watch("civilStatus");
-  const agreedToPrivacy = watch("privacyConsent");
 
   useEffect(() => {
     if (civilStatus !== "MARRIED") {
@@ -249,725 +256,685 @@ export default function ResidentialForm({ inspectors }) {
         <hr className="border-gray-200 mb-8" />
 
         <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
-          {/* {isInspetorActive ? (
-            <>
-             
-
-              <div className="flex flex-row w-full justify-end gap-2 min-h-15">
-                <Button
-                  onClick={() => setIsInspetorActive(false)}
-                  type="button"
-                  className="cursor-pointer bg-green-700 hover:bg-green-800 text-md min-h-9 max-h-md"
-                >
-                  Next
-                </Button>
-              </div>
-            </>
-          ) : ( */}
-          <>
-            {/* Section: Applicant Information */}
-            <div>
-              <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
-                Applicant Information
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("lastName")}
-                    type="text"
-                    placeholder="*LAST NAME"
-                    className={inputClass}
-                  />
-                  {errors.lastName && (
-                    <div className={errorClass}>{errors.lastName.message}</div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("firstName")}
-                    type="text"
-                    placeholder="*FIRST NAME"
-                    className={inputClass}
-                  />
-                  {errors.firstName && (
-                    <div className={errorClass}>{errors.firstName.message}</div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("middleName")}
-                    type="text"
-                    placeholder="MIDDLE NAME"
-                    className={inputClass}
-                  />
-                  {errors.middleName && (
-                    <div className={errorClass}>
-                      {errors.middleName.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("extensionName")}
-                    type="text"
-                    placeholder="NAME EXTENSION"
-                    className={inputClass}
-                  />
-                  {errors.extensionName && (
-                    <div className={errorClass}>
-                      {errors.extensionName.message}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 mb-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <textarea
-                    {...register("fullAddress")}
-                    type="text"
-                    placeholder="*COMPLETE ADDRESS"
-                    className={`h-9 ${inputClass} resize-none overflow-hidden `}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+          {/* Section: Assign Inspector */}
+          <div>
+            <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
+              Assign Inspector
+            </h2>
+            <div className="flex flex-col gap-1 text-left md:w-1/2">
+              <Controller
+                name="assignedInspector"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value ? String(field.value) : ""}
+                    onValueChange={(val) => {
+                      const parsed = Number(val);
+                      setValue("assignedInspector", parsed, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
                     }}
-                  />
-                  {errors.fullAddress && (
-                    <div className={errorClass}>
-                      {errors.fullAddress.message}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("citizenship")}
-                    type="text"
-                    placeholder="*CITIZENSHIP"
-                    className={inputClass}
-                  />
-                  {errors.citizenship && (
-                    <div className={errorClass}>
-                      {errors.citizenship.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <Controller
-                    name="civilStatus"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value ?? ""}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger
-                          size="20"
-                          className="w-full px-2 py-2 mb-0 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start"
-                        >
-                          <SelectValue placeholder="*SELECT CIVIL STATUS" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {civilStatusChoices.map((c) => (
-                              <SelectItem key={c.id} value={c.value}>
-                                {c.value}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.civilStatus && (
-                    <div className={errorClass}>
-                      {errors.civilStatus.message}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label
-                    htmlFor="dateOfBirth"
-                    className="block text-xs font-bold text-gray-700 mb-1"
                   >
-                    DATE OF BIRTH*
-                  </label>
-                  <div className="flex flex-col gap-1 text-left">
-                    <Controller
-                      name="dateOfBirth"
-                      control={control}
-                      render={({ field }) => (
-                        <Popover open={open} onOpenChange={setOpen}>
-                          <PopoverTrigger
-                            render={
-                              <button
-                                type="button"
-                                id="dateOfBirth"
-                                className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start ${
-                                  field.value
-                                    ? "text-gray-800"
-                                    : "text-gray-400"
-                                }`}
-                              >
-                                <div className="flex flex-row justify-between items-center">
-                                  {field.value
-                                    ? new Date(field.value).toLocaleDateString()
-                                    : "*DATE OF BIRTH"}
-                                  <CalendarDays size={20} />
-                                </div>
-                              </button>
-                            }
-                          />
-                          <PopoverContent
-                            className="w-auto overflow-hidden p-0"
-                            align="start"
-                          >
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              defaultMonth={field.value}
-                              captionLayout="dropdown"
-                              onSelect={(date) => {
-                                field.onChange(date);
-                                setOpen(false);
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                    />
-                    {errors.dateOfBirth && (
-                      <div className={errorClass}>
-                        {errors.dateOfBirth.message}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
-                    PLACE OF BIRTH*
-                  </label>
-                  <div className="flex flex-col gap-1 text-left">
-                    <input
-                      {...register("placeOfBirth")}
-                      type="text"
-                      placeholder="*PLACE OF BIRTH"
-                      className={inputClass}
-                    />
-                    {errors.placeOfBirth && (
-                      <div className={errorClass}>
-                        {errors.placeOfBirth.message}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {civilStatus === "MARRIED" && (
-                <div className="grid grid-cols-1 gap-4 mb-4">
-                  <div className="flex flex-col gap-1 text-left">
-                    <input
-                      {...register("spouseName")}
-                      type="text"
-                      placeholder="NAME OF SPOUSE (IF MARRIED)"
-                      className={inputClass}
-                    />
-                    {errors.spouseName && (
-                      <div className={errorClass}>
-                        {errors.spouseName.message}
-                      </div>
-                    )}
-                  </div>
+                    <SelectTrigger
+                      size="20"
+                      className="w-full px-2 py-2 mb-0 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start"
+                    >
+                      <SelectValue placeholder="*SELECT AN INSPECTOR" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {inspectors
+                          .filter((i) => i.isAvailable)
+                          .map((i) => (
+                            <SelectItem key={i.id} value={String(i.id)}>
+                              {toTitleCase(
+                                [
+                                  i.firstName,
+                                  i.middleName,
+                                  i.lastName,
+                                  i.extensionName,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" "),
+                              )}{" "}
+                              ({i.email})
+                            </SelectItem>
+                          ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.assignedInspector && (
+                <div className={errorClass}>
+                  {errors.assignedInspector.message}
                 </div>
               )}
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {/* Section: Applicant Information */}
+          <div>
+            <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
+              Applicant Information
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("lastName")}
+                  type="text"
+                  placeholder="*LAST NAME"
+                  className={inputClass}
+                />
+                {errors.lastName && (
+                  <div className={errorClass}>
+                    {errors.lastName.message}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("firstName")}
+                  type="text"
+                  placeholder="*FIRST NAME"
+                  className={inputClass}
+                />
+                {errors.firstName && (
+                  <div className={errorClass}>
+                    {errors.firstName.message}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("middleName")}
+                  type="text"
+                  placeholder="MIDDLE NAME"
+                  className={inputClass}
+                />
+                {errors.middleName && (
+                  <div className={errorClass}>
+                    {errors.middleName.message}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("extensionName")}
+                  type="text"
+                  placeholder="NAME EXTENSION"
+                  className={inputClass}
+                />
+                {errors.extensionName && (
+                  <div className={errorClass}>
+                    {errors.extensionName.message}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("fullAddress")}
+                  type="text"
+                  placeholder="*COMPLETE ADDRESS"
+                  className={inputClass}
+                />
+                {errors.fullAddress && (
+                  <div className={errorClass}>
+                    {errors.fullAddress.message}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("citizenship")}
+                  type="text"
+                  placeholder="*CITIZENSHIP"
+                  className={inputClass}
+                />
+                {errors.citizenship && (
+                  <div className={errorClass}>
+                    {errors.citizenship.message}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <Controller
+                  name="civilStatus"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value ?? ""}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger
+                        size="20"
+                        className="w-full px-2 py-2 mb-0 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start"
+                      >
+                        <SelectValue placeholder="*SELECT CIVIL STATUS" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {civilStatusChoices.map((c) => (
+                            <SelectItem key={c.id} value={c.value}>
+                              {c.value}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.civilStatus && (
+                  <div className={errorClass}>
+                    {errors.civilStatus.message}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  CONTACT NUMBER*
+                </label>
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("contactNo")}
+                    type="text"
+                    placeholder="*09XXXXXXXXX"
+                    className={inputClass}
+                  />
+                  {errors.contactNo && (
+                    <div className={errorClass}>
+                      {errors.contactNo.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  EMAIL ADDRESS*
+                </label>
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("email")}
+                    type="email"
+                    placeholder="*EMAIL ADDRESS"
+                    className={inputClass}
+                  />
+                  {errors.email && (
+                    <div className={errorClass}>{errors.email.message}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label
+                  htmlFor="dateOfBirth"
+                  className="block text-xs font-bold text-gray-700 mb-1"
+                >
+                  DATE OF BIRTH*
+                </label>
+                <div className="flex flex-col gap-1 text-left">
+                  <Controller
+                    name="dateOfBirth"
+                    control={control}
+                    render={({ field }) => (
+                      <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger
+                          render={
+                            <button
+                              type="button"
+                              id="dateOfBirth"
+                              className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start ${
+                                field.value
+                                  ? "text-gray-800"
+                                  : "text-gray-400"
+                              }`}
+                            >
+                              <div className="flex flex-row justify-between items-center">
+                                {field.value
+                                  ? new Date(
+                                      field.value,
+                                    ).toLocaleDateString()
+                                  : "*DATE OF BIRTH"}
+                                <CalendarDays size={20} />
+                              </div>
+                            </button>
+                          }
+                        />
+                        <PopoverContent
+                          className="w-auto overflow-hidden p-0"
+                          align="start"
+                        >
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            defaultMonth={field.value}
+                            captionLayout="dropdown"
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              setOpen(false);
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  />
+                  {errors.dateOfBirth && (
+                    <div className={errorClass}>
+                      {errors.dateOfBirth.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  PLACE OF BIRTH*
+                </label>
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("placeOfBirth")}
+                    type="text"
+                    placeholder="*PLACE OF BIRTH"
+                    className={inputClass}
+                  />
+                  {errors.placeOfBirth && (
+                    <div className={errorClass}>
+                      {errors.placeOfBirth.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {civilStatus === "MARRIED" && (
+              <div className="grid grid-cols-1 gap-4 mb-4">
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("spouseName")}
+                    type="text"
+                    placeholder="NAME OF SPOUSE (IF MARRIED)"
+                    className={inputClass}
+                  />
+                  {errors.spouseName && (
+                    <div className={errorClass}>
+                      {errors.spouseName.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Section: Land Information */}
+          <div>
+            <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
+              Land Information
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <AddressFields
+                control={control}
+                setValue={setValue}
+                errors={errors}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("specificLocation")}
+                  type="text"
+                  placeholder="SPECIFIC LOCATION / SITIO"
+                  className={inputClass}
+                />
+                {errors.specificLocation && (
+                  <div className={errorClass}>
+                    {errors.specificLocation.message}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("lotNo")}
+                  type="text"
+                  placeholder="*LOT NO."
+                  className={inputClass}
+                />
+                {errors.lotNo && (
+                  <div className={errorClass}>{errors.lotNo.message}</div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 text-left">
+                <input
+                  {...register("landAreaSqm")}
+                  type="text"
+                  placeholder="*LAND AREA (SQM)"
+                  className={inputClass}
+                />
+                {errors.landAreaSqm && (
+                  <div className={errorClass}>
+                    {errors.landAreaSqm.message}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Affidavit */}
+          <div>
+            <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
+              Affidavit Support
+            </h2>
+
+            <div className="text-sm text-gray-700 space-y-4 bg-[#fdfdfd] p-5 border border-gray-200 rounded-lg shadow-inner">
+              {/* Jurisdiction Header */}
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <span className="font-bold uppercase text-gray-900 w-full md:w-auto">
+                  Republic of the Philippines
+                </span>
+                <span className="hidden md:inline">|</span>
+                <span>Province of</span>
+                <input
+                  {...register("affidavitProvince")}
+                  type="text"
+                  readOnly
+                  className={`${inputClass} w-full md:w-48 bg-gray-100 pointer-events-none`}
+                />
+                <span>City/Municipality of</span>
+                <div className="flex flex-col gap-1 text-left w-full md:w-48">
+                  <input
+                    {...register("affidavitCity")}
+                    type="text"
+                    placeholder="CITY/MUNICIPALITY"
+                    className={inputClass}
+                  />
+                  {errors.affidavitCity && (
+                    <div className={errorClass}>
+                      {errors.affidavitCity.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <hr className="border-gray-200" />
+
+              {/* Affiant Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("affiantName")}
+                    type="text"
+                    placeholder="*AFFIANT'S NAME"
+                    className={inputClass}
+                  />
+                  {errors.affiantName && (
+                    <div className={errorClass}>
+                      {errors.affiantName.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("affiantAddress")}
+                    type="text"
+                    placeholder="*AFFIANT'S ADDRESS"
+                    className={inputClass}
+                  />
+                  {errors.affiantAddress && (
+                    <div className={errorClass}>
+                      {errors.affiantAddress.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("affidavitLandLocation")}
+                    type="text"
+                    placeholder="*LAND LOCATION"
+                    className={inputClass}
+                  />
+                  {errors.affidavitLandLocation && (
+                    <div className={errorClass}>
+                      {errors.affidavitLandLocation.message}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 text-left">
+                  <input
+                    {...register("applicantFullName")}
+                    type="text"
+                    placeholder="*APPLICANT'S NAME (SAME AS ABOVE)"
+                    className={inputClass}
+                  />
+                  {errors.applicantFullName && (
+                    <div className={errorClass}>
+                      {errors.applicantFullName.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">
-                    CONTACT NUMBER*
+                    YEARS IN POSSESSION*
                   </label>
                   <div className="flex flex-col gap-1 text-left">
                     <input
-                      {...register("contactNo")}
-                      type="text"
-                      placeholder="*09XXXXXXXXX"
+                      {...register("yearsOfOccupation")}
+                      type="number"
+                      min="0"
+                      placeholder="*NO. OF YEARS"
                       className={inputClass}
                     />
-                    {errors.contactNo && (
+                    {errors.yearsOfOccupation && (
                       <div className={errorClass}>
-                        {errors.contactNo.message}
+                        {errors.yearsOfOccupation.message}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    PURPOSE OF USE*
+                  </label>
+                  <div className="flex flex-col gap-1 text-left">
+                    <input
+                      {...register("purposeOfUse")}
+                      type="text"
+                      placeholder="*PURPOSE OF USE"
+                      className={inputClass}
+                    />
+                    {errors.purposeOfUse && (
+                      <div className={errorClass}>
+                        {errors.purposeOfUse.message}
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
-            {/* Section: Land Information */}
-            <div>
-              <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
-                Land Information
-              </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <input
-                  {...register("province")}
-                  type="text"
-                  readOnly
-                  className={`${inputClass} bg-gray-100 pointer-events-none`}
-                />
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("municipality")}
-                    type="text"
-                    placeholder="*MUNICIPALITY"
-                    className={inputClass}
-                  />
-                  {errors.municipality && (
-                    <div className={errorClass}>
-                      {errors.municipality.message}
-                    </div>
-                  )}
-                </div>
+              {/* Sworn Deposition Text */}
+              <div className="bg-white p-4 border border-gray-200 rounded my-4">
+                <p className="mb-2 font-medium italic">
+                  I, the Affiant, residing at the address provided, hereby
+                  depose:
+                </p>
+                <ul className="list-disc list-inside space-y-1 ml-2 text-gray-600">
+                  <li>
+                    I am familiar with the land at the specified location
+                    under the application of the applicant.
+                  </li>
+                  <li>
+                    The Applicant has occupied the land for the stated
+                    number of years.
+                  </li>
+                  <li>The land is free from claims and conflicts.</li>
+                  <li>The land is used for the stated purposes.</li>
+                  <li>This affidavit supports the applicant's claim.</li>
+                </ul>
               </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <AddressFields
+
+              {/* Witness Section */}
+              <div className="flex flex-wrap items-center gap-2 mt-4">
+                <span>IN WITNESS WHEREOF, I set my hand this</span>
+                <div className="flex flex-col gap-1 text-left md:w-40">
+                  <Controller
+                    name="affidavitDate"
                     control={control}
-                    setValue={setValue}
-                    errors={errors}
-                  />
-                </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("barangay")}
-                    type="text"
-                    placeholder="*BARANGAY"
-                    className={inputClass}
-                  />
-                  {errors.barangay && (
-                    <div className={errorClass}>{errors.barangay.message}</div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("specificLocation")}
-                    type="text"
-                    placeholder="SPECIFIC LOCATION / SITIO"
-                    className={inputClass}
-                  />
-                  {errors.specificLocation && (
-                    <div className={errorClass}>
-                      {errors.specificLocation.message}
-                    </div>
-                  )}
-                </div>
-              </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="flex flex-col gap-1 text-left">
-                    <input
-                      {...register("specificLocation")}
-                      type="text"
-                      placeholder="SPECIFIC LOCATION / SITIO"
-                      className={inputClass}
-                    />
-                    {errors.specificLocation && (
-                      <div className={errorClass}>
-                        {errors.specificLocation.message}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("lotNo")}
-                    type="text"
-                    placeholder="*LOT NO."
-                    className={inputClass}
-                  />
-                  {errors.lotNo && (
-                    <div className={errorClass}>{errors.lotNo.message}</div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("landAreaSqm")}
-                    type="text"
-                    placeholder="*LAND AREA (SQM)"
-                    className={inputClass}
-                  />
-                  {errors.landAreaSqm && (
-                    <div className={errorClass}>
-                      {errors.landAreaSqm.message}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Section: Affidavit */}
-            <div>
-              <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
-                Affidavit Support
-              </h2>
-
-              <div className="text-sm text-gray-700 space-y-4 bg-[#fdfdfd] p-5 border border-gray-200 rounded-lg shadow-inner">
-                {/* Jurisdiction Header */}
-                <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <span className="font-bold uppercase text-gray-900 w-full md:w-auto">
-                    Republic of the Philippines
-                  </span>
-                  <span className="hidden md:inline">|</span>
-                  <span>Province of</span>
-                  <input
-                    {...register("affidavitProvince")}
-                    type="text"
-                    readOnly
-                    className={`${inputClass} w-full md:w-48 bg-gray-100 pointer-events-none`}
-                  />
-                  <span>City/Municipality of</span>
-                  <div className="flex flex-col gap-1 text-left w-full md:w-48">
-                    <input
-                      {...register("affidavitCity")}
-                      type="text"
-                      placeholder="CITY/MUNICIPALITY"
-                      className={inputClass}
-                    />
-                    {errors.affidavitCity && (
-                      <div className={errorClass}>
-                        {errors.affidavitCity.message}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <hr className="border-gray-200" />
-
-                {/* Affiant Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div className="flex flex-col gap-1 text-left">
-                    <input
-                      {...register("affiantName")}
-                      type="text"
-                      placeholder="*AFFIANT'S NAME"
-                      className={inputClass}
-                    />
-                    {errors.affiantName && (
-                      <div className={errorClass}>
-                        {errors.affiantName.message}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-1 text-left">
-                    <input
-                      {...register("affiantAddress")}
-                      type="text"
-                      placeholder="*AFFIANT'S ADDRESS"
-                      className={inputClass}
-                    />
-                    {errors.affiantAddress && (
-                      <div className={errorClass}>
-                        {errors.affiantAddress.message}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-1 text-left">
-                    <input
-                      {...register("affidavitLandLocation")}
-                      type="text"
-                      placeholder="*LAND LOCATION"
-                      className={inputClass}
-                    />
-                    {errors.affidavitLandLocation && (
-                      <div className={errorClass}>
-                        {errors.affidavitLandLocation.message}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-1 text-left">
-                    <input
-                      {...register("applicantFullName")}
-                      type="text"
-                      placeholder="*APPLICANT'S NAME (SAME AS ABOVE)"
-                      className={inputClass}
-                    />
-                    {errors.applicantFullName && (
-                      <div className={errorClass}>
-                        {errors.applicantFullName.message}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">
-                      YEARS IN POSSESSION*
-                    </label>
-                    <div className="flex flex-col gap-1 text-left">
-                      <input
-                        {...register("yearsOfOccupation")}
-                        type="number"
-                        min="0"
-                        placeholder="*NO. OF YEARS"
-                        className={inputClass}
-                      />
-                      {errors.yearsOfOccupation && (
-                        <div className={errorClass}>
-                          {errors.yearsOfOccupation.message}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">
-                      PURPOSE OF USE*
-                    </label>
-                    <div className="flex flex-col gap-1 text-left">
-                      <input
-                        {...register("purposeOfUse")}
-                        type="text"
-                        placeholder="*PURPOSE OF USE"
-                        className={inputClass}
-                      />
-                      {errors.purposeOfUse && (
-                        <div className={errorClass}>
-                          {errors.purposeOfUse.message}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sworn Deposition Text */}
-                <div className="bg-white p-4 border border-gray-200 rounded my-4">
-                  <p className="mb-2 font-medium italic">
-                    I, the Affiant, residing at the address provided, hereby
-                    depose:
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 ml-2 text-gray-600">
-                    <li>
-                      I am familiar with the land at the specified location
-                      under the application of the applicant.
-                    </li>
-                    <li>
-                      The Applicant has occupied the land for the stated number
-                      of years.
-                    </li>
-                    <li>The land is free from claims and conflicts.</li>
-                    <li>The land is used for the stated purposes.</li>
-                    <li>This affidavit supports the applicant's claim.</li>
-                  </ul>
-                </div>
-
-                {/* Witness Section */}
-                <div className="flex flex-wrap items-center gap-2 mt-4">
-                  <span>IN WITNESS WHEREOF, I set my hand this</span>
-                  <div className="flex flex-col gap-1 text-left md:w-40">
-                    <Controller
-                      name="affidavitDate"
-                      control={control}
-                      render={({ field }) => (
-                        <Popover
-                          open={openWitness}
-                          onOpenChange={setOpenWitness}
-                        >
-                          <PopoverTrigger
-                            render={
-                              <button
-                                type="button"
-                                id="affidavitDate"
-                                className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start ${
-                                  field.value
-                                    ? "text-gray-800"
-                                    : "text-gray-400"
-                                }`}
-                              >
-                                <div className="flex flex-row justify-between items-center">
-                                  {field.value
-                                    ? new Date(field.value).toLocaleDateString()
-                                    : "MM-DD-YYYY"}
-                                  <CalendarDays size={20} />
-                                </div>
-                              </button>
-                            }
-                          />
-                          <PopoverContent
-                            className="w-auto overflow-hidden p-0"
-                            align="start"
-                          >
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              defaultMonth={field.value}
-                              onSelect={(date) => {
-                                field.onChange(date);
-                                setOpenWitness(false);
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                    />
-                    {errors.affidavitDate && (
-                      <div className={errorClass}>
-                        {errors.affidavitDate.message}
-                      </div>
-                    )}
-                  </div>
-                  <span>at</span>
-                  <div className="flex flex-col gap-1 text-left w-full md:w-48">
-                    <input
-                      {...register("affidavitLocation")}
-                      type="text"
-                      placeholder="LOCATION"
-                      className={inputClass}
-                    />
-                    {errors.affidavitLocation && (
-                      <div className={errorClass}>
-                        {errors.affidavitLocation.message}
-                      </div>
-                    )}
-                  </div>
-                  ,<span>Philippines.</span>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="text-left text-sm font-bold text-gray-800 mb-1 uppercase">
-                  Select Inspector
-                </label>
-
-                <Controller
-                  name="assignedInspector"
-                  control={control}
-                  render={({ field }) => {
-                    const selectedInspector = inspectors.find(
-                      (i) => i.id === field.value,
-                    );
-
-                    const getInspectorName = (i) =>
-                      toTitleCase(
-                        [i.firstName, i.middleName, i.lastName, i.extensionName]
-                          .filter(Boolean)
-                          .join(" "),
-                      );
-
-                    return (
-                      <Select
-                        value={field.value ? String(field.value) : ""}
-                        onValueChange={(value) => field.onChange(Number(value))}
+                    render={({ field }) => (
+                      <Popover
+                        open={openWitness}
+                        onOpenChange={setOpenWitness}
                       >
-                        <SelectTrigger className={inputClass}>
-                          {selectedInspector ? (
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="font-semibold text-gray-800 truncate">
-                                {getInspectorName(selectedInspector)}
-                              </span>
-
-                              <span className="text-gray-400 truncate">
-                                ({selectedInspector.email})
-                              </span>
-                            </div>
-                          ) : (
-                            <SelectValue placeholder="Select an inspector" />
-                          )}
-                        </SelectTrigger>
-
-                        <SelectContent className="max-h-80">
-                          <SelectGroup>
-                            {inspectors
-                              .filter((i) => i.isAvailable)
-                              .map((i) => (
-                                <SelectItem key={i.id} value={String(i.id)}>
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <span className="font-semibold text-green-800 truncate">
-                                      {getInspectorName(i)}
-                                    </span>
-
-                                    <span className="text-xs text-gray-400 truncate">
-                                      ({i.email})
-                                    </span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    );
-                  }}
-                />
-
-                {errors.assignedInspector && (
-                  <div className={errorClass}>
-                    {errors.assignedInspector.message}
-                  </div>
-                )}
-              </div>
-            </div>
-            {/* DATA PRIVACY CONSENT SECTION */}
-            <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
-              <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">
-                Data Privacy Consent
-              </h2>
-              <p className="text-xs leading-relaxed text-gray-600 mb-3">
-                In compliance with the{" "}
-                <strong>Data Privacy Act of 2012 (RA 10173)</strong>, I hereby
-                authorize the agency/local government unit to collect, process,
-                store, and evaluate my personal data and land information
-                strictly for the purpose of processing this Residential Free
-                Patent Application. I understand that my information will be
-                protected and will not be shared with unauthorized third parties
-                without my express written consent.
-              </p>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="flex items-start gap-3 cursor-pointer select-none">
-                  <input
-                    {...register("privacyConsent")}
-                    type="checkbox"
-                    className="mt-0.5 h-4 w-4 text-[#1a5632] border-gray-300 rounded focus:ring-2 focus:ring-[#1a5632] cursor-pointer"
+                        <PopoverTrigger
+                          render={
+                            <button
+                              type="button"
+                              id="affidavitDate"
+                              className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start ${
+                                field.value
+                                  ? "text-gray-800"
+                                  : "text-gray-400"
+                              }`}
+                            >
+                              <div className="flex flex-row justify-between items-center">
+                                {field.value
+                                  ? new Date(
+                                      field.value,
+                                    ).toLocaleDateString()
+                                  : "MM-DD-YYYY"}
+                                <CalendarDays size={20} />
+                              </div>
+                            </button>
+                          }
+                        />
+                        <PopoverContent
+                          className="w-auto overflow-hidden p-0"
+                          align="start"
+                        >
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            defaultMonth={field.value}
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              setOpenWitness(false);
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   />
-                  <span className="font-semibold text-gray-800 text-xs md:text-sm">
-                    I have read and agree to the Data Privacy Consent statement
-                    above.*
-                  </span>
+                  {errors.affidavitDate && (
+                    <div className={errorClass}>
+                      {errors.affidavitDate.message}
+                    </div>
+                  )}
+                </div>
+                <span>at</span>
+                <div className="flex flex-col gap-1 text-left w-full md:w-48">
+                  <input
+                    {...register("affidavitLocation")}
+                    type="text"
+                    placeholder="LOCATION"
+                    className={inputClass}
+                  />
+                  {errors.affidavitLocation && (
+                    <div className={errorClass}>
+                      {errors.affidavitLocation.message}
+                    </div>
+                  )}
+                </div>
+                ,<span>Philippines.</span>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  AFFIANT'S SIGNATURE (E-Sign/Print)*
                 </label>
-                {errors.privacyConsent && (
-                  <div className={errorClass}>
-                    {errors.privacyConsent.message}
-                  </div>
-                )}
+                <div className="flex flex-col gap-1 text-left w-full md:w-1/2">
+                  <input
+                    {...register("signatureAffiantName")}
+                    type="text"
+                    placeholder="TYPE FULL NAME AS SIGNATURE"
+                    className={inputClass}
+                  />
+                  {errors.signatureAffiantName && (
+                    <div className={errorClass}>
+                      {errors.signatureAffiantName.message}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Form Submission Action */}
-            <div className="flex justify-start items-center w-full gap-2 min-h-15 md:justify-end">
-              <Button
-                type="submit"
-                disabled={isSubmitting || !agreedToPrivacy}
-                className="cursor-pointer text-md min-h-9 max-h-md bg-green-700 hover:bg-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Spinner data-icon />
-                  </>
-                ) : (
-                  "Submit Application"
-                )}
-              </Button>
+          {/* DATA PRIVACY CONSENT SECTION */}
+          <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
+            <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">
+              Data Privacy Consent
+            </h2>
+            <p className="text-xs leading-relaxed text-gray-600 mb-3">
+              In compliance with the{" "}
+              <strong>Data Privacy Act of 2012 (RA 10173)</strong>, I hereby
+              authorize the agency/local government unit to collect,
+              process, store, and evaluate my personal data and land
+              information strictly for the purpose of processing this
+              Residential Free Patent Application. I understand that my
+              information will be protected and will not be shared with
+              unauthorized third parties without my express written consent.
+            </p>
+            <div className="flex flex-col gap-1 text-left">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  {...register("privacyConsent")}
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 text-[#1a5632] border-gray-300 rounded focus:ring-2 focus:ring-[#1a5632] cursor-pointer"
+                />
+                <span className="font-semibold text-gray-800 text-xs md:text-sm">
+                  I have read and agree to the Data Privacy Consent
+                  statement above.*
+                </span>
+              </label>
+              {errors.privacyConsent && (
+                <div className={errorClass}>
+                  {errors.privacyConsent.message}
+                </div>
+              )}
             </div>
-          </>
-          {/* )} */}
+          </div>
+
+         <div className="flex justify-end pt-4">
+                     <button
+                       type="submit"
+                       disabled={isSubmitting || !agreedToPrivacy}
+                       className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                     >
+                       {isSubmitting ? (
+                         <>
+                           <Spinner data-icon />
+                         </>
+                       ) : (
+                         "Submit Application"
+                       )}
+                     </button>
+                   </div>
         </form>
       </div>
 

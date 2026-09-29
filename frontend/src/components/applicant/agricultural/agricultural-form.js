@@ -25,193 +25,91 @@ import { CalendarDays } from "lucide-react";
 
 import { submitAgriculturalForm } from "@/lib/api/applications/agricultural/agricultural";
 import { Spinner } from "@/components/ui/spinner";
-import { toTitleCase } from "@/lib/title-case";
 import AddressFields from "@/components/forms/AddressFields";
 
 const agriculturalFormSchema = z
   .object({
-    lastName: z
-      .string()
-      .trim()
-      .min(1, "Last name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    firstName: z
-      .string()
-      .trim()
-      .min(1, "First name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    middleName: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
-    extension: z
-      .string()
-      .trim()
-      .max(50, "Maximum 50 characters allowed")
-      .optional(),
+    lastName: z.string().trim().min(1, "Last name is required").max(255, "Maximum 255 characters allowed"),
+    firstName: z.string().trim().min(1, "First name is required").max(255, "Maximum 255 characters allowed"),
+    middleName: z.string().trim().max(255, "Maximum 255 characters allowed").optional(),
+    extension: z.string().trim().max(50, "Maximum 50 characters allowed").optional(),
+
     contactNumber: z
       .string()
       .trim()
       .regex(/^09\d{9}$/, "Enter a valid 11-digit mobile number")
       .max(11, "Maximum 11 characters allowed"),
+    email: z.email("Invalid email").max(255, "Maximum 255 characters allowed"),
+    
     birthday: z.coerce.date({
       required_error: "Date of birth is required",
       invalid_type_error: "Please enter a valid date",
     }),
+
     sex: z.enum(["Male", "Female"], {
       errorMap: () => ({ message: "Please select a sex" }),
     }),
-    citizenship: z
-      .string()
-      .trim()
-      .min(1, "Citizenship is required")
-      .max(100, "Maximum 100 characters allowed"),
-    naturalBorn: z.boolean({
-      error: "Please select an option",
+    citizenship: z.string().trim().min(1, "Citizenship is required").max(100, "Maximum 100 characters allowed"),
+    naturalBorn: z.enum(["Yes", "No"], {
+      errorMap: () => ({ message: "Please select an option" }),
     }),
-    civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANULLED"], {
     civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANULLED"], {
       errorMap: () => ({ message: "Please select civil status" }),
     }),
-    spouse: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+
+    spouse: z.string().trim().max(255, "Maximum 255 characters allowed").optional(),
     mailingAddress: z
       .string()
       .trim()
-      .min(1, "Complete mailing address is required")
+      .min(5, "Complete mailing address is required")
       .max(1000, "Maximum 1000 characters allowed"),
-    province: z
-      .string()
-      .trim()
-      .min(1, "Province is required")
-      .max(255, "Maximum 255 characters allowed"),
-    municipality: z
-      .string()
-      .trim()
-      .min(1, "Municipality is required")
-      .max(255, "Maximum 255 characters allowed"),
-    barangay: z
-      .string()
-      .trim()
-      .min(1, "Barangay is required")
-      .max(255, "Maximum 255 characters allowed"),
-    location: z
-      .string()
-      .trim()
-      .min(1, "Specific locations is required")
-      .max(500, "Maximum 500 characters allowed"),
-    lotNo: z
-      .string()
-      .trim()
-      .min(1, "Lot number is required")
-      .max(255, "Maximum 255 characters allowed"),
-    surveyNo: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
+
+    province: z.string().trim().min(1, "Province is required").max(255, "Maximum 255 characters allowed"),
+    municipality: z.string().trim().min(1, "Municipality is required").max(255, "Maximum 255 characters allowed"),
+    barangay: z.string().trim().min(1, "Barangay is required").max(255, "Maximum 255 characters allowed"),
+    location: z.string().trim().max(500, "Maximum 500 characters allowed").optional(),
+    lotNo: z.string().trim().min(1, "Lot number is required").max(255, "Maximum 255 characters allowed"),
+    surveyNo: z.string().trim().max(255, "Maximum 255 characters allowed").optional(),
     landAreaSqm: z.coerce
       .number({ required_error: "Land area is required" })
       .positive("Land area must be greater than 0")
       .max(99999999.99, "Value is too large for the database")
       .refine(
-        (val) => Math.round(val * 100) === val * 100,
-        "Land area can only have up to 2 decimal places",
+        (val) => Math.abs(val * 100 - Math.round(val * 100)) < 1e-6,
+        "Land area can only have up to 2 decimal places"
       ),
-    cultivationDate: z
-      .string()
-      .trim()
-      .refine(
-        (val) =>
-          /^(\d{4}|(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4})$/.test(val),
-        { message: "Enter a date as MM/DD/YYYY or just YYYY" },
-      ),
-    improvements: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    transferee_info: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    heir_info: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    evidence: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    heir1_name: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
-    heir1_address: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    heir2_name: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
-    heir2_address: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    heir_rep_name: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
-    heirs_of: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
-    witness1_name: z
-      .string()
-      .trim()
-      .min(1, "Witness 1 name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    witness1_address: z
-      .string()
-      .trim()
-      .min(1, "Witness 1 address is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    witness2_name: z
-      .string()
-      .trim()
-      .min(1, "Witness 2 name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    witness2_address: z
-      .string()
-      .trim()
-      .min(1, "Witness 2 address is required")
-      .max(1000, "Maximum 1000 characters allowed"),
+      
+    cultivationDate: z.string().trim().max(100, "Maximum 100 characters allowed").optional(),
+    improvements: z.string().trim().max(1000, "Maximum 1000 characters allowed").optional(),
+    transferee_info: z.string().trim().max(1000, "Maximum 1000 characters allowed").optional(),
+    heir_info: z.string().trim().max(1000, "Maximum 1000 characters allowed").optional(),
+    evidence: z.string().trim().max(1000, "Maximum 1000 characters allowed").optional(),
+
+    heir1_name: z.string().trim().max(255, "Maximum 255 characters allowed").optional(),
+    heir1_address: z.string().trim().max(1000, "Maximum 1000 characters allowed").optional(),
+    heir2_name: z.string().trim().max(255, "Maximum 255 characters allowed").optional(),
+    heir2_address: z.string().trim().max(1000, "Maximum 1000 characters allowed").optional(),
+    heir_rep_name: z.string().trim().max(255, "Maximum 255 characters allowed").optional(),
+    heirs_of: z.string().trim().max(255, "Maximum 255 characters allowed").optional(),
+
+    witness1_name: z.string().trim().min(1, "Witness 1 name is required").max(255, "Maximum 255 characters allowed"),
+    witness1_address: z.string().trim().min(1, "Witness 1 address is required").max(1000, "Maximum 1000 characters allowed"),
+    witness2_name: z.string().trim().min(1, "Witness 2 name is required").max(255, "Maximum 255 characters allowed"),
+    witness2_address: z.string().trim().min(1, "Witness 2 address is required").max(1000, "Maximum 1000 characters allowed"),
+
     date_filed: z.coerce.date({
       required_error: "Date filed is required",
       invalid_type_error: "Please enter a valid date",
     }),
+    applicant_signature: z
+      .string()
+      .trim()
+      .min(1, "Digital signature is required")
+      .max(255, "Maximum 255 characters allowed"),
+
     privacyConsent: z.literal(true, {
       errorMap: () => ({ message: "Please check this box to proceed" }),
     }),
-    assignedInspector: z
-      .number({ error: "Please assign an inspector" })
-      .int("Invalid inspector")
-      .positive("Invalid inspector")
-      .max(9999, "Invalid inspector"),
   })
   .refine(
     (data) => {
@@ -221,7 +119,7 @@ const agriculturalFormSchema = z
     {
       path: ["spouse"],
       message: "Spouse name is required for married applicants",
-    },
+    }
   )
   .refine(
     (data) => {
@@ -231,7 +129,7 @@ const agriculturalFormSchema = z
     {
       path: ["spouse"],
       message: "Spouse name should only be set if civil status is Married",
-    },
+    }
   );
 
 const civilStatusChoices = [
@@ -239,13 +137,9 @@ const civilStatusChoices = [
   { id: 2, value: "MARRIED" },
   { id: 3, value: "WIDOWED" },
   { id: 4, value: "ANULLED" },
-  { id: 1, value: "SINGLE" },
-  { id: 2, value: "MARRIED" },
-  { id: 3, value: "WIDOWED" },
-  { id: 4, value: "ANULLED" },
 ];
 
-export default function AgriculturalForm({ inspectors }) {
+export default function AgriculturalForm() {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-xs font-medium";
@@ -272,7 +166,6 @@ export default function AgriculturalForm({ inspectors }) {
   });
 
   const civilStatus = watch("civilStatus");
-  const agreedToPrivacy = watch("privacyConsent");
 
   useEffect(() => {
     if (civilStatus !== "MARRIED") {
@@ -371,9 +264,7 @@ export default function AgriculturalForm({ inspectors }) {
                   className={inputClass}
                 />
                 {errors.mailingAddress && (
-                  <div className={errorClass}>
-                    {errors.mailingAddress.message}
-                  </div>
+                  <div className={errorClass}>{errors.mailingAddress.message}</div>
                 )}
               </div>
             </div>
@@ -436,52 +327,23 @@ export default function AgriculturalForm({ inspectors }) {
                     className={inputClass}
                   />
                   {errors.contactNumber && (
-                    <div className={errorClass}>
-                      {errors.contactNumber.message}
-                    </div>
+                    <div className={errorClass}>{errors.contactNumber.message}</div>
                   )}
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  NATURAL BORN?*
+                  EMAIL ADDRESS*
                 </label>
                 <div className="flex flex-col gap-1 text-left">
-                  <Controller
-                    name="naturalBorn"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={
-                          field.value === undefined ? "" : String(field.value)
-                        }
-                        onValueChange={(val) => field.onChange(val === "true")}
-                      >
-                        <SelectTrigger
-                          size="20"
-                          className="w-full px-2 py-2 mb-0 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start"
-                        >
-                          <SelectValue placeholder="*SELECT">
-                            {field.value === true
-                              ? "Yes"
-                              : field.value === false
-                                ? "No"
-                                : undefined}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectItem value="true">Yes</SelectItem>
-                            <SelectItem value="false">No</SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    )}
+                  <input
+                    {...register("email")}
+                    type="email"
+                    placeholder="*EMAIL ADDRESS"
+                    className={inputClass}
                   />
-                  {errors.naturalBorn && (
-                    <div className={errorClass}>
-                      {errors.naturalBorn.message}
-                    </div>
+                  {errors.email && (
+                    <div className={errorClass}>{errors.email.message}</div>
                   )}
                 </div>
               </div>
@@ -500,10 +362,7 @@ export default function AgriculturalForm({ inspectors }) {
                     name="birthday"
                     control={control}
                     render={({ field }) => (
-                      <Popover
-                        open={openBirthday}
-                        onOpenChange={setOpenBirthday}
-                      >
+                      <Popover open={openBirthday} onOpenChange={setOpenBirthday}>
                         <PopoverTrigger
                           render={
                             <button
@@ -580,7 +439,43 @@ export default function AgriculturalForm({ inspectors }) {
               </div>
             </div>
 
-            {civilStatus === "Married" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  NATURAL BORN?*
+                </label>
+                <div className="flex flex-col gap-1 text-left">
+                  <Controller
+                    name="naturalBorn"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger
+                          size="20"
+                          className="w-full px-2 py-2 mb-0 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start"
+                        >
+                          <SelectValue placeholder="*SELECT" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="Yes">Yes</SelectItem>
+                            <SelectItem value="No">No</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.naturalBorn && (
+                    <div className={errorClass}>{errors.naturalBorn.message}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {civilStatus === "MARRIED" && (
               <div className="grid grid-cols-1 gap-4 mb-4">
                 <div className="flex flex-col gap-1 text-left">
                   <input
@@ -603,26 +498,6 @@ export default function AgriculturalForm({ inspectors }) {
               Location of Agricultural Land Applied For
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <input
-                {...register("province")}
-                type="text"
-                readOnly
-                className={`${inputClass} bg-gray-100 pointer-events-none`}
-              />
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("municipality")}
-                  type="text"
-                  placeholder="*MUNICIPALITY"
-                  className={inputClass}
-                />
-                {errors.municipality && (
-                  <div className={errorClass}>
-                    {errors.municipality.message}
-                  </div>
-                )}
-              </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <AddressFields
                 control={control}
@@ -705,22 +580,13 @@ export default function AgriculturalForm({ inspectors }) {
                     placeholder="MM/DD/YYYY or Year"
                     className={`${inputClass} w-full md:w-64`}
                   />
-                  {errors.cultivationDate && (
-                    <div className={errorClass}>
-                      {errors.cultivationDate.message}
-                    </div>
-                  )}
                 </div>
                 <div className="flex flex-col gap-1 text-left">
                   <textarea
                     {...register("improvements")}
                     rows="2"
                     placeholder="Improvements made..."
-                    className={`${inputClass} resize-none overflow-hidden`}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
+                    className={inputClass}
                   ></textarea>
                 </div>
               </div>
@@ -734,11 +600,7 @@ export default function AgriculturalForm({ inspectors }) {
                     {...register("transferee_info")}
                     rows="2"
                     placeholder="State public land origin, date of first cultivation, etc."
-                    className={`${inputClass} resize-none overflow-hidden`}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
+                    className={inputClass}
                   ></textarea>
                 </div>
               </div>
@@ -752,11 +614,7 @@ export default function AgriculturalForm({ inspectors }) {
                     {...register("heir_info")}
                     rows="2"
                     placeholder="State previous cultivator, date of death, improvements, etc."
-                    className={`${inputClass} resize-none overflow-hidden`}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
+                    className={inputClass}
                   ></textarea>
                 </div>
                 <div className="flex flex-col gap-1 text-left">
@@ -764,11 +622,7 @@ export default function AgriculturalForm({ inspectors }) {
                     {...register("evidence")}
                     rows="2"
                     placeholder="Evidence of relationship, death, burial, and heirship is attached and consists of:"
-                    className={`${inputClass} resize-none overflow-hidden`}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
+                    className={inputClass}
                   ></textarea>
                 </div>
               </div>
@@ -853,9 +707,7 @@ export default function AgriculturalForm({ inspectors }) {
                     className={inputClass}
                   />
                   {errors.witness1_name && (
-                    <div className={errorClass}>
-                      {errors.witness1_name.message}
-                    </div>
+                    <div className={errorClass}>{errors.witness1_name.message}</div>
                   )}
                 </div>
                 <div className="flex flex-col gap-1 text-left">
@@ -866,9 +718,7 @@ export default function AgriculturalForm({ inspectors }) {
                     className={inputClass}
                   />
                   {errors.witness1_address && (
-                    <div className={errorClass}>
-                      {errors.witness1_address.message}
-                    </div>
+                    <div className={errorClass}>{errors.witness1_address.message}</div>
                   )}
                 </div>
                 <div className="flex flex-col gap-1 text-left">
@@ -879,9 +729,7 @@ export default function AgriculturalForm({ inspectors }) {
                     className={inputClass}
                   />
                   {errors.witness2_name && (
-                    <div className={errorClass}>
-                      {errors.witness2_name.message}
-                    </div>
+                    <div className={errorClass}>{errors.witness2_name.message}</div>
                   )}
                 </div>
                 <div className="flex flex-col gap-1 text-left">
@@ -892,9 +740,7 @@ export default function AgriculturalForm({ inspectors }) {
                     className={inputClass}
                   />
                   {errors.witness2_address && (
-                    <div className={errorClass}>
-                      {errors.witness2_address.message}
-                    </div>
+                    <div className={errorClass}>{errors.witness2_address.message}</div>
                   )}
                 </div>
               </div>
@@ -923,10 +769,7 @@ export default function AgriculturalForm({ inspectors }) {
                     name="date_filed"
                     control={control}
                     render={({ field }) => (
-                      <Popover
-                        open={openDateFiled}
-                        onOpenChange={setOpenDateFiled}
-                      >
+                      <Popover open={openDateFiled} onOpenChange={setOpenDateFiled}>
                         <PopoverTrigger
                           render={
                             <button
@@ -970,80 +813,14 @@ export default function AgriculturalForm({ inspectors }) {
                 </div>
               </div>
             </div>
-          </div>
-          <div>
-            <div className="flex flex-col gap-1 text-left">
-              <label className="text-left text-sm font-bold text-gray-800 mb-1 uppercase">
-                Select Inspector
+
+            <div className="mt-4">
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                APPLICANT'S SIGNATURE (E-Sign/Print)*
               </label>
-
-              <Controller
-                name="assignedInspector"
-                control={control}
-                render={({ field }) => {
-                  const selectedInspector = inspectors.find(
-                    (i) => i.id === field.value,
-                  );
-
-                  const getInspectorName = (i) =>
-                    toTitleCase(
-                      [i.firstName, i.middleName, i.lastName, i.extensionName]
-                        .filter(Boolean)
-                        .join(" "),
-                    );
-
-                  return (
-                    <Select
-                      value={field.value ? String(field.value) : ""}
-                      onValueChange={(value) => field.onChange(Number(value))}
-                    >
-                      <SelectTrigger className={inputClass}>
-                        {selectedInspector ? (
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="font-semibold text-gray-800 truncate">
-                              {getInspectorName(selectedInspector)}
-                            </span>
-
-                            <span className="text-gray-400 truncate">
-                              ({selectedInspector.email})
-                            </span>
-                          </div>
-                        ) : (
-                          <SelectValue placeholder="Select an inspector" />
-                        )}
-                      </SelectTrigger>
-
-                      <SelectContent className="max-h-80">
-                        <SelectGroup>
-                          {inspectors
-                            .filter((i) => i.isAvailable)
-                            .map((i) => (
-                              <SelectItem key={i.id} value={String(i.id)}>
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span className="font-semibold text-green-800 truncate">
-                                    {getInspectorName(i)}
-                                  </span>
-
-                                  <span className="text-xs text-gray-400 truncate">
-                                    ({i.email})
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  );
-                }}
-              />
-
-              {errors.assignedInspector && (
-                <div className={errorClass}>
-                  {errors.assignedInspector.message}
-                </div>
-              )}
             </div>
           </div>
+
           {/* DATA PRIVACY CONSENT SECTION */}
           <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">
             <h2 className="text-xs font-bold text-[#1a5632] uppercase tracking-wider mb-2">
@@ -1080,20 +857,20 @@ export default function AgriculturalForm({ inspectors }) {
           </div>
 
           {/* Form Submission Action */}
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-4">
             <button
-              type="submit"
-              disabled={isSubmitting || !agreedToPrivacy}
-              className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSubmitting ? (
-                <>
-                  <Spinner data-icon />
-                </>
-              ) : (
-                "Submit Application"
-              )}
-            </button>
+                         type="submit"
+                         disabled={isSubmitting || !agreedToPrivacy}
+                         className="px-8 py-3 cursor-pointer bg-[#1a5632] text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                       >
+                         {isSubmitting ? (
+                           <>
+                             <Spinner data-icon />
+                           </>
+                         ) : (
+                           "Submit Application"
+                         )}
+                       </button>
           </div>
         </form>
       </div>

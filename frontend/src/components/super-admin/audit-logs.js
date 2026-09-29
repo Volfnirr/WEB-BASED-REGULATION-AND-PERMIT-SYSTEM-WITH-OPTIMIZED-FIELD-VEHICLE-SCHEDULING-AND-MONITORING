@@ -8,6 +8,7 @@ import { useDataTable } from "../ui/tables/tools/data-table";
 import SearchInput from "../ui/tables/tools/search-input";
 import SuperAdminTable from "../ui/tables/super-admin/audit-logs/super-admin-table";
 import AuditLogsView from "@/components/ui/modal/super-admin/view-audit-logs";
+import SortDropdown from "../ui/tables/tools/sort-dropdown";
 export default function AuditLogsUI({ data }) {
   const column = [
     {
@@ -102,7 +103,7 @@ export default function AuditLogsUI({ data }) {
     itemsPerPage,
   } = useDataTable({
     data,
-    searchableFields: ["action", "actorRole", "actorName", "target"],
+    searchableFields: ["action", "actorRole", "actorName", "target", "details"],
     itemsPerPage: 8,
   });
 
@@ -112,6 +113,8 @@ export default function AuditLogsUI({ data }) {
     "VEHICLE_ADMIN",
     "SUPER_ADMIN",
   ];
+
+  const sortOptions = [{ label: "Date", key: "logDate" }];
 
   return (
     <div>
@@ -131,6 +134,11 @@ export default function AuditLogsUI({ data }) {
           onChange={(value) => updateFilter("actorRole", value)}
           options={roleOptions}
           label="Roles"
+        />
+        <SortDropdown
+          sortConfig={sortConfig}
+          onSort={updateSort}
+          options={sortOptions}
         />
       </div>
       <div>

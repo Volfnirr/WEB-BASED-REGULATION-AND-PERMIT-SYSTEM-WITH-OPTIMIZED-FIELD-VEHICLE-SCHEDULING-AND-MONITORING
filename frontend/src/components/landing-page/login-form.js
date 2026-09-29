@@ -66,10 +66,8 @@ export default function LoginForm() {
           onSuccess: (ctx) => {
             const role = ctx.data.user.role;
             const route = getRoleRoute(role);
+            sessionStorage.setItem("just-logged-in", "true");
             router.replace(route);
-            toast.success("Signed in successfully", {
-              position: "top-center",
-            });
           },
           onError: (ctx) => {
             setLoginError("root", {
