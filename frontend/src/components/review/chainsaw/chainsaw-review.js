@@ -21,6 +21,8 @@ import {
   rejectApplication,
 } from "@/lib/api/applications/app-admin-action";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const action = [
   { id: 1, value: "APPROVED" },
@@ -33,11 +35,14 @@ const submitFormSchema = z.object({
 });
 
 export default function ReviewChainsawApp({ data, params }) {
+  const router = useRouter();
+
   const chainsaw = data;
   console.log(chainsaw);
   const {
     register,
     handleSubmit,
+    watch,
     control,
     formState: { errors, isSubmitting },
   } = useForm({
@@ -57,6 +62,7 @@ export default function ReviewChainsawApp({ data, params }) {
           remarks: formData.remarks,
         });
       }
+      router.replace("/application-admin/pending");
       toast.success(
         formData.action === "APPROVED"
           ? "Successfully approved application"
@@ -297,7 +303,7 @@ export default function ReviewChainsawApp({ data, params }) {
                       <textarea
                         {...register("remarks")}
                         placeholder="Add remarks..."
-                        className="h-9  max-h-80 resize-none overflow-hidden w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
+                        className="h-9 max-h-80 resize-none overflow-hidden w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
                         onInput={(e) => {
                           e.currentTarget.style.height = "auto";
                           e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;

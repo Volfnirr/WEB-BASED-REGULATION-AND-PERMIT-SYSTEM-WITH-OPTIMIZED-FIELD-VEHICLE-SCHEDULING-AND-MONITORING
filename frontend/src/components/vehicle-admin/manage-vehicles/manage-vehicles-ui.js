@@ -151,7 +151,10 @@ export default function ManageVehicleUI({ children, initialData }) {
 
   const roleOptions = ["DIESEL", "GASOLINE", "ELECTRIC"];
 
-  const sortOptions = [{ label: "Brand", key: "brand" }];
+  const sortOptions = [
+    { label: "Updated at", key: "updatedAt" },
+    { label: "Created at", key: "createdAt" },
+  ];
 
   return (
     <div className="">

@@ -53,6 +53,8 @@ export async function assignUserToApplication(
   return await db.application.update({
     where: {
       id: Number(applicationId),
+      status: "PENDING",
+      assignedToId: null,
     },
     data: {
       assignedToId: userId,

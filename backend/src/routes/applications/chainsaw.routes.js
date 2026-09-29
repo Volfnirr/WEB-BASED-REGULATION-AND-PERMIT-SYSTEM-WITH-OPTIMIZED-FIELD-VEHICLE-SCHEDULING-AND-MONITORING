@@ -29,7 +29,7 @@ router.get(
   "/chainsaw",
   requireAuthentication,
   requireAuthorization("APPLICATION_ADMIN"),
-  requireAppAdminServices([1]),
+  requireAppAdminServices([4]),
   listChainsawApplications,
 );
 
@@ -37,7 +37,7 @@ router.get(
   "/chainsaw/status",
   requireAuthentication,
   requireAuthorization("APPLICATION_ADMIN"),
-  requireAppAdminServices([1]),
+  requireAppAdminServices([4]),
   listChainsawAppStatus,
 );
 
@@ -45,7 +45,7 @@ router.get(
   "/chainsaw/:id",
   requireAuthentication,
   requireAuthorization("APPLICATION_ADMIN"),
-  requireAppAdminServices([1]),
+  requireAppAdminServices([4]),
   viewChainsawFormById,
 );
 

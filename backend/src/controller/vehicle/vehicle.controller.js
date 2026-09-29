@@ -4,6 +4,7 @@ import { createAuditLog } from "../../services/audit.service.js";
 import * as vehicleAdmin from "../../services/vehicle/vehicle.service.js";
 import { tripTicketExcelExport } from "../../lib/excel-templates/vehicle/tripTicketExport.js";
 import { getManilaToday, getManilaYear } from "../../lib/date/get-date.js";
+import { Prisma } from "../../../generated/index.js";
 
 // VEHICLE START
 
@@ -19,60 +20,69 @@ export async function createVehicle(req, res) {
       }
     }
 
-    const createVehicle = await prisma.$transaction(async (tx) => {
-      const { imageUrl, ...vehicleData } = req.validatedData;
+    const createVehicle = await prisma.$transaction(
+      async (tx) => {
+        const { imageUrl, ...vehicleData } = req.validatedData;
 
-      if (vehicleData.plateNumber) {
-        await vehicleAdmin.checkVehiclePlateIfExist(
-          vehicleData.plateNumber,
-          req.params.id,
-          tx,
-        );
-      }
+        if (vehicleData.plateNumber) {
+          await vehicleAdmin.checkVehiclePlateIfExist(
+            vehicleData.plateNumber,
+            req.params.id,
+            tx,
+          );
+        }
 
-      let filePath = null;
+        let filePath = null;
 
-      if (imageUrl) {
-        const brand = vehicleData.brand.replace(/\s+/g, "-");
-        const model = vehicleData.model.replace(/\s+/g, "-");
+        if (imageUrl) {
+          const brand = vehicleData.brand.replace(/\s+/g, "-");
+          const model = vehicleData.model.replace(/\s+/g, "-");
 
-        filePath = `vehicle-${brand}-${model}-${vehicleData.plateNumber}-${Date.now()}.${imageUrl.mimetype.split("/")[1]}`;
+          filePath = `vehicle-${brand}-${model}-${vehicleData.plateNumber}-${Date.now()}.${imageUrl.mimetype.split("/")[1]}`;
 
-        const { error } = await supabase.storage
-          .from("vehicle-photos")
-          .upload(filePath, imageUrl.buffer, {
-            contentType: imageUrl.mimetype,
-          });
+          const { error } = await supabase.storage
+            .from("vehicle-photos")
+            .upload(filePath, imageUrl.buffer, {
+              contentType: imageUrl.mimetype,
+            });
 
+          if (error) {
+            throw new Error("UPLOAD_FAILED");
+          }
+        }
         if (error) {
           
           throw new Error("UPLOAD_FAILED");
         }
       }
 
-      const vehicle = await vehicleAdmin.createVehicle(
-        {
-          ...vehicleData,
-          imageUrl: filePath,
-          addedById: req.user.id,
-        },
-        tx,
-      );
+        const vehicle = await vehicleAdmin.createVehicle(
+          {
+            ...vehicleData,
+            imageUrl: filePath,
+            addedById: req.user.id,
+          },
+          tx,
+        );
 
-      await createAuditLog(
-        {
-          actorId: req.user.id,
-          actorName: req.user.name,
-          actorRole: req.user.role,
-          action: "Create Vehicle",
-          target: "Vehicle",
-          details: `Created vehicle (Plate No: ${vehicle.plateNumber}, ID: ${vehicle.id})`,
-        },
-        tx,
-      );
+        await createAuditLog(
+          {
+            actorId: req.user.id,
+            actorName: req.user.name,
+            actorRole: req.user.role,
+            action: "Create Vehicle",
+            target: "Vehicle",
+            details: `Created vehicle (Plate No: ${vehicle.plateNumber}, ID: ${vehicle.id})`,
+          },
+          tx,
+        );
 
-      return vehicle;
-    });
+        return vehicle;
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
 
     return res.status(201).json({
       message: "Vehicle created successfully.",
@@ -80,7 +90,12 @@ export async function createVehicle(req, res) {
     });
   } catch (error) {
     console.log(error);
-
+    if (error.code === "P2034") {
+      return res.status(409).json({
+        message:
+          "The vehicle record could not be created because another transaction occurred at the same time. Please try again.",
+      });
+    }
     if (error.message === "PLATE_NUMBER_EXISTS") {
       return res.status(409).json({
         message: "Plate number is already in use",
@@ -329,71 +344,76 @@ export async function availableVehicles(req, res) {
 
 export async function submitTripAndSchedule(req, res) {
   try {
-    const submitTripAndAssignVehicle = await prisma.$transaction(async (tx) => {
-      const year = getManilaYear();
-      const incrementRow = await tx.trip_ticket_increment.upsert({
-        where: {
-          year,
-        },
-        create: { year, count: 1 },
-        update: { count: { increment: 1 } },
+    const today = getManilaToday();
+    if (req.validatedData.startDate < today) {
+      return res.status(400).json({
+        message: "Trip ticket start date can't be earlier than today",
       });
-      const today = getManilaToday();
-      if (req.validatedData.startDate < today) {
-        return res.status(400).json({
-          message: "Trip ticket start date can't be earlier than today",
+    }
+    if (req.validatedData.startDate > req.validatedData.endDate) {
+      return res.status(400).json({
+        message: "Trip ticket start date can't be greater than end date",
+      });
+    }
+    const submitTripAndAssignVehicle = await prisma.$transaction(
+      async (tx) => {
+        const year = getManilaYear();
+        const incrementRow = await tx.trip_ticket_increment.upsert({
+          where: {
+            year,
+          },
+          create: { year, count: 1 },
+          update: { count: { increment: 1 } },
         });
-      }
-      if (req.validatedData.startDate > req.validatedData.endDate) {
-        return res.status(400).json({
-          message: "Trip ticket start date can't be greater than end date",
-        });
-      }
 
-      const tripTicketNo = `TR-TIX-${year}-${String(incrementRow.count).padStart(5, "0")}`;
-      console.log("Testing 1");
-      await vehicleAdmin.verifyTripTicketTaken(tripTicketNo, tx);
-      console.log("Testing 2");
+        const tripTicketNo = `TR-TIX-${year}-${String(incrementRow.count).padStart(5, "0")}`;
+        console.log("Testing 1");
+        await vehicleAdmin.verifyTripTicketTaken(tripTicketNo, tx);
+        console.log("Testing 2");
 
-      const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
-        req.validatedData,
-        tx,
-      );
-      console.log("Testing 3");
+        const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
+          req.validatedData,
+          tx,
+        );
+        console.log("Testing 3");
 
-      if (!verifyStatus.available) {
-        throw new Error(verifyStatus.reason);
-      }
-      console.log("Testing 4");
+        if (!verifyStatus.available) {
+          throw new Error(verifyStatus.reason);
+        }
+        console.log("Testing 4");
 
-      const createTicket = await vehicleAdmin.createTripTicket(
-        tripTicketNo,
-        req.validatedData,
-        req.user.id,
-        tx,
-      );
-      console.log("Testing 5");
+        const createTicket = await vehicleAdmin.createTripTicket(
+          tripTicketNo,
+          req.validatedData,
+          req.user.id,
+          tx,
+        );
+        console.log("Testing 5");
 
-      const scheduleVehicle = await vehicleAdmin.scheduleVehicle(
-        req.validatedData,
-        createTicket.id,
-        tx,
-      );
+        const scheduleVehicle = await vehicleAdmin.scheduleVehicle(
+          req.validatedData,
+          createTicket.id,
+          tx,
+        );
 
-      await createAuditLog(
-        {
-          actorId: req.user.id,
-          actorName: req.user.name,
-          actorRole: req.user.role,
-          action: "Create Trip Ticket and Schedule Vehicle",
-          target: "Trip Ticket",
-          details: `Created Trip Ticket (Trip Ticket No: ${createTicket.tripTicketNo}, ID: ${createTicket.id}), Vehicle (Plate No: ${verifyStatus.vehicle.plateNumber}, ID: ${verifyStatus.vehicle.id}), Schedule (ID: ${scheduleVehicle.id}, Start: ${scheduleVehicle.startDate.toISOString()}, End: ${scheduleVehicle.endDate.toISOString()})`,
-        },
-        tx,
-      );
+        await createAuditLog(
+          {
+            actorId: req.user.id,
+            actorName: req.user.name,
+            actorRole: req.user.role,
+            action: "Create Trip Ticket and Schedule Vehicle",
+            target: "Trip Ticket",
+            details: `Created Trip Ticket (Trip Ticket No: ${createTicket.tripTicketNo}, ID: ${createTicket.id}), Vehicle (Plate No: ${verifyStatus.vehicle.plateNumber}, ID: ${verifyStatus.vehicle.id}), Schedule (ID: ${scheduleVehicle.id}, Start: ${scheduleVehicle.startDate.toISOString()}, End: ${scheduleVehicle.endDate.toISOString()})`,
+          },
+          tx,
+        );
 
-      return { createTicket, scheduleVehicle };
-    });
+        return { createTicket, scheduleVehicle };
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
     console.log("Testing Done");
 
     return res.status(200).json({
@@ -402,6 +422,12 @@ export async function submitTripAndSchedule(req, res) {
     });
   } catch (error) {
     console.log(error);
+    if (error.code === "P2034") {
+      return res.status(409).json({
+        message:
+          "The vehicle schedule was changed by another user. Please try again.",
+      });
+    }
     if (error.message === "TRIP_TICKET_NO_TAKEN" || error.code === "P2002") {
       return res.status(409).json({
         message: "This trip ticket number is already in use",
@@ -425,69 +451,150 @@ export async function submitTripAndSchedule(req, res) {
 
 export async function updateTripTicket(req, res) {
   try {
-    const updateTripAndAssignVehicle = await prisma.$transaction(async (tx) => {
-      if (req.validatedData.tripTicketNo) {
-        await vehicleAdmin.verifyTripTicketTaken(
-          req.validatedData.tripTicketNo,
-          tx,
-        );
-      }
-
-      if (req.validatedData.startDate) {
-        const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
-          req.validatedData,
-          tx,
-        );
-        if (!verifyStatus.available) {
-          throw new Error(verifyStatus.reason);
+    const updateTripAndAssignVehicle = await prisma.$transaction(
+      async (tx) => {
+        const currentTrip = await tx.trip_ticket.findUnique({
+          where: {
+            id: Number(req.params.id),
+          },
+          include: {
+            vehicle_schedule: true,
+          },
+        });
+        if (!currentTrip) {
+          throw new Error("TRIP_TICKET_NOT_FOUND");
         }
-      }
+        if (!currentTrip.vehicle_schedule) {
+          throw new Error("SCHEDULE_NOT_FOUND");
+        }
 
-      const { endDate, startDate, vehicleId, ...rest } = req.validatedData;
+        if (req.validatedData.tripTicketNo) {
+          await vehicleAdmin.verifyTripTicketTaken(
+            req.validatedData.tripTicketNo,
+            tx,
+          );
+        }
 
-      const updateTicket = await vehicleAdmin.updateTripTicket(
-        {
-          ...rest,
-          vehicleId: vehicleId != null ? Number(vehicleId) : undefined,
-        },
-        req.params.id,
-        tx,
-      );
-      const updateScheduleVehicle = await vehicleAdmin.updateScheduleVehicle(
-        {
-          vehicleId: vehicleId != null ? Number(vehicleId) : undefined,
-          startDate: startDate != null ? new Date(startDate) : undefined,
-          endDate:
-            endDate != null
-              ? new Date(endDate)
-              : startDate != null
-                ? new Date(startDate)
-                : undefined,
-        },
-        req.params.id,
-        tx,
-      );
+        const scheduleChanged =
+          req.validatedData.vehicleId !== undefined ||
+          req.validatedData.startDate !== undefined ||
+          req.validatedData.endDate !== undefined;
 
-      await createAuditLog(
-        {
-          actorId: req.user.id,
-          actorName: req.user.name,
-          actorRole: req.user.role,
-          action: "Update Trip Ticket and Schedule Vehicle",
-          target: "Trip Ticket",
-          details: `Updated Trip Ticket (Trip Ticket No: ${updateTicket.tripTicketNo}, ID: ${updateTicket.id})`,
-        },
-        tx,
-      );
+        let finalVehicleId = currentTrip.vehicleId;
+        let finalStartDate = currentTrip.vehicle_schedule.startDate;
+        let finalEndDate = currentTrip.vehicle_schedule.endDate;
 
-      return { updateTicket, updateScheduleVehicle };
-    });
+        if (req.validatedData.vehicleId !== undefined) {
+          finalVehicleId = Number(req.validatedData.vehicleId);
+        }
+
+        if (req.validatedData.startDate !== undefined) {
+          finalStartDate = new Date(req.validatedData.startDate);
+        }
+
+        if (req.validatedData.endDate !== undefined) {
+          finalEndDate = new Date(req.validatedData.endDate);
+        }
+
+        if (scheduleChanged) {
+          if (finalStartDate > finalEndDate) {
+            throw new Error("INVALID_DATE_RANGE");
+          }
+
+          const verifyStatus = await vehicleAdmin.verifyScheduleStatus(
+            {
+              vehicleId: finalVehicleId,
+              startDate: finalStartDate,
+              endDate: finalEndDate,
+            },
+            tx,
+            Number(req.params.id),
+          );
+
+          if (!verifyStatus.available) {
+            throw new Error(verifyStatus.reason);
+          }
+        }
+
+        const { endDate, startDate, vehicleId, ...rest } = req.validatedData;
+
+        const updateTicket = await vehicleAdmin.updateTripTicket(
+          {
+            ...rest,
+            ...(vehicleId !== undefined
+              ? {
+                  vehicleId: finalVehicleId,
+                }
+              : {}),
+          },
+          req.params.id,
+          tx,
+        );
+
+        let updateScheduleVehicle = null;
+
+        if (scheduleChanged) {
+          updateScheduleVehicle = await vehicleAdmin.updateScheduleVehicle(
+            {
+              vehicleId: finalVehicleId,
+              startDate: finalStartDate,
+              endDate: finalEndDate,
+            },
+            req.params.id,
+            tx,
+          );
+        }
+
+        await createAuditLog(
+          {
+            actorId: req.user.id,
+            actorName: req.user.name,
+            actorRole: req.user.role,
+            action: "Update Trip Ticket and Schedule Vehicle",
+            target: "Trip Ticket",
+            details: `Updated Trip Ticket (Trip Ticket No: ${updateTicket.tripTicketNo}, ID: ${updateTicket.id})`,
+          },
+          tx,
+        );
+
+        return { updateTicket, updateScheduleVehicle };
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
     return res.status(200).json({
       message: "Updated Trip ticket successfully.",
       trip: updateTripAndAssignVehicle,
     });
   } catch (error) {
     console.log(error);
+
+    if (error.code === "P2034") {
+      return res.status(409).json({
+        message:
+          "The vehicle schedule was changed by another user. Please try again.",
+      });
+    }
+
+    if (error.message === "TRIP_TICKET_NOT_FOUND") {
+      return res.status(404).json({
+        message: "Trip ticket not found",
+      });
+    }
+
+    if (error.message === "SCHEDULE_NOT_FOUND") {
+      return res.status(404).json({
+        message: "Vehicle schedule not found",
+      });
+    }
+
+    if (error.message === "INVALID_DATE_RANGE") {
+      return res.status(400).json({
+        message: "Start date cannot be greater than end date",
+      });
+    }
+
     if (error.message === "TRIP_TICKET_NO_TAKEN" || error.code === "P2002") {
       return res.status(409).json({
         message: "This trip ticket number is already in use",

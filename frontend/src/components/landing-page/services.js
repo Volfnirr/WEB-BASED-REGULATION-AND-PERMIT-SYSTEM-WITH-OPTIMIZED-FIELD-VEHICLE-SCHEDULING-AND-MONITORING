@@ -70,10 +70,34 @@ export default function ServicesPage() {
                 </button>
 
                 {openIndex === index && (
-                  <div className="px-5 pb-4 bg-white">
-                    <p className="text-gray-600 text-xs border-t border-gray-100 pt-3">
-                      {service.description}
-                    </p>
+                  <div className="px-8 pb-6 bg-white">
+                    <div className="space-y-4 mt-2 border-t border-gray-100 pt-4">
+                      {service.hasSubMenu ? (
+                        service.subItems.map((subItem, subIndex) => (
+                          <div
+                            key={subIndex}
+                            className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                          >
+                            <div className="flex-1">
+                              <span className="text-gray-800 font-medium text-base">
+                                {subItem.name}
+                              </span>
+
+                              <p className="text-gray-600 text-sm mt-1">
+                                {subItem.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                          {/* This code automatically pulls the specific description from the list above */}
+                          <p className="text-gray-600 text-base flex-1 whitespace-pre-wrap">
+                            {service.description}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
