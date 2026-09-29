@@ -1,6 +1,5 @@
 import express from "express";
 const router = express.Router();
-
 import {
   vehicleAction,
   fetchLimit,
@@ -11,6 +10,10 @@ import { requireAuthorization } from "../../middleware/requireAuthorization.js";
 import { validate } from "../../middleware/validate.js";
 import { attachFile } from "../../middleware/attachment.js";
 import upload from "../../middleware/upload.js";
+import {
+  completeTripTicketSchema,
+  updateCompleteTripTicketSchema,
+} from "../../validation/vehicle/completeTripTicketData.js";
 import {
   vehicleSchema,
   updateVehicleSchema,
@@ -35,6 +38,11 @@ import {
   vehiclesSchdulesStatus,
   exportTripTicketAsExcel,
   scheduleVehicleMaintenance,
+  getCompleteTripTickets,
+  getCompletedTripTickets,
+  getCompletedTripTicketsStatus,
+  submitCompleteTripTicket,
+  updateCompleteTripTicket,
 } from "../../controller/vehicle/vehicle.controller.js";
 
 // Create a new vehicle
@@ -166,5 +174,45 @@ router.get(
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
   dashboardStatus,
+);
+
+//Complete trip ticket start
+router.get(
+  "/complete-trip-ticket",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  getCompleteTripTickets
+);
+
+router.post(
+  "/complete-trip-ticket",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(completeTripTicketSchema),
+  submitCompleteTripTicket
+);
+
+router.get("/complete-trip-ticket/completed",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(completeTripTicketSchema),
+   getCompletedTripTickets);
+
+  router.get("/complete-trip-ticket/completed/status",
+    fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+ getCompletedTripTicketsStatus);
+
+router.patch(
+  "/complete-trip-ticket/:id",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(updateCompleteTripTicketSchema),
+  updateCompleteTripTicket
 );
 export default router;

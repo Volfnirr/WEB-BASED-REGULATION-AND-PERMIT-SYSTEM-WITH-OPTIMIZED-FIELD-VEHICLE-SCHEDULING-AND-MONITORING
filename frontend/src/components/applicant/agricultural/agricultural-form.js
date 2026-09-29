@@ -26,6 +26,8 @@ import { CalendarDays } from "lucide-react";
 import { submitAgriculturalForm } from "@/lib/api/applications/agricultural/agricultural";
 import { Spinner } from "@/components/ui/spinner";
 import { toTitleCase } from "@/lib/title-case";
+import AddressFields from "@/components/forms/AddressFields";
+import { getBarangays } from "@/lib/ph-pampanga/ph-address";
 
 const agriculturalFormSchema = z
   .object({
@@ -213,7 +215,7 @@ const agriculturalFormSchema = z
   })
   .refine(
     (data) => {
-      if (data.civilStatus === "Married") return !!data.spouse?.trim();
+      if (data.civilStatus === "MARRIED") return !!data.spouse?.trim();
       return true;
     },
     {
@@ -223,12 +225,19 @@ const agriculturalFormSchema = z
   )
   .refine(
     (data) => {
-      if (data.civilStatus !== "Married") return !data.spouse?.trim();
+      if (data.civilStatus !== "MARRIED") return !data.spouse?.trim();
       return true;
     },
     {
       path: ["spouse"],
       message: "Spouse name should only be set if civil status is Married",
+    },
+  )
+  .refine(
+    (data) => getBarangays(data.province, data.municipality).includes(data.barangay),
+    {
+      path: ["barangay"],
+      message: "Selected barangay does not belong to the selected municipality",
     },
   );
 
@@ -269,7 +278,7 @@ export default function AgriculturalForm({ inspectors }) {
   const agreedToPrivacy = watch("privacyConsent");
 
   useEffect(() => {
-    if (civilStatus !== "Married") {
+    if (civilStatus !== "MARRIED") {
       setValue("spouse", "", { shouldValidate: true, shouldDirty: false });
     }
   }, [civilStatus, setValue]);
@@ -573,7 +582,7 @@ export default function AgriculturalForm({ inspectors }) {
               </div>
             </div>
 
-            {civilStatus === "Married" && (
+            {civilStatus === "MARRIED" && (
               <div className="grid grid-cols-1 gap-4 mb-4">
                 <div className="flex flex-col gap-1 text-left">
                   <input
@@ -596,40 +605,15 @@ export default function AgriculturalForm({ inspectors }) {
               Location of Agricultural Land Applied For
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <input
-                {...register("province")}
-                type="text"
-                readOnly
-                className={`${inputClass} bg-gray-100 pointer-events-none`}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <AddressFields
+                control={control}
+                setValue={setValue}
+                errors={errors}
               />
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("municipality")}
-                  type="text"
-                  placeholder="*MUNICIPALITY"
-                  className={inputClass}
-                />
-                {errors.municipality && (
-                  <div className={errorClass}>
-                    {errors.municipality.message}
-                  </div>
-                )}
-              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("barangay")}
-                  type="text"
-                  placeholder="*BARANGAY"
-                  className={inputClass}
-                />
-                {errors.barangay && (
-                  <div className={errorClass}>{errors.barangay.message}</div>
-                )}
-              </div>
               <div className="flex flex-col gap-1 text-left">
                 <input
                   {...register("location")}

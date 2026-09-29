@@ -50,6 +50,11 @@ export async function createVehicle(req, res) {
             throw new Error("UPLOAD_FAILED");
           }
         }
+        if (error) {
+          
+          throw new Error("UPLOAD_FAILED");
+        }
+      }
 
         const vehicle = await vehicleAdmin.createVehicle(
           {
@@ -653,6 +658,117 @@ export async function tripTicketStatus(req, res) {
   }
 }
 
+
+export async function getCompleteTripTickets(req, res) {
+  try {
+    const tickets = await vehicleAdmin.completeTripTicketList();
+    res.status(200).json(tickets || []);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to fetch complete trip tickets", error: error.message });
+  }
+}
+
+export async function getCompletedTripTicketsStatus(req, res) {
+  try {
+    const status = await vehicleAdmin.completedTripTicketsStatus();
+    res.status(200).json({
+      message: "Successfully retrieved completed trip ticket status",
+      status,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function submitCompleteTripTicket(req, res) {
+  try {
+    const { id, data } = req.validatedData;
+
+    if (!id) {
+      return res.status(400).json({ message: "Trip Ticket ID is required." });
+    }
+
+    const completionRecord = await prisma.$transaction(async (tx) => {
+      const completion = await vehicleAdmin.submitCompleteTripTicket(id, data, tx);
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Complete Trip Ticket",
+          target: "Trip Ticket",
+          details: `Completed Trip Ticket (ID: ${id})`,
+        },
+        tx,
+      );
+
+      return completion;
+    });
+
+    return res.status(200).json({
+      message: "Driver ticket details updated successfully",
+      data: completionRecord,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error.message === "TRIP_TICKET_ALREADY_COMPLETED") {
+      return res.status(400).json({ message: "This Trip Ticket has already been marked as completed." });
+    }
+    if (error.message === "TRIP_TICKET_NOT_FOUND") {
+      return res.status(404).json({ message: "Trip Ticket not found." });
+    }
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// Paste this into vehicle_controller.js, right after submitCompleteTripTicket.
+export async function updateCompleteTripTicket(req, res) {
+  try {
+    const { id } = req.params;
+    const data = req.validatedData;
+
+    if (!id) {
+      return res.status(400).json({ message: "Trip Ticket ID is required." });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const completion = await vehicleAdmin.updateCompleteTripTicket(
+        id,
+        data,
+        tx,
+      );
+
+      await createAuditLog(
+        {
+          actorId: req.user.id,
+          actorName: req.user.name,
+          actorRole: req.user.role,
+          action: "Update Complete Trip Ticket",
+          target: "Trip Ticket Completion",
+          details: `Updated completion details for Trip Ticket (ID: ${id})`,
+        },
+        tx,
+      );
+
+      return completion;
+    });
+
+    return res.status(200).json({
+      message: "Driver ticket details updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    console.log(error);
+    if (error.message === "TRIP_TICKET_NOT_FOUND") {
+      return res.status(404).json({ message: "Trip ticket not found." });
+    }
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 // TRIP TICKET END
 
 // DASHBOARD START
@@ -660,11 +776,13 @@ export async function tripTicketStatus(req, res) {
 export async function dashboardStatus(req, res) {
   try {
     const status = await vehicleAdmin.dashboardStatus();
+    
     res.status(200).json({
       message: "Successfuly retrieved dashboard status",
       status,
     });
   } catch (error) {
+   
     return res.status(500).json({ message: "Internal server error" });
   }
 }
@@ -796,5 +914,38 @@ export async function scheduleVehicleMaintenance(req, res) {
     }
 
     return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export const checkTripTicketExists = async (req, res) => {
+  try {
+   
+    const { tripTicketNo } = req.query; 
+    
+    if (!tripTicketNo) {
+      return res.status(400).json({ message: "Trip Ticket No is required" });
+    }
+
+    const existingTicket = await prisma.tripTicket.findFirst({
+      where: { tripTicketNo: tripTicketNo } 
+    });
+
+    return res.status(200).json({ exists: !!existingTicket });
+  } catch (error) {
+    console.error("Error checking ticket:", error);
+    return res.status(500).json({ message: "Server error checking ticket number" });
+  }
+};
+//for trip ticket b table
+export async function getCompletedTripTickets(req, res) {
+  try {
+    const completedtripticketlist = await vehicleAdmin.completedTripTicketsList();
+    res.status(200).json({
+      message: "Successfully retrieved completed trip ticket list",
+      completedtripticketlist,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to fetch completed trip tickets", error: error.message });
   }
 }

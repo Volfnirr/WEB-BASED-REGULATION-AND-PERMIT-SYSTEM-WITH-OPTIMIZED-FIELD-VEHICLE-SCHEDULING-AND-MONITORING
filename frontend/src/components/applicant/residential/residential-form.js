@@ -27,6 +27,8 @@ import { submitResidentialForm } from "@/lib/api/applications/residential/reside
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { toTitleCase } from "@/lib/title-case";
+import AddressFields from "@/components/forms/AddressFields";
+import { getBarangays } from "@/lib/ph-pampanga/ph-address";
 
 const residentialFormSchema = z
   .object({
@@ -175,6 +177,13 @@ const residentialFormSchema = z
       path: ["spouseName"],
       message: "Spouse name should only be set if civil status is Married",
     },
+  )
+  .refine(
+    (data) => getBarangays(data.province, data.municipality).includes(data.barangay),
+    {
+      path: ["barangay"],
+      message: "Selected barangay does not belong to the selected municipality",
+    },
   );
 
 const civilStatusChoices = [
@@ -248,21 +257,6 @@ export default function ResidentialForm({ inspectors }) {
         <hr className="border-gray-200 mb-8" />
 
         <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
-          {/* {isInspetorActive ? (
-            <>
-             
-
-              <div className="flex flex-row w-full justify-end gap-2 min-h-15">
-                <Button
-                  onClick={() => setIsInspetorActive(false)}
-                  type="button"
-                  className="cursor-pointer bg-green-700 hover:bg-green-800 text-md min-h-9 max-h-md"
-                >
-                  Next
-                </Button>
-              </div>
-            </>
-          ) : ( */}
           <>
             {/* Section: Applicant Information */}
             <div>
@@ -514,40 +508,15 @@ export default function ResidentialForm({ inspectors }) {
                 Land Information
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <input
-                  {...register("province")}
-                  type="text"
-                  readOnly
-                  className={`${inputClass} bg-gray-100 pointer-events-none`}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <AddressFields
+                  control={control}
+                  setValue={setValue}
+                  errors={errors}
                 />
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("municipality")}
-                    type="text"
-                    placeholder="*MUNICIPALITY"
-                    className={inputClass}
-                  />
-                  {errors.municipality && (
-                    <div className={errorClass}>
-                      {errors.municipality.message}
-                    </div>
-                  )}
-                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("barangay")}
-                    type="text"
-                    placeholder="*BARANGAY"
-                    className={inputClass}
-                  />
-                  {errors.barangay && (
-                    <div className={errorClass}>{errors.barangay.message}</div>
-                  )}
-                </div>
                 <div className="flex flex-col gap-1 text-left">
                   <input
                     {...register("specificLocation")}
@@ -944,7 +913,6 @@ export default function ResidentialForm({ inspectors }) {
               </Button>
             </div>
           </>
-          {/* )} */}
         </form>
       </div>
 
