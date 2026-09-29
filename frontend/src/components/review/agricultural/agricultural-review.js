@@ -20,6 +20,7 @@ import {
   approveApplication,
   rejectApplication,
 } from "@/lib/api/applications/app-admin-action";
+import Link from "next/link";
 
 const action = [
   { id: 1, value: "APPROVED" },
