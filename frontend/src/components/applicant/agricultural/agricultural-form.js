@@ -35,21 +35,25 @@ const agriculturalFormSchema = z
       .string()
       .trim()
       .min(1, "Last name is required")
-      .max(255, "Maximum 255 characters allowed"),
+      .max(255, "Maximum 255 characters allowed")
+      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
     firstName: z
       .string()
       .trim()
       .min(1, "First name is required")
-      .max(255, "Maximum 255 characters allowed"),
+      .max(255, "Maximum 255 characters allowed")
+      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
     middleName: z
       .string()
       .trim()
       .max(255, "Maximum 255 characters allowed")
+      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
       .optional(),
     extension: z
       .string()
       .trim()
       .max(50, "Maximum 50 characters allowed")
+      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
       .optional(),
     contactNumber: z
       .string()
@@ -67,7 +71,8 @@ const agriculturalFormSchema = z
       .string()
       .trim()
       .min(1, "Citizenship is required")
-      .max(100, "Maximum 100 characters allowed"),
+      .max(100, "Maximum 100 characters allowed")
+      .regex(/^[A-Za-z\s-]+$/, "Only letters, spaces, and hyphens are allowed"),
     naturalBorn: z.boolean({
       error: "Please select an option",
     }),
@@ -184,7 +189,8 @@ const agriculturalFormSchema = z
       .string()
       .trim()
       .min(1, "Witness 1 name is required")
-      .max(255, "Maximum 255 characters allowed"),
+      .max(255, "Maximum 255 characters allowed")
+      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
     witness1_address: z
       .string()
       .trim()
@@ -194,7 +200,8 @@ const agriculturalFormSchema = z
       .string()
       .trim()
       .min(1, "Witness 2 name is required")
-      .max(255, "Maximum 255 characters allowed"),
+      .max(255, "Maximum 255 characters allowed")
+      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
     witness2_address: z
       .string()
       .trim()
@@ -234,7 +241,8 @@ const agriculturalFormSchema = z
     },
   )
   .refine(
-    (data) => getBarangays(data.province, data.municipality).includes(data.barangay),
+    (data) =>
+      getBarangays(data.province, data.municipality).includes(data.barangay),
     {
       path: ["barangay"],
       message: "Selected barangay does not belong to the selected municipality",

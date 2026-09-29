@@ -8,21 +8,25 @@ export const residentialFormSchema = z
       .string()
       .trim()
       .min(1, "Last name is required")
-      .max(100, "Last name is too long"),
+      .max(100, "Last name is too long")
+      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
     firstName: z
       .string()
       .trim()
       .min(1, "First name is required")
-      .max(100, "First name is too long"),
+      .max(100, "First name is too long")
+      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
     middleName: z
       .string()
       .trim()
       .max(100, "Middle name is too long")
+      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
       .optional(),
     extensionName: z
       .string()
       .trim()
       .max(20, "Extension name is too long")
+      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
       .optional(),
     fullAddress: z
       .string()
@@ -58,14 +62,12 @@ export const residentialFormSchema = z
     province: z.string().trim().min(1, "Province is required").max(100),
     municipality: z.string().trim().min(1, "Municipality is required").max(100),
     barangay: z.string().trim().min(1, "Barangay is required").max(100),
-
     specificLocation: z
       .string()
       .trim()
       .min(1, "Specific Location / Sitio is required")
       .max(255),
     lotNo: z.string().trim().min(1, "Lot No. is required").max(50),
-
     landAreaSqm: z.coerce
       .number("Land area is required")
       .positive("Land area must be greater than 0")

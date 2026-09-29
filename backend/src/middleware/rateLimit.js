@@ -8,7 +8,7 @@ export const rateLimiter = rateLimit({
 
 export const formSubmitLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 2, //1
+  max: 20, //2
   message: {
     message:
       "You can only submit this form once per minute. Please wait a moment and try again.",
@@ -17,7 +17,7 @@ export const formSubmitLimiter = rateLimit({
 
 export const vehicleAction = rateLimit({
   windowMs: 60 * 1000,
-  max: 10, //1
+  max: 20, //10
   message: {
     message:
       "You can only add or update vehicle once per minute. Please wait a moment and try again.",
@@ -26,7 +26,7 @@ export const vehicleAction = rateLimit({
 
 export const fetchLimit = rateLimit({
   windowMs: 60 * 1000,
-  max: 300, //80
+  max: 3000, //300
   message: {
     message: "Please wait a moment and try again.",
   },

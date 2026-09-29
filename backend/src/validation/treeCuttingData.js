@@ -4,17 +4,27 @@ export const treeCuttingFormSchema = z.object({
     .string()
     .trim()
     .min(1, "Last name is required")
-    .max(100, "Last name is too long"),
+    .max(100, "Last name is too long")
+    .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
+
   firstName: z
     .string()
     .trim()
     .min(1, "First name is required")
-    .max(100, "First name is too long"),
-  middleName: z.string().trim().max(100, "Middle name is too long").optional(),
+    .max(100, "First name is too long")
+    .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
+
+  middleName: z
+    .string()
+    .trim()
+    .max(100, "Middle name is too long")
+    .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
+    .optional(),
   extensionName: z
     .string()
     .trim()
     .max(100, "Extension name is too long")
+    .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
     .optional(),
   fullAddress: z
     .string()

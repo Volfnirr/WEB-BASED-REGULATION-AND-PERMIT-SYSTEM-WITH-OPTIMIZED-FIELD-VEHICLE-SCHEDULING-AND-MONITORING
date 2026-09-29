@@ -10,23 +10,26 @@ export const chainsawFormSchema = z
       .string()
       .trim()
       .min(1, "Last name is required")
-      .max(255, "Maximum 255 characters allowed"),
+      .max(255, "Maximum 255 characters allowed")
+      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
     firstname: z
       .string()
       .trim()
       .min(1, "First name is required")
-      .max(255, "Maximum 255 characters allowed"),
+      .max(255, "Maximum 255 characters allowed")
+      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
     middlename: z
       .string()
       .trim()
-      .min(1, "Middle name is required")
-      .max(255, "Maximum 255 characters allowed"),
+      .max(255, "Maximum 255 characters allowed")
+      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
+      .optional(),
     extension: z
       .string()
       .trim()
       .max(50, "Maximum 50 characters allowed")
+      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
       .optional(),
-
     province: z
       .string()
       .trim()
@@ -45,19 +48,19 @@ export const chainsawFormSchema = z
     completeAddress: z
       .string()
       .trim()
-      .min(5, "Complete address is required")
+      .min(1, "Complete address is required")
       .max(1000, "Maximum 1000 characters allowed"),
     contactNumber: z
       .string()
       .trim()
       .regex(/^09\d{9}$/, "Enter a valid 11-digit Philippine mobile number")
       .max(11, "Maximum 11 characters allowed"),
-
     brand: z
       .string()
       .trim()
       .min(1, "Brand is required")
-      .max(255, "Maximum 255 characters allowed"),
+      .max(255, "Maximum 255 characters allowed")
+      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
     model: z
       .string()
       .trim()
@@ -86,7 +89,6 @@ export const chainsawFormSchema = z
       .trim()
       .min(1, "Guide bar length is required")
       .max(100, "Maximum 100 characters allowed"),
-
     privacyConsent: z.literal(true, {
       errorMap: () => ({ message: "Please check this box to proceed" }),
     }),
