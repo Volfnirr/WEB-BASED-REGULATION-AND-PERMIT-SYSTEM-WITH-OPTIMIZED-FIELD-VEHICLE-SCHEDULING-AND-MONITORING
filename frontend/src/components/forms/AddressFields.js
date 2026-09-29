@@ -14,7 +14,7 @@ import {
   DEFAULT_PROVINCE,
   getMunicipalities,
   getBarangays,
-} from "@/lib/data/ph-address";
+} from "@/lib/ph-pampanga/ph-address";
 
 /**
  * Cascading Province / Municipality / Barangay dropdowns for React Hook Form.

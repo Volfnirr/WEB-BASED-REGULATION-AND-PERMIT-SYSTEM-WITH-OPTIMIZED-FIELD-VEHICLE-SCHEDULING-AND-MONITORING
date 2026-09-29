@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getBarangays } from "@/lib/ph-pampanga/ph-address";
 
 export const residentialFormSchema = z
   .object({
@@ -57,12 +58,14 @@ export const residentialFormSchema = z
     province: z.string().trim().min(1, "Province is required").max(100),
     municipality: z.string().trim().min(1, "Municipality is required").max(100),
     barangay: z.string().trim().min(1, "Barangay is required").max(100),
+
     specificLocation: z
       .string()
       .trim()
       .min(1, "Specific Location / Sitio is required")
       .max(255),
     lotNo: z.string().trim().min(1, "Lot No. is required").max(50),
+
     landAreaSqm: z.coerce
       .number("Land area is required")
       .positive("Land area must be greater than 0")
@@ -71,6 +74,7 @@ export const residentialFormSchema = z
         (val) => Math.round(val * 100) === val * 100,
         "Land area can only have up to 2 decimal places",
       ),
+
     // AFFIDAVIT
     affidavitProvince: z
       .string()
@@ -143,5 +147,12 @@ export const residentialFormSchema = z
     {
       path: ["spouseName"],
       message: "Spouse name should only be set if civil status is Married",
+    },
+  )
+  .refine(
+    (data) => getBarangays(data.province, data.municipality).includes(data.barangay),
+    {
+      path: ["barangay"],
+      message: "Selected barangay does not belong to the selected municipality",
     },
   );

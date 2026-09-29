@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getBarangays } from "@/lib/ph-pampanga/ph-address";
 
 export const agriculturalFormSchema = z
   .object({
@@ -93,7 +94,6 @@ export const agriculturalFormSchema = z
         (val) => Math.round(val * 100) === val * 100,
         "Land area can only have up to 2 decimal places",
       ),
-
     cultivationDate: z
       .string()
       .trim()
@@ -187,7 +187,7 @@ export const agriculturalFormSchema = z
   })
   .refine(
     (data) => {
-      if (data.civilStatus === "Married") return !!data.spouse?.trim();
+      if (data.civilStatus === "MARRIED") return !!data.spouse?.trim();
       return true;
     },
     {
@@ -197,11 +197,18 @@ export const agriculturalFormSchema = z
   )
   .refine(
     (data) => {
-      if (data.civilStatus !== "Married") return !data.spouse?.trim();
+      if (data.civilStatus !== "MARRIED") return !data.spouse?.trim();
       return true;
     },
     {
       path: ["spouse"],
       message: "Spouse name should only be set if civil status is Married",
+    },
+  )
+  .refine(
+    (data) => getBarangays(data.province, data.municipality).includes(data.barangay),
+    {
+      path: ["barangay"],
+      message: "Selected barangay does not belong to the selected municipality",
     },
   );

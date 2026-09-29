@@ -1,6 +1,5 @@
 import express from "express";
 const router = express.Router();
-
 import {
   vehicleAction,
   fetchLimit,
@@ -106,24 +105,6 @@ router.get(
 
 // TRIP TICKET START
 
-router.get(
-  "/complete-trip-ticket",
-  fetchLimit,
-  requireAuthentication,
-  requireAuthorization("VEHICLE_ADMIN"),
-  getCompleteTripTickets
-);
-
-router.post(
-  "/complete-trip-ticket",
-  fetchLimit,
-  requireAuthentication,
-  requireAuthorization("VEHICLE_ADMIN"),
-  validate(completeTripTicketSchema),
-  submitCompleteTripTicket
-);
-
-
 router.post(
   "/trip-ticket",
   vehicleSubmitTicketLimit,
@@ -177,27 +158,12 @@ router.get(
   vehicleSchedules,
 );
 
-router.get("/complete-trip-ticket/completed",
-   getCompletedTripTickets);
-
 router.get(
   "/schedules/status",
   fetchLimit,
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
   vehiclesSchdulesStatus,
-);
-
-router.get("/complete-trip-ticket/completed/status",
- getCompletedTripTicketsStatus);
-
- router.patch(
-  "/complete-trip-ticket/:id",
-  fetchLimit,
-  requireAuthentication,
-  requireAuthorization("VEHICLE_ADMIN"),
-  validate(updateCompleteTripTicketSchema),
-  updateCompleteTripTicket
 );
 
 // VEHICLE SCHEDULES END
@@ -208,5 +174,45 @@ router.get(
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
   dashboardStatus,
+);
+
+//Complete trip ticket start
+router.get(
+  "/complete-trip-ticket",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  getCompleteTripTickets
+);
+
+router.post(
+  "/complete-trip-ticket",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(completeTripTicketSchema),
+  submitCompleteTripTicket
+);
+
+router.get("/complete-trip-ticket/completed",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(completeTripTicketSchema),
+   getCompletedTripTickets);
+
+  router.get("/complete-trip-ticket/completed/status",
+    fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+ getCompletedTripTicketsStatus);
+
+router.patch(
+  "/complete-trip-ticket/:id",
+  fetchLimit,
+  requireAuthentication,
+  requireAuthorization("VEHICLE_ADMIN"),
+  validate(updateCompleteTripTicketSchema),
+  updateCompleteTripTicket
 );
 export default router;

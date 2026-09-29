@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { submitChainsawForm } from "@/lib/api/applications/chainsaw/chainsaw";
 import { Spinner } from "@/components/ui/spinner";
-import AddressFields from "@/components/forms/AddressFields";
 import {
   Select,
   SelectContent,
@@ -17,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import AddressFields from "@/components/forms/AddressFields";
+import { getBarangays } from "@/lib/ph-pampanga/ph-address";
 
 const chainsawFormSchema = z.object({
   registrationType: z.enum(["New", "Renewal"], {
@@ -106,7 +107,14 @@ const chainsawFormSchema = z.object({
   privacyConsent: z.literal(true, {
     errorMap: () => ({ message: "Please check this box to proceed" }),
   }),
-});
+})
+  .refine(
+    (data) => getBarangays(data.province, data.municipality).includes(data.barangay),
+    {
+      path: ["barangay"],
+      message: "Selected barangay does not belong to the selected municipality",
+    },
+  );
 export default function ChainsawForm() {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
@@ -126,8 +134,6 @@ export default function ChainsawForm() {
     resolver: zodResolver(chainsawFormSchema),
     defaultValues: {
       registrationType: "New",
-    },
-    defaultValues: {
       province: "Pampanga",
     },
   });
@@ -255,41 +261,6 @@ export default function ChainsawForm() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("province")}
-                  type="text"
-                  placeholder="*PROVINCE"
-                  className={inputClass}
-                />
-                {errors.province && (
-                  <div className={errorClass}>{errors.province.message}</div>
-                )}
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("municipality")}
-                  type="text"
-                  placeholder="*MUNICIPALITY"
-                  className={inputClass}
-                />
-                {errors.municipality && (
-                  <div className={errorClass}>
-                    {errors.municipality.message}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("barangay")}
-                  type="text"
-                  placeholder="*BARANGAY"
-                  className={inputClass}
-                />
-                {errors.barangay && (
-                  <div className={errorClass}>{errors.barangay.message}</div>
-                )}
-              </div>
               <AddressFields
                 control={control}
                 setValue={setValue}
