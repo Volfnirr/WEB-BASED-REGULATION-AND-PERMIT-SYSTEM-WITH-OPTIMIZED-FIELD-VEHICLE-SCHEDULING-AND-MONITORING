@@ -18,7 +18,7 @@ export default function AssignApplication({
   assignedRole,
   assignedService,
 }) {
-  const router = useRouter();
+  // const router = useRouter();
   const queryClient = useQueryClient();
 
   const {
@@ -31,17 +31,29 @@ export default function AssignApplication({
       const response = await assignUserToApplication(serviceId);
 
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["agricultural"] }),
-        queryClient.invalidateQueries({ queryKey: ["residential"] }),
-        queryClient.invalidateQueries({ queryKey: ["tree-cutting"] }),
-        queryClient.invalidateQueries({ queryKey: ["chainsaw"] }),
+        // queryClient.invalidateQueries({ queryKey: ["agricultural"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["agricultural-applications"],
+        }),
+        queryClient.invalidateQueries({ queryKey: ["agricultural-status"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["residential-applications"],
+        }),
+        queryClient.invalidateQueries({ queryKey: ["residential-status"] }),
+        queryClient.invalidateQueries({ queryKey: ["residential-status"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["tree-cutting-applications"],
+        }),
+        queryClient.invalidateQueries({ queryKey: ["tree-cutting-status"] }),
+        queryClient.invalidateQueries({ queryKey: ["chainsaw-applications"] }),
+        queryClient.invalidateQueries({ queryKey: ["chainsaw-status"] }),
         queryClient.invalidateQueries({ queryKey: ["applications-dashboard"] }),
       ]);
       toast.success(`${response.message}`, {
         position: "top-center",
       });
       onClose();
-      router.refresh();
+      // router.refresh();
     } catch (err) {
       toast.error(err.message, {
         position: "top-center",

@@ -14,11 +14,11 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function AgriculturalApplicationReview() {
   const applications = useQuery({
-    queryKey: ["agricultural", "applications"],
+    queryKey: ["agricultural-applications"],
     queryFn: getAgriculturalApplications,
   });
   const status = useQuery({
-    queryKey: ["agricultural", "status"],
+    queryKey: ["agricultural-status"],
     queryFn: getAgriculturalStatus,
   });
 
@@ -50,9 +50,7 @@ export default function AgriculturalApplicationReview() {
           title3="Applications"
           description="View and manage all Agricultural Applications."
         />
-        {(applications.isFetching || status.isFetching) && (
-          <p className="text-xs text-gray-400 mb-2">Refreshing…</p>
-        )}
+
         <AgriculturalInfo status={status.data.status} />
         <AgriculturalTable initialData={applications.data.applications} />
         {/* <ScheduleCardValue /> */}

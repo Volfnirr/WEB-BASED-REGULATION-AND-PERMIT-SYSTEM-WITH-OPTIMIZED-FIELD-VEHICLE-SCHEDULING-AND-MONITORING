@@ -14,11 +14,11 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function ResidentialApplicationReview() {
   const applications = useQuery({
-    queryKey: ["residential", "applications"],
+    queryKey: ["residential-applications"],
     queryFn: getResidentialApplications,
   });
   const status = useQuery({
-    queryKey: ["residential", "status"],
+    queryKey: ["residential-status"],
     queryFn: getResidentialStatus,
   });
 

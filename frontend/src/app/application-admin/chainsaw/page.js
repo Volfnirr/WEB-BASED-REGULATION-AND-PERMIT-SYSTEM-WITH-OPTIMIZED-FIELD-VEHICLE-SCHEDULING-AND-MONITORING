@@ -14,11 +14,11 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function ChainsawApplicationReview() {
   const applications = useQuery({
-    queryKey: ["chainsaw", "applications"],
+    queryKey: ["chainsaw-applications"],
     queryFn: getChainsawApplications,
   });
   const status = useQuery({
-    queryKey: ["chainsaw", "status"],
+    queryKey: ["chainsaw-status"],
     queryFn: getChainsawStatus,
   });
 

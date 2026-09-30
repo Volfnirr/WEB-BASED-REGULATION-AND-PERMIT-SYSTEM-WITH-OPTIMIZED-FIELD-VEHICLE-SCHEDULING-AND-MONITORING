@@ -13,11 +13,11 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function TreeCuttingApplicationReview() {
   const applications = useQuery({
-    queryKey: ["tree-cutting", "applications"],
+    queryKey: ["tree-cutting-applications"],
     queryFn: getTreeCuttingApplications,
   });
   const status = useQuery({
-    queryKey: ["tree-cutting", "status"],
+    queryKey: ["tree-cutting-status"],
     queryFn: getTreeCuttingStatus,
   });
 
