@@ -1,31 +1,21 @@
 import z from "zod";
 
-export const createUserSchema = z
-  .object({
-    name: z.string().min(3, "Full name must be at least 3 characters"),
-    email: z.email("Invalid email address"),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter")
-      .regex(
-        /[^A-Za-z0-9]/,
-        "Password must contain at least 1 special character",
-      ),
-    role: z.enum(
-      ["USER", "APPLICATION_ADMIN", "VEHICLE_ADMIN", "SUPER_ADMIN"],
-      "Please select a role",
+export const createUserSchema = z.object({
+  name: z.string().min(3, "Full name must be at least 3 characters"),
+  email: z.email("Invalid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter")
+    .regex(
+      /[^A-Za-z0-9]/,
+      "Password must contain at least 1 special character",
     ),
-    assignedServices: z.array(z.number()).default([]),
-  })
-  .refine(
-    (data) =>
-      data.role !== "APPLICATION_ADMIN" || data.assignedServices.length > 0,
-    {
-      message: "Please assign at least one service",
-      path: ["assignedServices"],
-    },
-  );
+  role: z.enum(
+    ["USER", "APPLICATION_ADMIN", "VEHICLE_ADMIN", "SUPER_ADMIN"],
+    "Please select a role",
+  ),
+});
 
 export const banSchema = z
   .object({

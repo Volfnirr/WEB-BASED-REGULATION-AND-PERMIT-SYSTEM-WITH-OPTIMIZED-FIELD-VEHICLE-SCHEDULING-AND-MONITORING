@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, EyeOff, Eye } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { Spinner } from "../../spinner";
-import { EyeOff, Eye } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { useRouter } from "next/navigation";
@@ -19,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { createAppAdmin, createUser } from "@/lib/api/super-admin/super-admin";
 
-const createUserSchema = z
+const createUserFormSchema = z
   .object({
     name: z.string().min(3, "Full name must be at least 3 characters"),
     email: z.email("Invalid email address"),
@@ -35,7 +34,7 @@ const createUserSchema = z
       ["USER", "APPLICATION_ADMIN", "VEHICLE_ADMIN", "SUPER_ADMIN"],
       "Please select a role",
     ),
-    assignedServices: z.array(z.number()).default([]),
+    assignedServices: z.array(z.number().int().positive()).default([]),
     termsAndCondition: z.literal(true),
     confirmPassword: z.string(),
   })
@@ -47,7 +46,6 @@ const createUserSchema = z
       path: ["assignedServices"],
     },
   )
-
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
@@ -90,10 +88,11 @@ export default function AddUser({ open, onClose }) {
     handleSubmit,
     control,
     setValue,
+    clearErrors,
     watch,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(createUserSchema),
+    resolver: zodResolver(createUserFormSchema),
     defaultValues: {
       termsAndCondition: true,
       assignedServices: [],
@@ -110,28 +109,30 @@ export default function AddUser({ open, onClose }) {
         role: data.role,
       });
 
-      if (error) {
-        toast.error(error.message ?? "Failed to create user", {
+      if (error || !newUser?.user?.id) {
+        toast.error(error?.message ?? "Failed to create user", {
           position: "top-center",
         });
         return;
       }
 
-      console.log("Role", data.role);
-      console.log("Services", data.assignServices);
-      if (
-        data.role === "APPLICATION_ADMIN" &&
-        data.assignedServices.length > 0
-      ) {
+      if (data.role === "APPLICATION_ADMIN") {
         const assignServices = data.assignedServices.map((serviceId) => ({
           userId: newUser.user.id,
           serviceId,
         }));
 
-        console.log("USER CHECK", assignServices);
-        await createAppAdmin({
-          assignServices,
-        });
+        const result = await createAppAdmin({ assignServices });
+
+        if (result?.error) {
+          toast.error(
+            result.error.message ??
+              "User was created, but assigning services failed",
+            { position: "top-center" },
+          );
+          router.refresh();
+          return;
+        }
       }
 
       toast.success("User created successfully", {
@@ -140,14 +141,25 @@ export default function AddUser({ open, onClose }) {
       onClose();
       router.refresh();
     } catch (error) {
-      console.error("ERROR creating user", error.message);
+      console.error("ERROR creating user", error);
       toast.error(
-        error.message || "Something went wrong while creating the user",
-        {
-          position: "top-center",
-        },
+        error?.message || "Something went wrong while creating the user",
+        { position: "top-center" },
       );
     }
+  };
+
+  const toggleService = (serviceId, checked) => {
+    const current = assignedServices ?? [];
+    const next = checked
+      ? current.includes(serviceId)
+        ? current
+        : [...current, serviceId]
+      : current.filter((id) => id !== serviceId);
+    setValue("assignedServices", next, {
+      shouldDirty: true,
+      shouldValidate: !!errors.assignedServices,
+    });
   };
 
   if (!open) return null;
@@ -168,7 +180,6 @@ export default function AddUser({ open, onClose }) {
         >
           <div className="flex flex-col gap-1 text-left">
             <label className="text-xs text-gray-500">Full Name</label>
-
             <input
               {...register("name")}
               placeholder="Full Name"
@@ -181,9 +192,9 @@ export default function AddUser({ open, onClose }) {
               </div>
             )}
           </div>
+
           <div className="flex flex-col gap-1 text-left">
             <label className="text-xs text-gray-500">Email</label>
-
             <input
               {...register("email")}
               placeholder="Email"
@@ -196,14 +207,13 @@ export default function AddUser({ open, onClose }) {
               </div>
             )}
           </div>
+
           <div className="flex flex-col gap-1 text-left">
             <label className="text-xs text-gray-500">Password</label>
             <div className="relative">
               <input
                 {...register("password")}
                 type={showRegPassword ? "text" : "password"}
-                id="password"
-                name="password"
                 placeholder="********"
                 className={inputClass}
               />
@@ -219,25 +229,22 @@ export default function AddUser({ open, onClose }) {
                 )}
               </button>
             </div>
-
             {errors.password && (
               <div className="text-red-600 text-xs font-medium">
                 {errors.password.message}
               </div>
             )}
           </div>
+
           <div className="flex flex-col gap-1 text-left">
             <label className="text-xs text-gray-500">Confirm Password</label>
             <div className="relative">
               <input
                 {...register("confirmPassword")}
                 type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword"
-                name="confirmPassword"
                 placeholder="********"
                 className={inputClass}
               />
-
               <button
                 type="button"
                 onClick={() => setshowConfirmPassword(!showConfirmPassword)}
@@ -267,7 +274,8 @@ export default function AddUser({ open, onClose }) {
                   onValueChange={(value) => {
                     field.onChange(value);
                     if (value !== "APPLICATION_ADMIN") {
-                      setValue("assignedServices", []);
+                      setValue("assignedServices", [], { shouldDirty: true });
+                      clearErrors("assignedServices");
                     }
                   }}
                 >
@@ -307,25 +315,12 @@ export default function AddUser({ open, onClose }) {
                   <Field orientation="horizontal" key={service.id}>
                     <Checkbox
                       id={`service-${service.id}`}
-                      checked={assignedServices?.includes(service.id)}
-                      onCheckedChange={(checked) => {
-                        const currentServices = assignedServices ?? [];
-
-                        if (checked) {
-                          setValue("assignedServices", [
-                            ...currentServices,
-                            service.id,
-                          ]);
-                        } else {
-                          setValue(
-                            "assignedServices",
-                            currentServices.filter((id) => id !== service.id),
-                          );
-                        }
-                      }}
+                      checked={assignedServices?.includes(service.id) ?? false}
+                      onCheckedChange={(checked) =>
+                        toggleService(service.id, checked === true)
+                      }
                       className="border border-black "
                     />
-
                     <FieldLabel htmlFor={`service-${service.id}`}>
                       {service.label}
                     </FieldLabel>
@@ -346,13 +341,7 @@ export default function AddUser({ open, onClose }) {
               disabled={isSubmitting}
               className="px-8 py-3 bg-[#1a5632] cursor-pointer text-white font-bold rounded-lg shadow hover:bg-[#124024] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              {isSubmitting ? (
-                <>
-                  <Spinner data-icon />
-                </>
-              ) : (
-                "Submit Application"
-              )}
+              {isSubmitting ? <Spinner data-icon /> : "Submit Application"}
             </button>
           </div>
         </form>
