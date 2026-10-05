@@ -13,6 +13,13 @@ import DashboardSkeletonSwitcher from "@/components/skeleton/skeletons-switcher"
 import { useQuery } from "@tanstack/react-query";
 
 export default function ResidentialApplicationReview() {
+  return (
+    <AssignedServices reqServices={[2]}>
+      <ResidentialData />
+    </AssignedServices>
+  );
+}
+function ResidentialData() {
   const applications = useQuery({
     queryKey: ["residential-applications"],
     queryFn: getResidentialApplications,
@@ -43,17 +50,15 @@ export default function ResidentialApplicationReview() {
 
   return (
     <div>
-      <AssignedServices reqServices={[2]}>
-        <Title
-          title="Manage "
-          title2="Residential"
-          title3="Applications"
-          description="View and manage all Residential Applications."
-        />
-        <ResidentialInfo status={status.data.status} />
-        <ResidentialTable initialData={applications.data.applications} />
-        {/* <ScheduleCardValue /> */}
-      </AssignedServices>
+      <Title
+        title="Manage "
+        title2="Residential"
+        title3="Applications"
+        description="View and manage all Residential Applications."
+      />
+      <ResidentialInfo status={status.data.status} />
+      <ResidentialTable initialData={applications.data.applications} />
+      {/* <ScheduleCardValue /> */}
     </div>
   );
 }

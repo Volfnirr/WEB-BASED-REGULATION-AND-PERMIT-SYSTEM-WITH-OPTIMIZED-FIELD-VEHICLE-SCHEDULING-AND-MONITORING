@@ -113,7 +113,7 @@ export function DashboardChartBarMultiple({ status }) {
             <BarChart
               accessibilityLayer
               data={chartData}
-              margin={{ left: 8, right: 8 }}
+              margin={{ left: 8, right: 8, top: 18 }}
               barCategoryGap={20}
             >
               <CartesianGrid vertical={false} />

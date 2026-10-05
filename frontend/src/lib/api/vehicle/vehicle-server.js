@@ -112,7 +112,9 @@ export async function completetripTicketList() {
 
   const result = await response.json();
   if (!response.ok) {
-    throw new Error(result.message || "Failed to retrieved complete trip ticket list.");
+    throw new Error(
+      result.message || "Failed to retrieved complete trip ticket list.",
+    );
   }
 
   return result;
@@ -190,7 +192,9 @@ export async function completedTripTicketsList() {
 
   const result = await response.json();
   if (!response.ok) {
-    throw new Error(result.message || "Failed to retrieve completed trip ticket list.");
+    throw new Error(
+      result.message || "Failed to retrieve completed trip ticket list.",
+    );
   }
 
   return result;
@@ -210,7 +214,9 @@ export async function completedTripTicketsStatus() {
 
   const result = await response.json();
   if (!response.ok) {
-    throw new Error(result.message || "Failed to retrieve completed trip ticket status.");
+    throw new Error(
+      result.message || "Failed to retrieve completed trip ticket status.",
+    );
   }
 
   return result;

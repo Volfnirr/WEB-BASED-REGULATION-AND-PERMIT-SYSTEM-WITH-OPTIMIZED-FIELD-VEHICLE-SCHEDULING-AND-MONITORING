@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { submitTreeCuttingForm } from "@/lib/api/applications/tree-cutting/tree-cutting";
 import { Spinner } from "@/components/ui/spinner";
+import { fa } from "zod/v4/locales";
 
 const treeCuttingFormSchema = z.object({
   lastName: z
@@ -70,6 +71,9 @@ export default function TreeCuttingForm() {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(treeCuttingFormSchema),
+    defaultValues: {
+      privacyConsent: false,
+    },
   });
 
   const agreedToPrivacy = watch("privacyConsent");

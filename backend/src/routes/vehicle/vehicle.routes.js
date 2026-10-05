@@ -182,7 +182,7 @@ router.get(
   fetchLimit,
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
-  getCompleteTripTickets
+  getCompleteTripTickets,
 );
 
 router.post(
@@ -191,21 +191,25 @@ router.post(
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
   validate(completeTripTicketSchema),
-  submitCompleteTripTicket
+  submitCompleteTripTicket,
 );
 
-router.get("/complete-trip-ticket/completed",
+router.get(
+  "/complete-trip-ticket/completed",
   fetchLimit,
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
-  validate(completeTripTicketSchema),
-   getCompletedTripTickets);
+  // validate(completeTripTicketSchema),
+  getCompletedTripTickets,
+);
 
-  router.get("/complete-trip-ticket/completed/status",
-    fetchLimit,
+router.get(
+  "/complete-trip-ticket/completed/status",
+  fetchLimit,
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
- getCompletedTripTicketsStatus);
+  getCompletedTripTicketsStatus,
+);
 
 router.patch(
   "/complete-trip-ticket/:id",
@@ -213,6 +217,6 @@ router.patch(
   requireAuthentication,
   requireAuthorization("VEHICLE_ADMIN"),
   validate(updateCompleteTripTicketSchema),
-  updateCompleteTripTicket
+  updateCompleteTripTicket,
 );
 export default router;

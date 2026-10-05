@@ -13,6 +13,14 @@ import DashboardSkeletonSwitcher from "@/components/skeleton/skeletons-switcher"
 import { useQuery } from "@tanstack/react-query";
 
 export default function AgriculturalApplicationReview() {
+  return (
+    <AssignedServices reqServices={[1]}>
+      <AgriculturalData />
+    </AssignedServices>
+  );
+}
+
+function AgriculturalData() {
   const applications = useQuery({
     queryKey: ["agricultural-applications"],
     queryFn: getAgriculturalApplications,
@@ -43,18 +51,16 @@ export default function AgriculturalApplicationReview() {
 
   return (
     <div>
-      <AssignedServices reqServices={[1]}>
-        <Title
-          title="Manage "
-          title2="Agricultural"
-          title3="Applications"
-          description="View and manage all Agricultural Applications."
-        />
+      <Title
+        title="Manage "
+        title2="Agricultural"
+        title3="Applications"
+        description="View and manage all Agricultural Applications."
+      />
 
-        <AgriculturalInfo status={status.data.status} />
-        <AgriculturalTable initialData={applications.data.applications} />
-        {/* <ScheduleCardValue /> */}
-      </AssignedServices>
+      <AgriculturalInfo status={status.data.status} />
+      <AgriculturalTable initialData={applications.data.applications} />
+      {/* <ScheduleCardValue /> */}
     </div>
   );
 }

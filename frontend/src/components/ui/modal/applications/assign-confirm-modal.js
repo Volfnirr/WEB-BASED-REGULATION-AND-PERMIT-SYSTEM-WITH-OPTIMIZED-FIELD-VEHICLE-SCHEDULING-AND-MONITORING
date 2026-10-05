@@ -17,6 +17,7 @@ export default function AssignApplication({
   userName,
   assignedRole,
   assignedService,
+  assignedServiceId,
 }) {
   // const router = useRouter();
   const queryClient = useQueryClient();
@@ -28,28 +29,56 @@ export default function AssignApplication({
   } = useForm({});
   const onSubmit = async (_) => {
     try {
-      const response = await assignUserToApplication(serviceId);
+      console.log("Service Name", assignedService);
+      console.log("Service Id", assignedServiceId);
 
-      await Promise.all([
-        // queryClient.invalidateQueries({ queryKey: ["agricultural"] }),
-        queryClient.invalidateQueries({
-          queryKey: ["agricultural-applications"],
-        }),
-        queryClient.invalidateQueries({ queryKey: ["agricultural-status"] }),
-        queryClient.invalidateQueries({
-          queryKey: ["residential-applications"],
-        }),
-        queryClient.invalidateQueries({ queryKey: ["residential-status"] }),
-        queryClient.invalidateQueries({ queryKey: ["residential-status"] }),
-        queryClient.invalidateQueries({
-          queryKey: ["tree-cutting-applications"],
-        }),
-        queryClient.invalidateQueries({ queryKey: ["tree-cutting-status"] }),
-        queryClient.invalidateQueries({ queryKey: ["chainsaw-applications"] }),
-        queryClient.invalidateQueries({ queryKey: ["chainsaw-status"] }),
-        queryClient.invalidateQueries({ queryKey: ["applications-dashboard"] }),
-      ]);
-      toast.success(`${response.message}`, {
+      await assignUserToApplication(serviceId);
+
+      const asssignedServiceId = Number(assignedServiceId);
+
+      if (asssignedServiceId === 1) {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["agricultural-applications"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["agricultural-status"],
+          }),
+        ]);
+      } else if (asssignedServiceId === 2) {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["residential-applications"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["residential-status"],
+          }),
+        ]);
+      } else if (asssignedServiceId === 3) {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["tree-cutting-applications"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["tree-cutting-status"],
+          }),
+        ]);
+      } else if (asssignedServiceId === 4) {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["chainsaw-applications"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["chainsaw-status"],
+          }),
+        ]);
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ["applications-dashboard"],
+      });
+
+      toast.success("Application successfully assigned to yourself", {
         position: "top-center",
       });
       onClose();

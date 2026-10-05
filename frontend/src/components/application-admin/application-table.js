@@ -28,7 +28,12 @@ export default function AssignApplicationsTable({ columns, rows }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const { user } = useUser();
   const { assignedServices } = useServices();
-
+  const selectedAssignedService = selectedRow
+    ? assignedServices?.services?.find(
+        (s) => s.service?.name === selectedRow.serviceName,
+      )
+    : undefined;
+  console.log("SERVICEs", assignedServices);
   return (
     <div className="bg-white rounded-lg border">
       <Table>
@@ -117,11 +122,8 @@ export default function AssignApplicationsTable({ columns, rows }) {
           serviceId={selectedRow.id}
           userName={user?.name}
           assignedRole={user?.role}
-          assignedService={
-            assignedServices?.services?.find(
-              (s) => s.service.name === selectedRow.serviceName,
-            )?.service?.name
-          }
+          assignedService={selectedAssignedService?.service?.name}
+          assignedServiceId={selectedAssignedService?.serviceId}
         />
       )}
     </div>

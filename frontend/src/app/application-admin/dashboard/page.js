@@ -10,6 +10,13 @@ import { getAdminlistAllApplicationsStatus } from "@/lib/api/applications/app-ad
 import { useQuery } from "@tanstack/react-query";
 
 export default function DashboardData() {
+  return (
+    <AssignedServices reqServices={[1, 2, 3, 4]}>
+      <Dashboard />
+    </AssignedServices>
+  );
+}
+function Dashboard() {
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["applications-dashboard"],
     queryFn: getAdminlistAllApplicationsStatus,
@@ -32,11 +39,7 @@ export default function DashboardData() {
     return <p className="text-sm text-red-600">{error.message}</p>;
   }
 
-  return (
-    <AssignedServices reqServices={[1, 2, 3, 4]}>
-      <AppAdminDashboardInfo status={data.status} />
-    </AssignedServices>
-  );
+  return <AppAdminDashboardInfo status={data.status} />;
 }
 
 // export default function AdminDashboard() {

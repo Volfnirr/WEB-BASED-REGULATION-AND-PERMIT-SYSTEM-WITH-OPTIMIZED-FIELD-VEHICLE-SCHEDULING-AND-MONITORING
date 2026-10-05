@@ -83,13 +83,9 @@ export default function ApplicationStatusPage({ initialData }) {
     itemsPerPage: 8,
   });
 
-  const roleOptions = ["PENDING", "REJECTED", "ACCEPTED"];
+  const roleOptions = ["PENDING", "REJECTED", "APPROVED"];
 
-  const sortOptions = [
-    { label: "Application Id", key: "id" },
-    { label: "Service", key: "service?.name" },
-    { label: "Date Created", key: "submittedAt" },
-  ];
+  const sortOptions = [{ label: "Date Submitted", key: "submittedAt" }];
 
   if (initialData.length === 0) {
     return (

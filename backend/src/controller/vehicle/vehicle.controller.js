@@ -806,12 +806,10 @@ export async function getCompleteTripTickets(req, res) {
     res.status(200).json(tickets || []);
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({
-        message: "Failed to fetch complete trip tickets",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to fetch complete trip tickets",
+      error: error.message,
+    });
   }
 }
 
@@ -865,11 +863,9 @@ export async function submitCompleteTripTicket(req, res) {
   } catch (error) {
     console.log(error);
     if (error.message === "TRIP_TICKET_ALREADY_COMPLETED") {
-      return res
-        .status(400)
-        .json({
-          message: "This Trip Ticket has already been marked as completed.",
-        });
+      return res.status(400).json({
+        message: "This Trip Ticket has already been marked as completed.",
+      });
     }
     if (error.message === "TRIP_TICKET_NOT_FOUND") {
       return res.status(404).json({ message: "Trip Ticket not found." });
@@ -932,7 +928,9 @@ export const checkTripTicketExists = async (req, res) => {
     }
 
     const existingTicket = await prisma.tripTicket.findFirst({
-      where: { tripTicketNo: tripTicketNo },
+      where: {
+        tripTicketNo: tripTicketNo,
+      },
     });
 
     return res.status(200).json({ exists: !!existingTicket });
@@ -954,12 +952,10 @@ export async function getCompletedTripTickets(req, res) {
     });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({
-        message: "Failed to fetch completed trip tickets",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to fetch completed trip tickets",
+      error: error.message,
+    });
   }
 }
 

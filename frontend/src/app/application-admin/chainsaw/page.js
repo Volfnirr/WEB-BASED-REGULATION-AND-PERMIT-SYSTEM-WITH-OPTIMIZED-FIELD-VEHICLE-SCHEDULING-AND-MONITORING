@@ -13,6 +13,13 @@ import DashboardSkeletonSwitcher from "@/components/skeleton/skeletons-switcher"
 import { useQuery } from "@tanstack/react-query";
 
 export default function ChainsawApplicationReview() {
+  return (
+    <AssignedServices reqServices={[4]}>
+      <ChainsawData />
+    </AssignedServices>
+  );
+}
+function ChainsawData() {
   const applications = useQuery({
     queryKey: ["chainsaw-applications"],
     queryFn: getChainsawApplications,
@@ -43,17 +50,15 @@ export default function ChainsawApplicationReview() {
 
   return (
     <div>
-      <AssignedServices reqServices={[4]}>
-        <Title
-          title="Manage "
-          title2="Chainsaw"
-          title3="Applications"
-          description="View and manage all Chainsaw Applications."
-        />
-        <ChainsawInfo status={status.data.status} />
-        <ChainsawTable initialData={applications.data.applications} />
-        {/* <ScheduleCardValue /> */}
-      </AssignedServices>
+      <Title
+        title="Manage "
+        title2="Chainsaw"
+        title3="Applications"
+        description="View and manage all Chainsaw Applications."
+      />
+      <ChainsawInfo status={status.data.status} />
+      <ChainsawTable initialData={applications.data.applications} />
+      {/* <ScheduleCardValue /> */}
     </div>
   );
 }

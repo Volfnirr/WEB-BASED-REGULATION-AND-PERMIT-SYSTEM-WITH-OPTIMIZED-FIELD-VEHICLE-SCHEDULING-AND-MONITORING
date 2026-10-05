@@ -12,6 +12,13 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 export default function TreeCuttingApplicationReview() {
+  return (
+    <AssignedServices reqServices={[3]}>
+      <TreeCuttingData />
+    </AssignedServices>
+  );
+}
+function TreeCuttingData() {
   const applications = useQuery({
     queryKey: ["tree-cutting-applications"],
     queryFn: getTreeCuttingApplications,
@@ -42,16 +49,14 @@ export default function TreeCuttingApplicationReview() {
 
   return (
     <div>
-      <AssignedServices reqServices={[3]}>
-        <Title
-          title="Manage "
-          title2="Tree Cutting"
-          title3="Applications"
-          description="View and manage all Tree Cutting Applications."
-        />
-        <TreeCuttingInfo status={status.data.status} />
-        <TreeCuttingTable initialData={applications.data.applications} />
-      </AssignedServices>
+      <Title
+        title="Manage "
+        title2="Tree Cutting"
+        title3="Applications"
+        description="View and manage all Tree Cutting Applications."
+      />
+      <TreeCuttingInfo status={status.data.status} />
+      <TreeCuttingTable initialData={applications.data.applications} />
     </div>
   );
 }
