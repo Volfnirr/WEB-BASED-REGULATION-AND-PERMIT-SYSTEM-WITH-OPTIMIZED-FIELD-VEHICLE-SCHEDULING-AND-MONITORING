@@ -264,7 +264,7 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
 
   return (
     <div
-      className="fixed inset-y-0 left-0 right-0 md:left-64 z-50 flex items-center justify-center pt-10 bg-black/40 p-4"
+      className="fixed inset-y-0 left-0 right-0  z-50 flex items-center justify-center pt-10 bg-black/40 p-4"
       onClick={onClose}
     >
       <div
@@ -284,7 +284,7 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-700 text-2xl leading-none px-2"
+            className="text-gray-400 hover:text-gray-700 text-2xl leading-none px-2 cursor-pointer"
           >
             <X />
           </button>

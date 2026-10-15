@@ -52,20 +52,20 @@ export default function TableUI({ columns, rows, ViewTicket, EditTicket }) {
   const colSpan = dataColumns.length + (hasActions ? 1 : 0);
 
   return (
-    <div className="bg-white rounded-lg border">
-      <Table>
+    <div className="w-full min-w-0 overflow-hidden">
+      <Table className="min-w-[760px]">
         <TableHeader>
           <TableRow>
             {dataColumns.map((column) => (
               <TableHead
-                className="text-green-700 font-bold whitespace-nowrap"
+                className="h-11 px-4 text-xs font-semibold whitespace-nowrap text-[#52657D]"
                 key={column.head}
               >
                 {column.head}
               </TableHead>
             ))}
             {hasActions && (
-              <TableHead className="text-green-700 font-bold">
+              <TableHead className="h-11 px-4 text-xs font-semibold text-[#52657D]">
                 Actions
               </TableHead>
             )}
@@ -88,14 +88,14 @@ export default function TableUI({ columns, rows, ViewTicket, EditTicket }) {
           ) : (
             rows.map((row) => (
               <TableRow
-                className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition-colors border-b last:border-b-0"
+                className="bg-white transition-colors hover:bg-[#F8FAF9] border-b border-[#E8EBEF] last:border-b-0"
                 key={row.id}
               >
                 {dataColumns.map((column) => (
                   <TableCell className="text-sm" key={column.data}>
                     {column.data === "status" ? (
                       <span
-                        className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm`}
+                        className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-full px-3 text-sm`}
                       >
                         {row[column.data]}
                       </span>
@@ -129,7 +129,7 @@ export default function TableUI({ columns, rows, ViewTicket, EditTicket }) {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger
-                        className="border border-gray-400"
+                        className="cursor-pointer border border-gray-400"
                         render={<Button variant="outline">...</Button>}
                       />
                       <DropdownMenuContent>

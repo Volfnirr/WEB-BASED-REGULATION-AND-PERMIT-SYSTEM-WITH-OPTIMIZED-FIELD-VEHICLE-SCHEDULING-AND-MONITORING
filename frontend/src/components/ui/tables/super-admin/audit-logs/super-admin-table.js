@@ -30,12 +30,15 @@ export default function SuperAdminTable({ columns, rows, View }) {
   const [viewAuditLogs, setViewAuditLogs] = useState(null);
 
   return (
-    <div className="bg-white rounded">
-      <Table>
+    <div className="w-full min-w-0 overflow-hidden">
+      <Table className="min-w-[960px]">
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
-              <TableHead className="text-green-700 font-bold" key={column.head}>
+              <TableHead
+                className="h-11 px-4 text-xs font-semibold text-[#52657D]"
+                key={column.head}
+              >
                 {column.head}
               </TableHead>
             ))}
@@ -58,7 +61,7 @@ export default function SuperAdminTable({ columns, rows, View }) {
           ) : (
             rows.map((row) => (
               <TableRow
-                className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition-colors border-b last:border-b-0 "
+                className="bg-white transition-colors hover:bg-[#F8FAF9] border-b border-[#E8EBEF] last:border-b-0"
                 key={row.logId}
               >
                 {columns.map((column) => (
@@ -77,7 +80,7 @@ export default function SuperAdminTable({ columns, rows, View }) {
                     ) : column.data === "VIEW" ? (
                       <DropdownMenu>
                         <DropdownMenuTrigger
-                          className="border border-gray-400"
+                          className="cursor-pointer border border-gray-400"
                           render={<Button variant="outline">...</Button>}
                         />
                         <DropdownMenuContent>

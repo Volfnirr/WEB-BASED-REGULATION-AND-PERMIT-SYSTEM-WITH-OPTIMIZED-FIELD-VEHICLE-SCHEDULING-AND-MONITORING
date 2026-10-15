@@ -8,6 +8,8 @@ import { redirect } from "next/navigation";
 import LogoutSync from "@/components/route-protection/logoutSync";
 import { requireRole } from "@/components/route-protection/check-role-server";
 import QueryProvider from "@/components/providers/query-provider";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import VehicleAdminSidebar from "@/components/vehicle-admin/sidebar";
 
 export default async function VehicleAdminLayout({ children }) {
   await requireRole(["VEHICLE_ADMIN"]);
@@ -19,13 +21,20 @@ export default async function VehicleAdminLayout({ children }) {
           <LogoutSync />
           {/* <CheckRole userRoles={["VEHICLE_ADMIN"]}> */}
           <TooltipProvider>
-            <div className="flex h-screen bg-[#b1b1b1]">
-              <VehicleAdminSiderbar />
-              <main className="flex-1 pt-16 md:pt-4 px-4 overflow-auto bg-[#F2F2F4]">
+            <SidebarProvider
+              style={{
+                "--sidebar-width": "14.5rem",
+                "--sidebar-width-icon": "3.5rem",
+              }}
+            >
+              <VehicleAdminSidebar />
+              <SidebarInset className="min-w-0 bg-[#F5F6F7]">
                 <Topbar />
-                {children}
-              </main>
-            </div>
+                <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-x-hidden p-4 sm:p-6 lg:p-9">
+                  {children}
+                </main>
+              </SidebarInset>
+            </SidebarProvider>
           </TooltipProvider>
           {/* </CheckRole> */}
         </QueryProvider>

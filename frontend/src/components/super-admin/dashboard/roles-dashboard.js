@@ -68,7 +68,7 @@ export function RolesOverview({ users }) {
     .sort((a, b) => b.count - a.count);
 
   return (
-    <Card className="h-full border border-green-300">
+    <Card className="h-full border border-gray-300">
       <CardHeader>
         <CardTitle>Accounts by Role</CardTitle>
         <CardDescription>How accounts are split across roles</CardDescription>

@@ -1,19 +1,29 @@
 import { Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function SearchInput({
   value,
   onChange,
   placeholder = "Search...",
+  className,
+  inputClassName,
 }) {
   return (
-    <div className="relative flex-1 bg-white rounded-lg">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+    <div className={cn("relative min-w-0 flex-1 bg-white", className)}>
+      <Search
+        aria-hidden="true"
+        className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#64748B]"
+      />
       <input
-        type="text"
+        type="search"
+        aria-label={placeholder}
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        onChange={(event) => onChange(event.target.value)}
+        className={cn(
+          "h-10 w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-[#172033] placeholder:text-[#64748B] focus:outline-none focus:ring-2 focus:ring-green-500",
+          inputClassName,
+        )}
       />
     </div>
   );

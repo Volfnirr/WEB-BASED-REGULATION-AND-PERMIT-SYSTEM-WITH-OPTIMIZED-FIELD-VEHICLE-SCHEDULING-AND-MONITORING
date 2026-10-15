@@ -64,7 +64,7 @@ export function StatusOverview({ status }) {
   ];
 
   return (
-    <Card className="h-full border border-green-300">
+    <Card className="h-full border border-gray-300">
       <CardHeader>
         <CardTitle>Applications Overview</CardTitle>
         <CardDescription>

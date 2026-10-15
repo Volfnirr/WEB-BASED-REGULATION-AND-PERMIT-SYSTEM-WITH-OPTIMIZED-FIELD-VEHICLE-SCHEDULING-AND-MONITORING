@@ -6,6 +6,7 @@ import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
 import { useState } from "react";
 import AssignApplicationsTable from "../application-table";
+import TableContainerUI from "@/components/ui/tables/table-container";
 
 export default function AgriculturalTable({ initialData }) {
   // const [data, setData] = useState(initialData);
@@ -79,6 +80,7 @@ export default function AgriculturalTable({ initialData }) {
   //     action: "View",
   //   },
   // ];
+
   const {
     search,
     updateSearch,
@@ -108,29 +110,40 @@ export default function AgriculturalTable({ initialData }) {
   ];
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <SearchInput
-          value={search}
-          onChange={updateSearch}
-          placeholder="Search by name or email..."
-        />
-        <SortDropdown
-          sortConfig={sortConfig}
-          onSort={updateSort}
-          options={sortOptions}
-        />
-      </div>
+    <div className="w-full min-w-0">
+      <TableContainerUI
+        title="All applications"
+        description="Review and manage submitted applications."
+        toolbar={
+          <div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(220px,1fr)_160px] lg:w-[min(100%,560px)]">
+            <SearchInput
+              value={search}
+              onChange={updateSearch}
+              placeholder="Search by name or email..."
+              className="w-full min-w-0"
+            />
 
-      <AssignApplicationsTable columns={column} rows={paginatedData} />
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        totalItems={filteredData.length}
-        itemsPerPage={itemsPerPage}
-      />
+            <SortDropdown
+              sortConfig={sortConfig}
+              onSort={updateSort}
+              options={sortOptions}
+              className="w-full min-w-0"
+            />
+          </div>
+        }
+        footer={
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredData.length}
+            itemsPerPage={itemsPerPage}
+            className="m-0 rounded-none border-0 bg-transparent px-0 py-2 text-xs"
+          />
+        }
+      >
+        <AssignApplicationsTable columns={column} rows={paginatedData} />
+      </TableContainerUI>
     </div>
   );
 }

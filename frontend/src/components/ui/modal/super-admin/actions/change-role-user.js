@@ -96,7 +96,7 @@ export default function SetUserRole({ isOpen, onClose, userData }) {
         }
       }}
     >
-      <DialogContent className="sm:max-w-md  md:left-[calc(50%+8rem)]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Set User Role</DialogTitle>
           <DialogDescription>Change the role for this user.</DialogDescription>

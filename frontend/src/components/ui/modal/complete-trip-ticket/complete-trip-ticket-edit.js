@@ -235,7 +235,7 @@ export default function CompleteTripTicketEditModal({
 
   return (
     <div
-      className="fixed inset-y-0 left-0 right-0 md:left-64 z-50 flex items-center justify-center pt-10 bg-black/40 p-4"
+      className="fixed inset-y-0 left-0 right-0  z-50 flex items-center justify-center pt-10 bg-black/40 p-4"
       onClick={onClose}
     >
       <div
@@ -454,12 +454,9 @@ export default function CompleteTripTicketEditModal({
                   <label className="text-[10px] font-bold text-gray-700 uppercase">
                     Total Fuel
                   </label>
-                  <div
-                    className={`${inputClass} flex items-center bg-gray-50`}
-                  >
+                  <div className={`${inputClass} flex items-center bg-gray-50`}>
                     <span className="font-mono font-bold text-[#1a5632]">
-                      {Number.isNaN(totalFuel) ? "0.0" : totalFuel.toFixed(1)}{" "}
-                      L
+                      {Number.isNaN(totalFuel) ? "0.0" : totalFuel.toFixed(1)} L
                     </span>
                   </div>
                 </div>
@@ -546,9 +543,7 @@ export default function CompleteTripTicketEditModal({
                   <label className="block text-xs font-bold text-gray-700 mb-1">
                     Distance:
                   </label>
-                  <div
-                    className={`${inputClass} flex items-center bg-gray-50`}
-                  >
+                  <div className={`${inputClass} flex items-center bg-gray-50`}>
                     <span className="font-mono font-bold text-[#1a5632]">
                       {Number.isNaN(computedDistance) ? 0 : computedDistance}{" "}
                       kms

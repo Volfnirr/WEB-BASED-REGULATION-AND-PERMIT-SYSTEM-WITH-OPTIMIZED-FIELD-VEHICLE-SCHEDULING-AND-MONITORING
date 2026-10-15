@@ -95,7 +95,7 @@ export default function ChangeUserPassword({ isOpen, onClose, userData }) {
         }
       }}
     >
-      <DialogContent className="sm:max-w-md  md:left-[calc(50%+8rem)]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Set User Password</DialogTitle>
           <DialogDescription>

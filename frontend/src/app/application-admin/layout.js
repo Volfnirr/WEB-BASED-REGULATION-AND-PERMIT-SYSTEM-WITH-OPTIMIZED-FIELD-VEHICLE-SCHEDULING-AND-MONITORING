@@ -4,6 +4,7 @@ import Topbar from "@/components/ui/top-bar";
 import { UserProvider } from "@/lib/context/account-info-context";
 import { ServicesProvider } from "@/lib/context/service-context";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { redirect } from "next/navigation";
 import { getUserInfo } from "@/lib/api/userinfo-server-only";
 import LogoutSync from "@/components/route-protection/logoutSync";
@@ -22,13 +23,20 @@ export default async function ApplicationAdminLayout({ children }) {
         {/* <CheckRole userRoles={["APPLICATION_ADMIN"]}> */}
         <ServicesProvider>
           <TooltipProvider>
-            <div className="flex h-screen bg-[#b1b1b1]">
+            <SidebarProvider
+              style={{
+                "--sidebar-width": "14.5rem",
+                "--sidebar-width-icon": "3.5rem",
+              }}
+            >
               <ApplicationAdminSidebar />
-              <main className="flex-1 pt-16 md:pt-4 px-4 overflow-auto bg-[#F2F2F4]">
+              <SidebarInset className="min-w-0 bg-[#F5F6F7]">
                 <Topbar />
-                {children}
-              </main>
-            </div>
+                <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-x-hidden p-4 sm:p-6 lg:p-9">
+                  {children}
+                </main>
+              </SidebarInset>
+            </SidebarProvider>
           </TooltipProvider>
         </ServicesProvider>
         {/* </CheckRole> */}

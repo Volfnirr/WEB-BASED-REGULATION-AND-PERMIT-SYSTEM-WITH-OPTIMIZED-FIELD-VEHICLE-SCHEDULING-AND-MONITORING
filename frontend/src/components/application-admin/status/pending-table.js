@@ -7,6 +7,7 @@ import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
 import { useState } from "react";
 import ViewApplicationsTable from "./status-table";
+import TableContainerUI from "@/components/ui/tables/table-container";
 
 export default function PendingTable({ initialData, status }) {
   // const page = {page};
@@ -14,6 +15,7 @@ export default function PendingTable({ initialData, status }) {
 
   // const [data, setData] = useState(initialData);
   // console.log("DATA", data);
+
   const initialColumn = [
     {
       head: "REF-NO",
@@ -48,10 +50,12 @@ export default function PendingTable({ initialData, status }) {
     //   data: "VIEW",
     // },
   ];
+
   const column =
     status === "pending"
       ? initialColumn.filter((col) => col.data !== "reviewedAt")
       : initialColumn.filter((col) => col.data !== "submittedAt");
+
   // const data = [
   //   {
   //     id: "1",
@@ -90,6 +94,7 @@ export default function PendingTable({ initialData, status }) {
   //     action: "View",
   //   },
   // ];
+
   const {
     search,
     updateSearch,
@@ -108,7 +113,6 @@ export default function PendingTable({ initialData, status }) {
     searchableFields: [
       "userAccEmail",
       "userAccName",
-      "status",
       "referenceNo",
       "submittedAt",
     ],
@@ -116,24 +120,37 @@ export default function PendingTable({ initialData, status }) {
   });
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <SearchInput
-          value={search}
-          onChange={updateSearch}
-          placeholder="Search by name, status, reference no, or email..."
-        />
-      </div>
-
-      <ViewApplicationsTable columns={column} rows={paginatedData} />
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        totalItems={filteredData.length}
-        itemsPerPage={itemsPerPage}
-      />
+    <div className="w-full min-w-0">
+      <TableContainerUI
+        title={
+          status === "pending"
+            ? "Pending applications"
+            : "Applications by status"
+        }
+        description="Review application details and status."
+        toolbar={
+          <div className="w-full min-w-0 sm:w-80">
+            <SearchInput
+              value={search}
+              onChange={updateSearch}
+              placeholder="Search by name, reference no, email"
+              className="w-full min-w-0"
+            />
+          </div>
+        }
+        footer={
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredData.length}
+            itemsPerPage={itemsPerPage}
+            className="m-0 rounded-none border-0 bg-transparent px-0 py-2 text-xs"
+          />
+        }
+      >
+        <ViewApplicationsTable columns={column} rows={paginatedData} />
+      </TableContainerUI>
     </div>
   );
 }

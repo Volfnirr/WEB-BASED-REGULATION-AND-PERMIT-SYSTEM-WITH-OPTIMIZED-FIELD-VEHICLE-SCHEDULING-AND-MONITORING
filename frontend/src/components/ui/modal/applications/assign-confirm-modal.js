@@ -91,7 +91,7 @@ export default function AssignApplication({
   };
 
   return (
-    <div className="fixed inset-y-0 left-0 right-0 md:left-64 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-y-0 left-0 right-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-96 rounded-lg bg-white p-6 shadow-lg">
         <div className="flex flex-col gap-2">
           <div className="flex flex-col items-center gap-1 text-center">

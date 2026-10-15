@@ -92,7 +92,7 @@ export default function EditUser({ isOpen, onClose, userData }) {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="sm:max-w-md  md:left-[calc(50%+8rem)]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Update User Name</DialogTitle>
           <DialogDescription>

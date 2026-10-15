@@ -1,31 +1,37 @@
-import Navbar from "@/components/landing-page/navbar";
-import ServicesPage from "@/components/landing-page/services";
-import Home from "@/components/landing-page/home";
-import AboutUs from "@/components/landing-page/aboutus";
+// import Navbar from "@/components/landing-page/navbar";
+// import ServicesPage from "@/components/landing-page/services";
+// import Home from "@/components/landing-page/home";
+// import AboutUs from "@/components/landing-page/aboutus";
+
+import LandingPageUI from "@/components/landing-page/landing-page";
+
+// export default function LandingPage() {
+//   return (
+//     <>
+//       <div
+//         className="min-h-screen bg-cover bg-center bg-fixed relative"
+//         style={{ backgroundImage: "url('background.png')" }}
+//       >
+//         <div className="absolute inset-0 bg-green-950/80 pointer-events-none z-0" />
+
+//         <div className="relative z-10">
+//           <Navbar />
+//           <section id="home" className="scroll-mt-16">
+//             <Home />
+//           </section>
+
+//           <section id="aboutus" className="scroll-mt-16">
+//             <AboutUs />
+//           </section>
+//           <section id="services" className="scroll-mt-16">
+//             <ServicesPage />
+//           </section>
+//         </div>
+//       </div>
+//     </>
+//   );
+// }
 
 export default function LandingPage() {
-  return (
-    <>
-      <div
-        className="min-h-screen bg-cover bg-center bg-fixed relative"
-        style={{ backgroundImage: "url('background.png')" }}
-      >
-        <div className="absolute inset-0 bg-green-950/80 pointer-events-none z-0" />
-
-        <div className="relative z-10">
-          <Navbar />
-          <section id="home" className="scroll-mt-16">
-            <Home />
-          </section>
-
-          <section id="aboutus" className="scroll-mt-16">
-            <AboutUs />
-          </section>
-          <section id="services" className="scroll-mt-16">
-            <ServicesPage />
-          </section>
-        </div>
-      </div>
-    </>
-  );
+  return <LandingPageUI />;
 }

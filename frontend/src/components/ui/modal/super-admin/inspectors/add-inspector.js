@@ -51,7 +51,7 @@ export default function AddInspector({ open, onClose }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-y-0 left-0 right-0 md:left-64 z-50 flex items-center justify-center pt-10 bg-black/40 p-4">
+    <div className="fixed inset-y-0 left-0 right-0 z-50 flex items-center justify-center pt-10 bg-black/40 p-4">
       <div className="flex max-h-[85vh] w-full max-w-xl flex-col rounded-xl bg-white">
         <div className="flex items-center justify-between border-b p-4">
           <h2 className="text-lg font-bold">Add new inspector </h2>

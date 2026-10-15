@@ -1,7 +1,7 @@
 import Link from "next/link";
 export default function ThankYouModal({ onClose }) {
   return (
-    <div className="fixed inset-y-0 left-0 right-0 md:left-64 z-50 flex items-center justify-center pt-10 bg-black/40 p-4">
+    <div className="fixed inset-y-0 left-0 right-0 z-50 flex items-center justify-center pt-10 bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center transform transition-all animate-scaleUp">
         <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-3">
           Thank You For Your Application!

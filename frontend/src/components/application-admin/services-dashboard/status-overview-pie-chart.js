@@ -111,7 +111,7 @@ export function WeeklyStatus({ status }) {
   return (
     <Card
       data-chart={id}
-      className="flex flex-col h-full border border-green-300"
+      className="flex flex-col h-full border border-gray-300"
     >
       <ChartStyle id={id} config={chartConfig} />
       <CardHeader className="flex-row items-start space-y-0 pb-0">

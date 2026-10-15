@@ -76,7 +76,7 @@ export default function UnbanUser({ isOpen, onClose, userData }) {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="sm:max-w-md  md:left-[calc(50%+8rem)]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Unban User</DialogTitle>
           <DialogDescription>

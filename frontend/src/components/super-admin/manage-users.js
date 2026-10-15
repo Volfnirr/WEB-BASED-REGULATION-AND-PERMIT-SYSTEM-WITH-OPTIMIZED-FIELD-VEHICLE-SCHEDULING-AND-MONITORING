@@ -1,7 +1,5 @@
 "use client";
-import TableUI from "../ui/tables/table";
 
-import Title from "../ui/title";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import FilterDropdown from "@/components/ui/tables/tools/dropdown";
@@ -11,41 +9,16 @@ import { useDataTable } from "@/components/ui/tables/tools/data-table";
 import Pagination from "@/components/ui/tables/tools/pagination";
 import AddUser from "../ui/modal/super-admin/add-user";
 import SuperAdminTable from "../ui/tables/super-admin/manage-users/manage-users-table";
-export default function ManageUsersUI({ data }) {
-  const [isAddUserOpen, setisAddUserOpen] = useState(false);
+
+export default function ManageUsersUI({ data = [] }) {
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // function openUserEdit(id) {
-  //   const User = data.find((d) => d.id === id);
-
-  //   setSelectedUser(User);
-  //   setisEditUserOpen(true);
-  // }
-  const column = [
-    // {
-    //   head: "User ID",
-    //   data: "id",
-    // },
-    {
-      head: "Name",
-      data: "name",
-    },
-    {
-      head: "Email",
-      data: "email",
-    },
-    {
-      head: "Role",
-      data: "role",
-    },
-    {
-      head: "Date Created",
-      data: "createdAt",
-    },
-    {
-      head: "Updated",
-      data: "updatedAt",
-    },
+  const columns = [
+    { head: "Name", data: "name" },
+    { head: "Email", data: "email" },
+    { head: "Role", data: "role" },
+    { head: "Status", data: "status" },
   ];
 
   const {
@@ -62,7 +35,7 @@ export default function ManageUsersUI({ data }) {
     paginatedData,
     itemsPerPage,
   } = useDataTable({
-    data,
+    data: Array.isArray(data) ? data : [],
     searchableFields: ["name", "email"],
     itemsPerPage: 8,
   });
@@ -73,62 +46,96 @@ export default function ManageUsersUI({ data }) {
     "VEHICLE_ADMIN",
     "SUPER_ADMIN",
   ];
-
   const sortOptions = [
     { label: "Name", key: "name" },
     { label: "Date Created", key: "createdAt" },
   ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center">
-        <Title
-          title="Manage"
-          title2="Users"
-          description="View and manage all registered users."
-        />
+    <div className="w-full min-w-0 space-y-7">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.12em] text-[#64748B]">
+            Administration
+          </p>
+          <h1 className="text-[30px] font-semibold leading-9 tracking-[-0.02em] text-[#172033]">
+            Manage Users
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-5 text-[#64748B]">
+            View and manage all registered users.
+          </p>
+        </div>
         <button
-          onClick={() => setisAddUserOpen(true)}
-          className="flex items-center gap-1.5 text-sm whitespace-nowrap rounded-lg bg-[#4DAA74] px-4 py-2.5 text-white font-medium cursor-pointer hover:bg-[#428f63] transition-colors duration-200"
+          type="button"
+          onClick={() => setIsAddUserOpen(true)}
+          className="inline-flex cursor-pointer h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[#005221] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#06451F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#005221] focus-visible:ring-offset-2"
         >
-          <Plus className="h-4 w-4" />
-          Add new user
+          <Plus aria-hidden="true" className="size-4" />
+          Add User
         </button>
       </div>
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <SearchInput
-          value={search}
-          onChange={updateSearch}
-          placeholder="Search by name or email..."
-        />
-        <FilterDropdown
-          value={filters.role}
-          onChange={(value) => updateFilter("role", value)}
-          options={roleOptions}
-          label="Roles"
-        />
-        <SortDropdown
-          sortConfig={sortConfig}
-          onSort={updateSort}
-          options={sortOptions}
-        />
-      </div>
 
-      {/* <TableUI columns={column} rows={paginatedData} onEdit={openUserEdit} /> */}
-      <SuperAdminTable columns={column} rows={paginatedData} />
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        totalItems={filteredData.length}
-        itemsPerPage={itemsPerPage}
-      />
+      <section
+        aria-labelledby="users-table-title"
+        className="min-w-0 overflow-hidden rounded-lg border border-[#E1E5E9] bg-white"
+      >
+        <div className="flex flex-col gap-4 border-b border-[#E1E5E9] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <h2
+              id="users-table-title"
+              className="text-sm font-semibold text-[#172033]"
+            >
+              All users
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-[#64748B]">
+              Search, filter, and manage registered accounts.
+            </p>
+          </div>
+          <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(180px,1fr)_minmax(132px,auto)_minmax(132px,auto)] lg:w-[min(100%,620px)]">
+            <SearchInput
+              value={search}
+              onChange={updateSearch}
+              placeholder="Search users"
+              className="min-w-0"
+              inputClassName="h-9 rounded-md border-[#DCE2E8] pl-9 focus-visible:ring-[#005221]/25"
+            />
+            <FilterDropdown
+              value={filters.role}
+              onChange={(value) => updateFilter("role", value)}
+              options={roleOptions}
+              label="Roles"
+              className="min-w-0"
+              triggerClassName="h-9 rounded-md border-[#DCE2E8]"
+            />
+            <SortDropdown
+              sortConfig={sortConfig}
+              onSort={updateSort}
+              options={sortOptions}
+              className="min-w-0"
+              triggerClassName="h-9 rounded-md border-[#DCE2E8]"
+            />
+          </div>
+        </div>
+
+        <div className="min-w-0 overflow-x-auto">
+          <SuperAdminTable columns={columns} rows={paginatedData} />
+        </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredData.length}
+          itemsPerPage={itemsPerPage}
+          className="m-0 rounded-none border-0 border-t border-[#E1E5E9] px-5 py-3 text-xs"
+        />
+      </section>
 
       {isAddUserOpen && (
         <AddUser
           open={isAddUserOpen}
           onClose={() => {
-            setisAddUserOpen(false);
+            setIsAddUserOpen(false);
             setSelectedUser(null);
           }}
           user={selectedUser}

@@ -8,13 +8,18 @@ import { X, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 // Fetches the list for the dropdown
-import { submitCompleteTripTicket, getTripTickets } from "@/lib/api/vehicle/manage-vehicles";
+import {
+  submitCompleteTripTicket,
+  getTripTickets,
+} from "@/lib/api/vehicle/manage-vehicles";
 
 import { Spinner } from "@/components/ui/spinner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 const driverTripTicketSchema = z.object({
-  selectedTripTicketId: z.string().min(1, "Please select an available trip ticket"),
+  selectedTripTicketId: z
+    .string()
+    .min(1, "Please select an available trip ticket"),
   timeOfDeparture: z.coerce.date({
     required_error: "Departure time is required",
     invalid_type_error: "Departure time is required",
@@ -25,7 +30,7 @@ const driverTripTicketSchema = z.object({
         place: z.string().trim().min(1, "Place name is required"),
         timeOfArrival: z.coerce.date().optional().nullable(),
         timeOfDeparture: z.coerce.date().optional().nullable(),
-      })
+      }),
     )
     .min(1, "At least one place log is required"),
   timeOfArrivalBack: z.coerce.date({
@@ -71,7 +76,7 @@ const driverTripTicketSchema = z.object({
     .array(
       z.object({
         name: z.string().trim().min(1, "Passenger name is required"),
-      })
+      }),
     )
     .optional(),
 
@@ -79,8 +84,11 @@ const driverTripTicketSchema = z.object({
   computedDistance: z.coerce.number().optional(),
 });
 
-
-export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket }) {
+export default function CompleteTripTicketModal({
+  isOpen,
+  onClose,
+  tripTicket,
+}) {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-[10px] font-bold mt-1";
@@ -131,7 +139,7 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
         // This stops the ".map is not a function" error forever
         const ticketsArray = Array.isArray(response)
           ? response
-          : (response?.data || []);
+          : response?.data || [];
 
         setAvailableTickets(ticketsArray);
       } catch (error) {
@@ -152,7 +160,7 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
     if (ticketToLoad?.driverDetails) {
       reset({
         ...ticketToLoad.driverDetails,
-        selectedTripTicketId: String(ticketToLoad.id)
+        selectedTripTicketId: String(ticketToLoad.id),
       });
 
       if (ticketToLoad.driverDetails.placesVisited?.length > 0) {
@@ -199,14 +207,13 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
 
   const removePassenger = (indexToRemove) => {
     const updatedPassengers = passengers.filter(
-      (_, index) => index !== indexToRemove
+      (_, index) => index !== indexToRemove,
     );
     setPassengers(updatedPassengers);
     setValue("passengers", updatedPassengers, { shouldValidate: true });
   };
 
   const onSubmit = async (data) => {
-
     const { selectedTripTicketId } = data;
 
     if (!selectedTripTicketId) {
@@ -240,7 +247,7 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
     } catch (err) {
       toast.error(
         err.message || "Something went wrong submitting your report.",
-        { position: "top-center" }
+        { position: "top-center" },
       );
     }
   };
@@ -249,7 +256,7 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
 
   return (
     <div
-      className="fixed inset-y-0 left-0 right-0 md:left-64 z-50 flex items-center justify-center pt-10 bg-black/40 p-4"
+      className="fixed inset-y-0 left-0 right-0  z-50 flex items-center justify-center pt-10 bg-black/40 p-4"
       onClick={onClose}
     >
       <div
@@ -276,7 +283,6 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
         <hr className="border-gray-200 mb-8" />
 
         <form className="space-y-2" onSubmit={handleSubmit(onSubmit)}>
-
           {/* Dropdown for picking the ticket */}
           <div className="mb-6">
             <div className="flex flex-col gap-1 text-left">
@@ -297,7 +303,7 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
                     onChange={(e) => {
                       field.onChange(e.target.value);
                       const ticket = availableTickets.find(
-                        (t) => String(t.id) === e.target.value
+                        (t) => String(t.id) === e.target.value,
                       );
                       setSelectedTicket(ticket || null);
                     }}
@@ -313,7 +319,8 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
                     ) : (
                       availableTickets.map((ticket) => (
                         <option key={ticket.id} value={String(ticket.id)}>
-                          Ticket No: {ticket.tripTicketNo} - {ticket.placesToVisit} ({ticket.driverName})
+                          Ticket No: {ticket.tripTicketNo} -{" "}
+                          {ticket.placesToVisit} ({ticket.driverName})
                         </option>
                       ))
                     )}
@@ -560,7 +567,9 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
                     <label className="text-[10px] font-bold text-gray-700 uppercase">
                       Total Fuel
                     </label>
-                    <div className={`${inputClass} flex items-center bg-gray-50`}>
+                    <div
+                      className={`${inputClass} flex items-center bg-gray-50`}
+                    >
                       <span className="font-mono font-bold text-[#1a5632]">
                         {Number.isNaN(totalFuel) ? "0.0" : totalFuel.toFixed(1)}{" "}
                         L
@@ -651,7 +660,9 @@ export default function CompleteTripTicketModal({ isOpen, onClose, tripTicket })
                     <label className="block text-xs font-bold text-gray-700 mb-1">
                       Distance:
                     </label>
-                    <div className={`${inputClass} flex items-center bg-gray-50`}>
+                    <div
+                      className={`${inputClass} flex items-center bg-gray-50`}
+                    >
                       <span className="font-mono font-bold text-[#1a5632]">
                         {Number.isNaN(computedDistance) ? 0 : computedDistance}{" "}
                         kms

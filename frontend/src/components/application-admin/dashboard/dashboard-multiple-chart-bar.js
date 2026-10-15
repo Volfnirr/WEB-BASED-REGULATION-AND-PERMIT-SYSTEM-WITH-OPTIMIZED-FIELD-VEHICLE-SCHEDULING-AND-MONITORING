@@ -98,7 +98,7 @@ export function DashboardChartBarMultiple({ status }) {
   ];
 
   return (
-    <Card className="h-full border border-green-300">
+    <Card className="h-full border border-gray-300">
       <CardHeader>
         <CardTitle>Applications by Service</CardTitle>
         <CardDescription>Applications across all services</CardDescription>

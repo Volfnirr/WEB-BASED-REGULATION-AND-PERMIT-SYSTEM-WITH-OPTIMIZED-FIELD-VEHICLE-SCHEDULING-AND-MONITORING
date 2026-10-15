@@ -56,7 +56,7 @@ export function NewUsersChart({ data = [] }) {
   );
 
   return (
-    <Card className="pt-0 border border-green-300">
+    <Card className="pt-0 border border-gray-300">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="grid flex-1 gap-1">
           <CardTitle>New Users</CardTitle>

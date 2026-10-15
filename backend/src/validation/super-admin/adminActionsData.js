@@ -17,29 +17,15 @@ export const createUserSchema = z.object({
   ),
 });
 
-export const banSchema = z
-  .object({
-    userId: z.string().min(1, "Id is required"),
-    banReason: z
-      .string()
-      .trim()
-      .min(1, "Reason is required")
-      .max(500, "Reason is too long"),
-    duration: z.string().min(1, "Pick a duration"),
-    customAmount: z.string().optional(),
-    customUnit: z.enum(["hours", "days", "weeks"]),
-  })
-  .superRefine((data, ctx) => {
-    if (data.duration !== "custom") return;
-    const n = Number(data.customAmount);
-    if (!Number.isInteger(n) || n < 1) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["customAmount"],
-        message: "Enter a whole number of 1 or more",
-      });
-    }
-  });
+export const banSchema = z.object({
+  userId: z.string().min(1, "Id is required"),
+  banReason: z
+    .string()
+    .trim()
+    .min(1, "Reason is required")
+    .max(500, "Reason is too long"),
+  banExpiresIn: z.number().int().positive().optional(),
+});
 
 export const unBanSchema = z.object({
   userId: z.string().min(1, "Id is required"),

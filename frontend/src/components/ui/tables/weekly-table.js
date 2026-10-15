@@ -47,7 +47,7 @@ export default function VehicleSchedulesTableUI({ date, rows }) {
                   <div key={d} className="border-r p-2">
                     {schedule && schedule.status !== "AVAILABLE" && (
                       <div
-                        className={`${StatusColor(schedule.status)} whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold`}
+                        className={`${StatusColor(schedule.status)} whitespace-nowrap rounded-full px-3 py-2 text-xs font-bold`}
                       >
                         {schedule.status}
                       </div>

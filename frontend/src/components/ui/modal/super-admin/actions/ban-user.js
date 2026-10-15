@@ -144,7 +144,7 @@ export default function BanUser({ isOpen, onClose, userData }) {
         if (!open) handleClose();
       }}
     >
-      <DialogContent className="sm:max-w-md  md:left-[calc(50%+8rem)]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Ban User</DialogTitle>
           <DialogDescription>

@@ -33,15 +33,21 @@ import EditInspector from "@/components/ui/modal/super-admin/inspectors/edit-ins
 export default function InspectorTableUI({ columns, rows, View }) {
   const [selectedInspector, setSelectedInspector] = useState(null);
   return (
-    <div className="bg-white rounded">
-      <Table className="rounded">
+    <div className="w-full min-w-0 overflow-hidden">
+      <Table className="min-w-[960px]">
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
-              <TableHead className="text-green-700 font-bold" key={column.head}>
+              <TableHead
+                className="h-11 px-4 text-xs font-semibold text-[#52657D]"
+                key={column.head}
+              >
                 {column.head}
               </TableHead>
             ))}
+            <TableHead className="h-11 px-4 text-xs font-semibold text-[#52657D]">
+              Action
+            </TableHead>
           </TableRow>
         </TableHeader>
 
@@ -49,7 +55,7 @@ export default function InspectorTableUI({ columns, rows, View }) {
           {rows.length === 0 ? (
             <tr>
               <td
-                colSpan={columns.length}
+                colSpan={columns.length + 1}
                 className="px-4 py-10 text-center text-sm text-gray-400"
               >
                 <div className="flex flex-col items-center justify-center gap-2">
@@ -61,7 +67,7 @@ export default function InspectorTableUI({ columns, rows, View }) {
           ) : (
             rows.map((row) => (
               <TableRow
-                className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition-colors border-b last:border-b-0"
+                className="bg-white transition-colors hover:bg-[#F8FAF9] border-b border-[#E8EBEF] last:border-b-0"
                 key={row.email}
               >
                 {columns.map((column) => (
@@ -75,13 +81,13 @@ export default function InspectorTableUI({ columns, rows, View }) {
                     ) : column.data === "isAvailable" ? (
                       row[column.data] === true ? (
                         <span
-                          className={`${StatusColor("AVAILABLE")} font-bold inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                          className={`${StatusColor("AVAILABLE")} font-bold inline-flex h-7 min-w-22.5 items-center justify-center rounded-full px-3 text-sm  transition-colors`}
                         >
                           AVAILABLE
                         </span>
                       ) : (
                         <span
-                          className={`${StatusColor("NOT_AVAILABLE")}font-bold inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm  transition-colors`}
+                          className={`${StatusColor("NOT_AVAILABLE")} font-bold inline-flex h-7 min-w-22.5 items-center justify-center rounded-full px-3 text-sm  transition-colors`}
                         >
                           NOT AVAILABLE
                         </span>

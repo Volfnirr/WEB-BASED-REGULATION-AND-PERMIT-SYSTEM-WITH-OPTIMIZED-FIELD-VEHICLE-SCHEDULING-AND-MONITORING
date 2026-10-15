@@ -35,19 +35,21 @@ export default function AssignApplicationsTable({ columns, rows }) {
     : undefined;
   console.log("SERVICEs", assignedServices);
   return (
-    <div className="bg-white rounded-lg border">
-      <Table>
+    <div className="w-full min-w-0 overflow-hidden">
+      <Table className="min-w-[760px]">
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
               <TableHead
-                className="text-green-700 font-bold whitespace-nowrap"
+                className="h-11 px-4 text-xs font-semibold whitespace-nowrap text-[#52657D]"
                 key={column.head}
               >
                 {column.head}
               </TableHead>
             ))}
-            <TableHead className="text-green-700 font-bold">Actions</TableHead>
+            <TableHead className="h-11 px-4 text-xs font-semibold text-[#52657D]">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
 
@@ -67,14 +69,14 @@ export default function AssignApplicationsTable({ columns, rows }) {
           ) : (
             rows.map((row) => (
               <TableRow
-                className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition-colors"
+                className="bg-white transition-colors hover:bg-[#F8FAF9]"
                 key={row.id}
               >
                 {columns.map((column) => (
                   <TableCell className="text-sm" key={column.data}>
                     {column.data === "status" ? (
                       <span
-                        className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-md px-3 text-sm`}
+                        className={`${StatusColor(row[column.data])} inline-flex h-7 min-w-22.5 items-center justify-center rounded-full px-3 text-sm`}
                       >
                         {row[column.data]}
                       </span>
@@ -94,7 +96,7 @@ export default function AssignApplicationsTable({ columns, rows }) {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger
-                      className="border border-gray-400"
+                      className="cursor-pointer border border-gray-400"
                       render={<Button variant="outline">...</Button>}
                     />
                     <DropdownMenuContent>
