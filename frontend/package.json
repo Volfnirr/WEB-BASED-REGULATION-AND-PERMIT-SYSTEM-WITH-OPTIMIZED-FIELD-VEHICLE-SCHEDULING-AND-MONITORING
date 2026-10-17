@@ -1,14 +1,6 @@
 {
   "name": "frontend",
   "version": "0.1.0",
-  "packageManager": "pnpm@11.6.0",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.6.0",
-      "onFail": "error"
-    }
-  },
   "private": true,
   "scripts": {
     "dev": "next dev",

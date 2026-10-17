@@ -1,14 +1,6 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "packageManager": "npm@11.6.2",
-  "devEngines": {
-    "packageManager": {
-      "name": "npm",
-      "version": "11.6.2",
-      "onFail": "error"
-    }
-  },
   "description": "",
   "main": "index.js",
   "scripts": {
