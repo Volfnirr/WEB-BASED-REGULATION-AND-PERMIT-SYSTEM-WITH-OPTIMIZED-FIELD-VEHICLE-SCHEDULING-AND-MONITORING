@@ -1,4 +1,10 @@
 import { prisma } from "../../lib/prisma.js";
+import {
+  verifyDriver,
+  assignDriver,
+  fullDriverName,
+  DriverError,
+} from "../../services/vehicle/driver.service.js";
 import { supabase } from "../../lib/supabase.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import * as vehicleAdmin from "../../services/vehicle/vehicle.service.js";
@@ -108,34 +114,24 @@ export async function createVehicle(req, res) {
 
 export async function listAllVehicles(req, res) {
   try {
-    console.log("lol 0");
-
     const vehicleData = await vehicleAdmin.listAllVehicles();
-    console.log("lol 1");
 
     const vehicleDataWithImages = await Promise.all(
       vehicleData.map(async (vehicle) => {
-        console.log("lol 1.2");
         const { data, error } = await supabase.storage
           .from("vehicle-photos")
           .createSignedUrl(vehicle.imageUrl, 120);
         if (error) {
-          console.log("lol 2");
-
           console.error(
             `Failed to sign URL for ${vehicle.imageUrl}:`,
             error.message,
           );
-          console.log("lol 2.4");
           return { ...vehicle, imageUrl: null };
         }
 
-        console.log("lol 3");
         return { ...vehicle, imageUrl: data.signedUrl };
       }),
     );
-
-    console.log("lol 4");
 
     return res.status(200).json({
       message: "Vehicle List",
@@ -305,22 +301,17 @@ export async function availableVehicles(req, res) {
 
     const vehicleDataWithImages = await Promise.all(
       availableVehiclesList.map(async (vehicle) => {
-        console.log("lol 1.2");
         const { data, error } = await supabase.storage
           .from("vehicle-photos")
           .createSignedUrl(vehicle.imageUrl, 120);
         if (error) {
-          console.log("lol 2");
-
           console.error(
             `Failed to sign URL for ${vehicle.imageUrl}:`,
             error.message,
           );
-          console.log("lol 2.4");
           return { ...vehicle, imageUrl: null };
         }
 
-        console.log("lol 3");
         return { ...vehicle, imageUrl: data.signedUrl };
       }),
     );
@@ -377,9 +368,10 @@ export async function submitTripAndSchedule(req, res) {
         }
         console.log("Testing 4");
 
+        const driver = await verifyDriver(tx, req.validatedData);
         const createTicket = await vehicleAdmin.createTripTicket(
           tripTicketNo,
-          req.validatedData,
+          { ...req.validatedData, driverName: fullDriverName(driver) },
           req.user.id,
           tx,
         );
@@ -403,6 +395,7 @@ export async function submitTripAndSchedule(req, res) {
           tx,
         );
 
+        await assignDriver(tx, createTicket.id, req.validatedData);
         return { createTicket, scheduleVehicle };
       },
       {
@@ -417,10 +410,12 @@ export async function submitTripAndSchedule(req, res) {
     });
   } catch (error) {
     console.log(error);
+    if (error instanceof DriverError)
+      return res.status(error.status).json({ message: error.message });
     if (error.code === "P2034") {
       return res.status(409).json({
         message:
-          "The vehicle schedule was changed by another user. Please try again.",
+          "A driver or vehicle schedule changed while saving. Please refresh and try again.",
       });
     }
     if (error.message === "TRIP_TICKET_NO_TAKEN" || error.code === "P2002") {
@@ -510,11 +505,42 @@ export async function updateTripTicket(req, res) {
             throw new Error(verifyStatus.reason);
           }
         }
-        const { endDate, startDate, vehicleId, ...rest } = req.validatedData;
+        const { endDate, startDate, vehicleId, driverId, ...rest } =
+          req.validatedData;
+        const driverChanged = driverId !== undefined;
+        const datesChanged = startDate !== undefined || endDate !== undefined;
+        const driverAssignmentChanged = driverChanged || datesChanged;
+        const finalDriverId = driverId ?? currentTrip.driverId;
+        let assignment = {};
+        if (driverAssignmentChanged) {
+          if (!finalDriverId)
+            throw new DriverError(
+              "Select a registered driver before changing this trip's dates.",
+            );
+          const driver = await verifyDriver(
+            tx,
+            {
+              driverId: finalDriverId,
+              startDate: finalStartDate,
+              endDate: finalEndDate,
+            },
+            currentTrip.id,
+          );
+          assignment = {
+            driverId: finalDriverId,
+            ...(driverChanged ? { driverName: fullDriverName(driver) } : {}),
+          };
+          await assignDriver(tx, currentTrip.id, {
+            driverId: finalDriverId,
+            startDate: finalStartDate,
+            endDate: finalEndDate,
+          });
+        }
 
         const updateTicket = await vehicleAdmin.updateTripTicket(
           {
             ...rest,
+            ...assignment,
             ...(vehicleId !== undefined
               ? {
                   vehicleId: finalVehicleId,
@@ -563,11 +589,13 @@ export async function updateTripTicket(req, res) {
     });
   } catch (error) {
     console.log(error);
+    if (error instanceof DriverError)
+      return res.status(error.status).json({ message: error.message });
 
     if (error.code === "P2034") {
       return res.status(409).json({
         message:
-          "The vehicle schedule was changed by another user. Please try again.",
+          "A driver or vehicle schedule changed while saving. Please refresh and try again.",
       });
     }
 
@@ -618,6 +646,7 @@ export async function tripTicketList(req, res) {
       tripTicketNo: trip.tripTicketNo,
       vehicleId: trip.vehicleId,
       driverName: trip.driverName,
+      driverId: trip.driverId,
       authorizedPassengers: trip.authorizedPassengers,
       placesToVisit: trip.placesToVisit,
       purpose: trip.purpose,

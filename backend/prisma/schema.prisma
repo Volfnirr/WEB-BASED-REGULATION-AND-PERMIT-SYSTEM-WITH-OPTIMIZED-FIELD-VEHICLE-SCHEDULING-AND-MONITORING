@@ -254,12 +254,17 @@ model trip_ticket {
   createdById            String
   createdAt              DateTime                @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime                @default(now()) @db.Timestamptz(6)
+  driverId               Int?
+  driver_schedule        driver_schedule?
   user                   user                    @relation(fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  drivers                drivers?                @relation(fields: [driverId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "trip_ticket_driver_id_fkey")
   vehicle                vehicle                 @relation(fields: [vehicleId], references: [id], onUpdate: NoAction)
   trip_ticket_completion trip_ticket_completion?
   trip_ticket_passenger  trip_ticket_passenger[]
   trip_ticket_place      trip_ticket_place[]
   vehicle_schedule       vehicle_schedule?
+
+  @@index([driverId], map: "trip_ticket_driver_id_idx")
 }
 
 model vehicle {
@@ -371,6 +376,38 @@ model trip_ticket_increment {
   count Int @default(0)
 }
 
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model driver_schedule {
+  id           Int                    @id @default(autoincrement())
+  driverId     Int
+  tripTicketId Int?                   @unique
+  startDate    DateTime               @db.Date
+  endDate      DateTime               @db.Date
+  status       driver_schedule_status
+  reason       String?
+  createdAt    DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime               @default(now()) @db.Timestamptz(6)
+  drivers      drivers                @relation(fields: [driverId], references: [id], onUpdate: NoAction, map: "driver_schedule_driver_id_fkey")
+  trip_ticket  trip_ticket?           @relation(fields: [tripTicketId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "driver_schedule_trip_ticket_id_fkey")
+
+  @@index([driverId, startDate, endDate], map: "driver_schedule_driver_dates_idx")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model drivers {
+  id              Int               @id @default(autoincrement())
+  lastName        String            @db.VarChar(100)
+  firstName       String            @db.VarChar(100)
+  middleName      String?           @db.VarChar(100)
+  extensionName   String?           @db.VarChar(10)
+  email           String            @unique @db.VarChar(255)
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime          @default(now()) @db.Timestamptz(6)
+  driver_schedule driver_schedule[]
+  trip_ticket     trip_ticket[]
+}
+
 enum application_status {
   PENDING
   APPROVED
@@ -410,4 +447,9 @@ enum trip_ticket_status {
 enum vehicle_status {
   RESERVED
   MAINTENANCE
+}
+
+enum driver_schedule_status {
+  RESERVED
+  UNAVAILABLE
 }

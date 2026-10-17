@@ -172,6 +172,7 @@ export async function createTripTicket(
     data: {
       tripTicketNo: tripTicketNo,
       vehicleId: Number(data.vehicleId),
+      driverId: Number(data.driverId),
       driverName: data.driverName,
       authorizedPassengers: data.authorizedPassengers,
       placesToVisit: data.placesToVisit,
@@ -259,7 +260,6 @@ export async function updateScheduleVehicle(data, tripTicketId, db = prisma) {
   });
 }
 
-
 export async function tripTicketsForCompletionList() {
   return await prisma.trip_ticket.findMany({
     select: {
@@ -282,12 +282,12 @@ export async function tripTicketsForCompletionList() {
   });
 }
 
- export async function completeTripTicketList() {
+export async function completeTripTicketList() {
   return await prisma.trip_ticket.findMany({
     where: {
       trip_ticket_completion: {
-      is: null,
-      }, 
+        is: null,
+      },
     },
     select: {
       id: true,
@@ -301,7 +301,6 @@ export async function tripTicketsForCompletionList() {
     },
   });
 }
-
 
 // TRIP TICKET END
 
@@ -409,6 +408,9 @@ export async function vehicleSchedules(startDate, endDate) {
           startDate: true,
           endDate: true,
           status: true,
+          trip_ticket: {
+            select: { tripTicketNo: true },
+          },
         },
       },
     },
@@ -527,7 +529,11 @@ export async function scheduleVehicleMaintenance(vehicleId, data, db = prisma) {
   });
 }
 
-export async function submitCompleteTripTicket(tripTicketId, data, db = prisma) {
+export async function submitCompleteTripTicket(
+  tripTicketId,
+  data,
+  db = prisma,
+) {
   const id = Number(tripTicketId);
 
   const ticket = await db.trip_ticket.findUnique({ where: { id } });
@@ -585,12 +591,13 @@ export async function submitCompleteTripTicket(tripTicketId, data, db = prisma) 
   });
 
   return completion;
-
-  
 }
 
-
-export async function updateCompleteTripTicket(tripTicketId, data, db = prisma) {
+export async function updateCompleteTripTicket(
+  tripTicketId,
+  data,
+  db = prisma,
+) {
   const id = Number(tripTicketId);
 
   const ticket = await db.trip_ticket.findUnique({ where: { id } });
@@ -678,7 +685,9 @@ export async function completedTripTicketsList() {
       Number(completion.fuelIssuedByOfficeStock || 0) +
       Number(completion.fuelAddPurchasedTrip || 0);
     const distance =
-      completion.speedometerDistance ?? completion.approxDistanceTraveled ?? null;
+      completion.speedometerDistance ??
+      completion.approxDistanceTraveled ??
+      null;
 
     return {
       id: t.id,

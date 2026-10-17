@@ -1,63 +1,108 @@
 import { getDayName } from "@/lib/date";
-import { StatusColor } from "@/lib/status";
 
-export default function VehicleSchedulesTableUI({ date, rows }) {
+export default function VehicleSchedulesTableUI({ date = [], rows = [] }) {
   return (
-    <div className="overflow-hidden rounded-xl border bg-white">
-      <div className="overflow-x-auto">
-        <div className="min-w-[1090px]">
-          <div className="grid grid-cols-[180px_repeat(7,minmax(130px,1fr))] border-b bg-gray-50">
-            <div className="p-4 text-xs font-semibold text-gray-500">
-              VEHICLE
-            </div>
-
-            {date.map((d) => (
-              <div key={d} className="border-l p-3 text-center">
-                <p className="text-xs text-gray-400">{getDayName(d)}</p>
-
-                <p className="whitespace-nowrap text-sm font-bold">{d}</p>
-              </div>
-            ))}
-          </div>
-
-          {rows.map((vehicle) => (
-            <div
-              key={vehicle.id}
-              className="grid min-h-24 grid-cols-[180px_repeat(7,minmax(130px,1fr))] border-b last:border-b-0"
-            >
-              <div className="sticky left-0 bg-white border-r p-4">
-                <p className="text-sm font-bold text-gray-900">
-                  {vehicle.brand} {vehicle.model}
-                </p>
-
-                <span className="mt-2 inline-flex rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-                  {vehicle.plateNumber}
-                </span>
-              </div>
-
-              {date.map((d) => {
-                const schedule = vehicle.vehicle_schedule?.find((s) => {
-                  const start = s.startDate.split("T")[0];
-                  const end = s.endDate.split("T")[0];
-
-                  return d >= start && d <= end;
-                });
-
-                return (
-                  <div key={d} className="border-r p-2">
-                    {schedule && schedule.status !== "AVAILABLE" && (
-                      <div
-                        className={`${StatusColor(schedule.status)} whitespace-nowrap rounded-full px-3 py-2 text-xs font-bold`}
-                      >
-                        {schedule.status}
-                      </div>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-4 text-xs">
+        <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-800">
+          Reserved for trip
+        </span>
+        <span className="rounded-full bg-red-100 px-3 py-1 text-red-800">
+          Maintenance
+        </span>
+        <span className="text-gray-500">
+          Blank cells: no reservation or maintenance scheduled.
+        </span>
+      </div>
+      <div className="w-full min-w-0 overflow-x-auto rounded-xl border bg-white">
+        <table className="w-full min-w-[1090px] text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                scope="col"
+                className="sticky left-0 z-10 w-52 bg-gray-50 p-4 text-left text-xs text-gray-500"
+              >
+                VEHICLE
+              </th>
+              {date.map((day) => (
+                <th scope="col" key={day} className="border-l p-3 text-center">
+                  <span className="block text-xs text-gray-400">
+                    {getDayName(day)}
+                  </span>
+                  <span className="whitespace-nowrap">{day}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={date.length + 1}
+                  className="p-8 text-center text-sm text-gray-500"
+                >
+                  No vehicles found.
+                </td>
+              </tr>
+            ) : (
+              rows.map((vehicle) => (
+                <tr key={vehicle.id} className="border-t align-top">
+                  <th
+                    scope="row"
+                    className="sticky left-0 z-10 border-r bg-white p-4 text-left"
+                  >
+                    <span className="block font-semibold">
+                      {vehicle.brand} {vehicle.model}
+                    </span>
+                    <span className="block text-xs font-normal text-gray-500">
+                      {vehicle.plateNumber}
+                    </span>
+                    {vehicle.isUsable === false && (
+                      <span className="mt-2 inline-block rounded-full bg-gray-100 px-2 py-1 text-xs font-normal text-gray-500">
+                        Unavailable
+                      </span>
                     )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+                  </th>
+                  {date.map((day) => {
+                    const schedules = (vehicle.vehicle_schedule ?? []).filter(
+                      (item) =>
+                        item.status !== "AVAILABLE" &&
+                        item.startDate &&
+                        item.endDate &&
+                        day >= String(item.startDate).slice(0, 10) &&
+                        day <= String(item.endDate).slice(0, 10),
+                    );
+                    return (
+                      <td
+                        key={day}
+                        className="h-24 min-w-32 border-r p-2 last:border-r-0"
+                      >
+                        {schedules.map((item) => (
+                          <div
+                            key={item.id}
+                            className={`mb-2 rounded-lg p-2 text-xs ${item.status === "RESERVED" ? "bg-amber-100 text-amber-900" : "bg-red-100 text-red-900"}`}
+                          >
+                            <p className="font-semibold">
+                              {item.status === "RESERVED"
+                                ? "Reserved"
+                                : "Maintenance"}
+                            </p>
+                            <p className="mt-1 break-words">
+                              {item.status === "RESERVED"
+                                ? item.trip_ticket?.tripTicketNo ||
+                                  "Trip reference unavailable"
+                                : "Scheduled maintenance"}
+                            </p>
+                          </div>
+                        ))}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

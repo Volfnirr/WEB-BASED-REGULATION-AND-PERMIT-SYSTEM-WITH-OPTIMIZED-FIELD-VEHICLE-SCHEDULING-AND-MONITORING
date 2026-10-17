@@ -67,6 +67,21 @@ const groups = [
     ],
   },
   {
+    label: "Drivers",
+    links: [
+      {
+        icon: UserRoundCog,
+        name: "Manage Drivers",
+        href: "/vehicle/manage-drivers",
+      },
+      {
+        icon: CalendarCog,
+        name: "Driver Schedules",
+        href: "/vehicle/driver-schedules",
+      },
+    ],
+  },
+  {
     label: "Vehicles",
     links: [
       {

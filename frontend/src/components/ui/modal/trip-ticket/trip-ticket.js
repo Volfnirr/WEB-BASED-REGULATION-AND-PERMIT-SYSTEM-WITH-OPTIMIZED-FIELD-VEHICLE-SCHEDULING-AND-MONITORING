@@ -1,4 +1,5 @@
 "use client";
+import DriverPicker from "@/components/vehicle-admin/drivers/driver-picker";
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,7 +43,7 @@ const tripTicketFormSchema = z.object({
     },
     { message: "Departure date is required" },
   ),
-  driverName: z.string().trim().min(1, "Driver name is Required"),
+  driverId: z.coerce.number().int().positive("Select a driver").optional(),
   authorizedPassengers: z
     .string()
     .trim()
@@ -74,6 +75,7 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
       queryClient.invalidateQueries({ queryKey: ["trip-ticket-status"] }),
       queryClient.invalidateQueries({ queryKey: ["vehicle-dashboard"] }),
       queryClient.invalidateQueries({ queryKey: ["vehicle-schedules"] }),
+      queryClient.invalidateQueries({ queryKey: ["drivers"] }),
     ]);
   // const router = useRouter();
 
@@ -110,7 +112,7 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
       reset({
         tripTicketNo: tripTicket.tripTicketNo,
         scheduleDate: { from, to },
-        driverName: tripTicket.driverName,
+        driverId: tripTicket.driverId ?? undefined,
         authorizedPassengers: tripTicket.authorizedPassengers,
         placesToVisit: tripTicket.placesToVisit,
         purpose: tripTicket.purpose,
@@ -181,6 +183,18 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
   };
 
   const onSubmit = async (data) => {
+    const dateChanged =
+      tripTicket &&
+      (format(data.scheduleDate.from, "yyyy-MM-dd") !==
+        tripTicket.startDate.slice(0, 10) ||
+        format(data.scheduleDate.to ?? data.scheduleDate.from, "yyyy-MM-dd") !==
+          tripTicket.endDate.slice(0, 10));
+    if ((!tripTicket || dateChanged) && !data.driverId) {
+      toast.error("Select a registered driver for this trip.", {
+        position: "top-center",
+      });
+      return;
+    }
     console.log("Data", data);
     console.log("TRIP TICKET DATA", tripTicket);
 
@@ -189,18 +203,21 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
     if (tripTicket) {
       if (data.authorizedPassengers !== tripTicket.authorizedPassengers)
         tripData.authorizedPassengers = data.authorizedPassengers;
-      if (data.driverName !== tripTicket.driverName)
-        tripData.driverName = data.driverName;
+      if (data.driverId !== (tripTicket.driverId ?? undefined))
+        tripData.driverId = data.driverId;
       if (data.purpose !== tripTicket.purpose) tripData.purpose = data.purpose;
       if (data.placesToVisit !== tripTicket.placesToVisit)
         tripData.placesToVisit = data.placesToVisit;
       if (data.vehicleId !== tripTicket.vehicleId)
         tripData.vehicleId = data.vehicleId;
-      if (data.scheduleDate.from.toISOString() !== tripTicket.startDate)
+      if (
+        format(data.scheduleDate.from, "yyyy-MM-dd") !==
+        tripTicket.startDate.slice(0, 10)
+      )
         tripData.startDate = format(data.scheduleDate.from, "yyyy-MM-dd");
       if (
-        (data.scheduleDate.to ?? data.scheduleDate.from).toISOString() !==
-        tripTicket.endDate
+        format(data.scheduleDate.to ?? data.scheduleDate.from, "yyyy-MM-dd") !==
+        tripTicket.endDate.slice(0, 10)
       )
         tripData.endDate = format(
           data.scheduleDate.to ?? data.scheduleDate.from,
@@ -208,7 +225,7 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
         );
     } else {
       tripData.authorizedPassengers = data.authorizedPassengers;
-      tripData.driverName = data.driverName;
+      tripData.driverId = data.driverId;
       tripData.purpose = data.purpose;
       tripData.placesToVisit = data.placesToVisit;
       tripData.vehicleId = data.vehicleId;
@@ -411,16 +428,20 @@ export default function TripTicketModal({ isOpen, onClose, tripTicket }) {
                   <label className="block text-xs font-bold text-gray-700 mb-1">
                     Name of Driver of the Vehicle*
                   </label>
-                  <input
-                    {...register("driverName")}
-                    type="text"
-                    placeholder="*NAME OF DRIVER"
-                    className={inputClass}
+                  <Controller
+                    name="driverId"
+                    control={control}
+                    render={({ field }) => (
+                      <DriverPicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        scheduleDate={scheduleDate}
+                        tripTicket={tripTicket}
+                      />
+                    )}
                   />
-                  {errors.driverName && (
-                    <div className={errorClass}>
-                      {errors.driverName.message}
-                    </div>
+                  {errors.driverId && (
+                    <div className={errorClass}>{errors.driverId.message}</div>
                   )}
                 </div>
                 <div className="flex flex-col gap-1 text-left">

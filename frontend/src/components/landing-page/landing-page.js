@@ -4,12 +4,17 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
   Check,
-  ChevronLeft,
-  ChevronRight,
   ClipboardCheck,
   FileText,
   Leaf,
@@ -64,7 +69,7 @@ const services = [
     code: "RO-F-04",
     title: "Chainsaw Registration",
     description: "Register a chainsaw or record a transfer of ownership.",
-    image: "/landing-page/chainsaw.svg",
+    image: "/landing-page/chainsaw.webp",
     imageAlt: "PENRO Pampanga office building",
     requirements: [
       "Completed application form and chainsaw for registration",
@@ -79,7 +84,7 @@ const services = [
     title: "Tree Cutting Permit",
     description:
       "Request authorization to cut trees on land you own or manage.",
-    image: "/landing-page/treecutting.svg",
+    image: "/landing-page/treecutting.webp",
     imageAlt: "Green forest and cultivated field",
     requirements: [
       "Formal application letter",
@@ -117,12 +122,6 @@ const steps = [
 
 const REPLAY_REVEAL_ON_SCROLL = true;
 
-const CAROUSEL_DURATION_MS = 650;
-
-const CENTER_SLOT = 2;
-
-const mod = (n, m) => ((n % m) + m) % m;
-
 function SectionEyebrow({ children, light = false }) {
   return (
     <p
@@ -140,13 +139,8 @@ export default function LandingPageUI() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const total = services.length;
-  const [base, setBase] = useState(-CENTER_SLOT);
-  const [step, setStep] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  const trackPosition = CENTER_SLOT + step;
-  const idleActiveIndex = mod(base + CENTER_SLOT, total);
-  const displayedIndex = mod(base + CENTER_SLOT + step, total);
+  const [carouselApi, setCarouselApi] = useState(null);
+  const [displayedIndex, setDisplayedIndex] = useState(0);
 
   useEffect(() => {
     const elements = document.querySelectorAll(
@@ -180,46 +174,21 @@ export default function LandingPageUI() {
   }, []);
 
   useEffect(() => {
-    if (!isAnimating) return;
+    if (!carouselApi) return;
 
-    const timer = setTimeout(() => {
-      setBase((current) => current + step);
-      setStep(0);
-      setIsAnimating(false);
-    }, CAROUSEL_DURATION_MS + 20);
-
-    return () => clearTimeout(timer);
-  }, [isAnimating, step]);
-
-  const moveCarousel = (amount) => {
-    if (isAnimating || amount === 0) return;
-
-    setStep(amount);
-    setIsAnimating(true);
-  };
-
-  const goToService = (index) => {
-    if (isAnimating || index === idleActiveIndex) return;
-
-    const half = Math.floor(total / 2);
-    const delta = mod(index - idleActiveIndex + half, total) - half;
-
-    if (Math.abs(delta) <= CENTER_SLOT) {
-      moveCarousel(delta);
-    } else {
-      setBase(index - CENTER_SLOT);
-    }
-  };
-
-  const visibleServices = Array.from({ length: 5 }, (_, slot) => {
-    const absoluteIndex = base + slot;
-
-    return {
-      service: services[mod(absoluteIndex, total)],
-      absoluteIndex,
-      offset: slot - CENTER_SLOT,
+    const updateSelection = () => {
+      setDisplayedIndex(carouselApi.selectedScrollSnap());
     };
-  });
+
+    updateSelection();
+    carouselApi.on("select", updateSelection);
+    carouselApi.on("reInit", updateSelection);
+
+    return () => {
+      carouselApi.off("select", updateSelection);
+      carouselApi.off("reInit", updateSelection);
+    };
+  }, [carouselApi]);
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -613,144 +582,130 @@ export default function LandingPageUI() {
             </p>
           </div>
 
-          <div className="reveal-from-bottom reveal-delay-1 relative mt-11 px-14 sm:px-16 lg:px-20">
-            <button
-              type="button"
-              aria-label="Previous service"
-              onClick={() => moveCarousel(-1)}
-              disabled={isAnimating}
-              className="absolute cursor-pointer left-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-emerald-900/15 bg-white text-emerald-900 shadow-lg transition hover:bg-[#075c3d] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 sm:h-12 sm:w-12"
-            >
-              <ChevronLeft size={22} />
-            </button>
+          <Carousel
+            setApi={setCarouselApi}
+            opts={{ align: "center", loop: true }}
+            aria-label="Online services"
+            className="reveal-from-bottom reveal-delay-1 relative mt-11 mx-0 pb-16 sm:mx-14 sm:pb-0"
+          >
+            <CarouselContent className="-ml-5 items-stretch py-3">
+              {services.map((service, index) => {
+                const isActive = index === displayedIndex;
 
-            <div className="overflow-hidden py-3">
-              <div
-                className="flex w-[500%] [--center:0] md:w-[166.6667%] md:[--center:1]"
-                style={{
-                  transform: `translateX(calc((var(--center) - ${trackPosition}) * 20%))`,
-                  transition: isAnimating
-                    ? `transform ${CAROUSEL_DURATION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`
-                    : "none",
-                }}
-              >
-                {visibleServices.map(({ service, absoluteIndex, offset }) => {
-                  const isActive = offset === step;
+                return (
+                  <CarouselItem
+                    key={service.code}
+                    className="flex min-w-0 basis-full pl-5 md:basis-1/2 lg:basis-1/3"
+                  >
+                    <article
+                      aria-current={isActive ? "true" : undefined}
+                      className={`flex h-full w-full min-h-[680px] min-w-0 flex-col overflow-hidden rounded-[1.75rem] border p-6 shadow-lg shadow-emerald-950/5 transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-7 ${
+                        isActive
+                          ? "border-[#075c3d] bg-[#075c3d] text-white md:scale-100"
+                          : "border-emerald-900/10 bg-white text-slate-900 md:scale-[0.94]"
+                      }`}
+                    >
+                      <div className="-mx-6 -mt-6 mb-5 sm:-mx-7 sm:-mt-7">
+                        <div className="relative h-40 overflow-hidden sm:h-44">
+                          <Image
+                            src={service.image}
+                            alt={service.imageAlt}
+                            fill
+                            sizes="(max-width: 767px) 90vw, (max-width: 1024px) 32vw, 30vw"
+                            className="object-cover transition-transform duration-500 hover:scale-105"
+                          />
 
-                  return (
-                    <div key={absoluteIndex} className="w-1/5 shrink-0 px-2.5">
-                      <article
-                        aria-current={isActive ? "true" : undefined}
-                        className={`flex min-h-[680px] min-w-0 flex-col overflow-hidden rounded-[1.75rem] border p-6 shadow-lg shadow-emerald-950/5 transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-7 ${
-                          isActive
-                            ? "border-[#075c3d] bg-[#075c3d] text-white md:scale-100"
-                            : "border-emerald-900/10 bg-white text-slate-900 md:scale-[0.94]"
-                        }`}
-                      >
-                        <div className="-mx-6 -mt-6 mb-5 sm:-mx-7 sm:-mt-7">
-                          <div className="relative h-40 overflow-hidden sm:h-44">
-                            <Image
-                              src={service.image}
-                              alt={service.imageAlt}
-                              fill
-                              sizes="(max-width: 767px) 90vw, (max-width: 1024px) 32vw, 30vw"
-                              className="object-cover transition-transform duration-500 hover:scale-105"
-                            />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#032f24]/80 via-[#032f24]/10 to-transparent" />
 
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#032f24]/80 via-[#032f24]/10 to-transparent" />
+                          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
+                            <span className="rounded-full border border-white/25 bg-[#064e35]/80 px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-white backdrop-blur">
+                              {service.code}
+                            </span>
 
-                            <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-                              <span className="rounded-full border border-white/25 bg-[#064e35]/80 px-3 py-1.5 text-[11px] font-extrabold tracking-[0.1em] text-white backdrop-blur">
-                                {service.code}
-                              </span>
-
-                              <span className="rounded-full bg-lime-300 p-2 text-emerald-950">
-                                {service.code === "RO-F-06" ? (
-                                  <TreePine size={18} />
-                                ) : (
-                                  <FileText size={18} />
-                                )}
-                              </span>
-                            </div>
+                            <span className="rounded-full bg-lime-300 p-2 text-emerald-950">
+                              {service.code === "RO-F-06" ? (
+                                <TreePine size={18} />
+                              ) : (
+                                <FileText size={18} />
+                              )}
+                            </span>
                           </div>
                         </div>
+                      </div>
 
-                        <h3 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-[1.65rem]">
-                          {service.title}
-                        </h3>
+                      <h3 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-[1.65rem]">
+                        {service.title}
+                      </h3>
 
+                      <p
+                        className={`mt-3 min-h-12 text-sm leading-6 transition-colors duration-[650ms] ${
+                          isActive ? "text-white/80" : "text-slate-500"
+                        }`}
+                      >
+                        {service.description}
+                      </p>
+
+                      <div
+                        className={`mt-6 border-t pt-5 transition-colors duration-[650ms] ${
+                          isActive ? "border-white/20" : "border-slate-200"
+                        }`}
+                      >
                         <p
-                          className={`mt-3 min-h-12 text-sm leading-6 transition-colors duration-[650ms] ${
-                            isActive ? "text-white/80" : "text-slate-500"
+                          className={`mb-4 text-xs font-extrabold uppercase tracking-[0.15em] ${
+                            isActive ? "text-lime-200" : "text-emerald-800"
                           }`}
                         >
-                          {service.description}
+                          Requirements
                         </p>
 
-                        <div
-                          className={`mt-6 border-t pt-5 transition-colors duration-[650ms] ${
-                            isActive ? "border-white/20" : "border-slate-200"
-                          }`}
-                        >
-                          <p
-                            className={`mb-4 text-xs font-extrabold uppercase tracking-[0.15em] ${
-                              isActive ? "text-lime-200" : "text-emerald-800"
-                            }`}
-                          >
-                            Requirements
-                          </p>
-
-                          <ul className="space-y-3">
-                            {service.requirements.map((requirement) => (
-                              <li
-                                key={requirement}
-                                className={`flex gap-2.5 text-sm leading-5 ${
-                                  isActive ? "text-white/90" : "text-slate-600"
+                        <ul className="space-y-3">
+                          {service.requirements.map((requirement) => (
+                            <li
+                              key={requirement}
+                              className={`flex gap-2.5 text-sm leading-5 ${
+                                isActive ? "text-white/90" : "text-slate-600"
+                              }`}
+                            >
+                              <Check
+                                size={16}
+                                className={`mt-0.5 shrink-0 ${
+                                  isActive
+                                    ? "text-lime-300"
+                                    : "text-emerald-700"
                                 }`}
-                              >
-                                <Check
-                                  size={16}
-                                  className={`mt-0.5 shrink-0 ${
-                                    isActive
-                                      ? "text-lime-300"
-                                      : "text-emerald-700"
-                                  }`}
-                                />
+                              />
 
-                                <span>{requirement}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                              <span>{requirement}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
 
-                        <Link
-                          href="/register"
-                          className={`mt-auto inline-flex items-center justify-between border-t pt-5 text-sm font-bold ${
-                            isActive
-                              ? "mt-7 border-white/20 text-white"
-                              : "mt-7 border-slate-200 text-emerald-800"
-                          }`}
-                        >
-                          Start this application
-                          <ArrowUpRight size={17} />
-                        </Link>
-                      </article>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <button
-              type="button"
+                      <Link
+                        href="/register"
+                        className={`mt-auto inline-flex items-center justify-between border-t pt-5 text-sm font-bold ${
+                          isActive
+                            ? "mt-7 border-white/20 text-white"
+                            : "mt-7 border-slate-200 text-emerald-800"
+                        }`}
+                      >
+                        Start this application
+                        <ArrowUpRight size={17} />
+                      </Link>
+                    </article>
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
+            <CarouselPrevious
+              aria-label="Previous service"
+              className="left-[calc(50%-3.25rem)] top-auto bottom-0 h-11 w-11 translate-y-0 border-emerald-900/15 bg-white text-emerald-900 hover:bg-[#075c3d] hover:text-white sm:-left-14 sm:top-1/2 sm:bottom-auto sm:-translate-y-1/2"
+            />
+            <CarouselNext
               aria-label="Next service"
-              onClick={() => moveCarousel(1)}
-              disabled={isAnimating}
-              className="absolute cursor-pointer right-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#075c3d] text-white shadow-lg transition hover:bg-[#06452f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 sm:h-12 sm:w-12"
-            >
-              <ChevronRight size={22} />
-            </button>
-          </div>
+              className="right-[calc(50%-3.25rem)] top-auto bottom-0 h-11 w-11 translate-y-0 border-emerald-900/15 bg-[#075c3d] text-white hover:bg-[#06452f] sm:-right-14 sm:top-1/2 sm:bottom-auto sm:-translate-y-1/2"
+            />
+          </Carousel>
 
           <div className="reveal-from-bottom reveal-delay-2 mt-8 flex flex-col items-center gap-3">
             <div
@@ -767,7 +722,7 @@ export default function LandingPageUI() {
                     type="button"
                     aria-label={`Go to ${service.title}`}
                     aria-pressed={isActive}
-                    onClick={() => goToService(index)}
+                    onClick={() => carouselApi?.scrollTo(index)}
                     className={`h-2.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 ${
                       isActive
                         ? "w-8 bg-[#075c3d]"
@@ -778,7 +733,11 @@ export default function LandingPageUI() {
               })}
             </div>
 
-            <p className="text-xs font-medium text-slate-500">
+            <p
+              aria-live="polite"
+              aria-atomic="true"
+              className="text-xs font-medium text-slate-500"
+            >
               Service {String(displayedIndex + 1).padStart(2, "0")} of{" "}
               {String(total).padStart(2, "0")}
               {" · "}

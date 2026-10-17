@@ -13,6 +13,8 @@ import chainsawRoutes from "./routes/applications/chainsaw.routes.js";
 import agriculturalRoutes from "./routes/applications/agricultural.routes.js";
 import vehicleRoutes from "./routes/vehicle/vehicle.routes.js";
 import superAdmin from "./routes/super-admin/super-admin.routes.js";
+import driverRoutes from "./routes/vehicle/driver.routes.js";
+
 const app = express();
 app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
@@ -49,6 +51,8 @@ app.use("/api/v1", userApplicationStatus);
 app.use("/api/v1/applications", applicationAdminRoutes);
 
 app.use("/api/v1/vehicles", vehicleRoutes);
+
+app.use("/api/v1/drivers", driverRoutes);
 
 app.use("/api/v1/super-admin", superAdmin);
 
