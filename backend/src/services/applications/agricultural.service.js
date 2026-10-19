@@ -1,6 +1,19 @@
 import { prisma } from "../../lib/prisma.js";
 import { getLast7DaysRange, getTodayRange } from "../../lib/date/get-date.js";
 
+function filingDateInManila() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const part = (type) => parts.find((entry) => entry.type === type).value;
+  return new Date(
+    part("year") + "-" + part("month") + "-" + part("day") + "T00:00:00.000Z",
+  );
+}
+
 export async function submitAgriculturalForm(
   refNo,
   isTransferee,
@@ -19,16 +32,15 @@ export async function submitAgriculturalForm(
         create: {
           lastName: data.lastName,
           firstName: data.firstName,
-          middleName: data.middleName,
-          extensionName: data.extension,
+          middleName: data.middleName || null,
           contactNo: data.contactNumber,
           email: userEmail,
-          dateOfBirth: data.birthday,
+          dateOfBirth: new Date(data.birthday + "T00:00:00.000Z"),
           sex: data.sex.toUpperCase(),
           citizenship: data.citizenship,
           naturalBorn: data.naturalBorn,
           civilStatus: data.civilStatus,
-          spouseName: data.spouse,
+          spouseName: data.spouse || null,
           fullAddress: data.mailingAddress,
           province: data.province,
           municipality: data.municipality,
@@ -38,22 +50,36 @@ export async function submitAgriculturalForm(
           surveyNo: data.surveyNo,
           landAreaSqm: parseFloat(data.landAreaSqm),
           cultivationDate: data.cultivationDate,
-          improvementsMade: data.improvements,
+          improvementsMade: data.improvements || "",
           isTransferee: isTransferee,
-          transfereeDetails: data.transferee_info,
-          heirRelationDetails: data.heir_info,
-          heirDetailsRelation: data.evidence,
-          heir1Name: data.heir1_name,
-          heir1Address: data.heir1_address,
-          heir2Name: data.heir2_name,
-          heir2Address: data.heir2_address,
-          heirRepresentativeName: data.heir_rep_name,
-          heirsOfAncestorName: data.heirs_of,
+          firstCultivatorName: data.firstCultivatorName || null,
+          firstCultivationDate: data.firstCultivationDate
+            ? new Date(data.firstCultivationDate + "T00:00:00.000Z")
+            : null,
+          previousCultivatorName: data.previousCultivatorName || null,
+          previousCultivatorDeathDate: data.previousCultivatorDeathDate
+            ? new Date(data.previousCultivatorDeathDate + "T00:00:00.000Z")
+            : null,
+          heirImprovements: data.heirImprovements || null,
+          heirDetailsRelation: data.evidence || null,
+          unoccupiedPeriodAndReason: data.unoccupiedPeriodAndReason || null,
+          heir1Name: data.heir1_name || null,
+          heir1Address: data.heir1_address || null,
+          heir2Name: data.heir2_name || null,
+          heir2Address: data.heir2_address || null,
+          heir3Name: data.heir3_name || null,
+          heir3Address: data.heir3_address || null,
+          heirRepresentativeName: data.previousCultivatorName
+            ? [data.firstName, data.middleName, data.lastName]
+                .filter(Boolean)
+                .join(" ")
+            : null,
+          heirsOfAncestorName: data.previousCultivatorName || null,
           witness1Name: data.witness1_name,
           witness1Address: data.witness1_address,
           witness2Name: data.witness2_name,
           witness2Address: data.witness2_address,
-          dateFiled: data.date_filed,
+          dateFiled: filingDateInManila(),
           assignedInspector: data.assignedInspector,
         },
       },

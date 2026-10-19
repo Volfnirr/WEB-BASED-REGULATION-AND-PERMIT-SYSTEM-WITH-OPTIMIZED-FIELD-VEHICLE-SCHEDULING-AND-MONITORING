@@ -29,7 +29,10 @@ export async function submitAgriculturalFormMW(req, res) {
       });
 
       const refNo = `${SERVICE_PREFIX[serviceId]}-${year}-${String(incrementRow.count).padStart(5, "0")}`;
-      const isTransferee = req.validatedData.transferee_info ? true : false;
+      const isTransferee = Boolean(
+        req.validatedData.firstCultivatorName &&
+        req.validatedData.firstCultivationDate,
+      );
 
       const newApplication = await agriculturalService.submitAgriculturalForm(
         refNo,

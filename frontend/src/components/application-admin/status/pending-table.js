@@ -1,4 +1,5 @@
 "use client";
+
 // import Table from "@/components/ui/tables/table";
 import FilterDropdown from "@/components/ui/tables/tools/dropdown";
 import SearchInput from "@/components/ui/tables/tools/search-input";
@@ -8,7 +9,6 @@ import Pagination from "@/components/ui/tables/tools/pagination";
 import { useState } from "react";
 import ViewApplicationsTable from "./status-table";
 import TableContainerUI from "@/components/ui/tables/table-container";
-
 export default function PendingTable({ initialData, status }) {
   // const page = {page};
   // console.log("Intial Data", initialData);
@@ -50,7 +50,6 @@ export default function PendingTable({ initialData, status }) {
     //   data: "VIEW",
     // },
   ];
-
   const column =
     status === "pending"
       ? initialColumn.filter((col) => col.data !== "reviewedAt")
@@ -118,7 +117,6 @@ export default function PendingTable({ initialData, status }) {
     ],
     itemsPerPage: 8,
   });
-
   return (
     <div className="w-full min-w-0">
       <TableContainerUI
@@ -149,7 +147,17 @@ export default function PendingTable({ initialData, status }) {
           />
         }
       >
-        <ViewApplicationsTable columns={column} rows={paginatedData} />
+        <ViewApplicationsTable
+          key={JSON.stringify([
+            search,
+            filters,
+            sortConfig,
+            currentPage,
+            status,
+          ])}
+          columns={column}
+          rows={paginatedData}
+        />
       </TableContainerUI>
     </div>
   );

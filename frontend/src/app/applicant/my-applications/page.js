@@ -6,10 +6,8 @@ import { UserApplicationsSkeleton } from "@/components/applicant/my-applications
 import Title from "@/components/ui/title";
 import { useUser } from "@/lib/context/account-info-context";
 import { userApplicationsStatus } from "@/lib/api/applications/user-applications-status";
-
 export default function MyApplicationsPage() {
   const { user, isPending: isUserPending } = useUser();
-
   const applicationsQuery = useQuery({
     queryKey: ["my-applications", user?.id],
     queryFn: userApplicationsStatus,
@@ -17,27 +15,25 @@ export default function MyApplicationsPage() {
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,
   });
-
   if (isUserPending || applicationsQuery.isPending) {
     return (
       <>
         <Title
           title="My "
-          title2="Application Status"
-          description="View all your applications."
+          title2="Applications"
+          description="View your submitted applications and their progress."
         />
         <UserApplicationsSkeleton />
       </>
     );
   }
-
   if (applicationsQuery.isError && !applicationsQuery.data) {
     return (
       <>
         <Title
           title="My "
-          title2="Application Status"
-          description="View all your applications."
+          title2="Applications"
+          description="View your submitted applications and their progress."
         />
         <p className="text-sm text-red-600" role="alert">
           {applicationsQuery.error.message}
@@ -45,13 +41,12 @@ export default function MyApplicationsPage() {
       </>
     );
   }
-
   return (
     <div>
       <Title
         title="My "
-        title2="Application Status"
-        description="View all your applications."
+        title2="Applications"
+        description="View your submitted applications and their progress."
       />
 
       {applicationsQuery.isError && (
@@ -66,7 +61,10 @@ export default function MyApplicationsPage() {
         </p>
       )}
 
-      <ApplicationStatusPage initialData={applicationsQuery.data ?? []} />
+      <ApplicationStatusPage
+        key={user?.id}
+        initialData={applicationsQuery.data ?? []}
+      />
     </div>
   );
 }

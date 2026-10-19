@@ -1,12 +1,15 @@
 "use client";
 
-import { localDate } from "@/lib/local-date";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
-import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
+import { FileText } from "lucide-react";
+import { localDate } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Select,
   SelectContent,
@@ -15,504 +18,347 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useRouter } from "next/navigation";
-
 import {
   approveApplication,
   rejectApplication,
 } from "@/lib/api/applications/app-admin-action";
-import Link from "next/link";
-const action = [
-  { id: 1, value: "APPROVED" },
-  { id: 2, value: "REJECTED" },
-];
 
+const actions = ["APPROVED", "REJECTED"];
 const submitFormSchema = z.object({
-  action: z.enum(["APPROVED", "REJECTED"], "Please select an action"),
+  action: z.enum(actions, "Please select an action"),
   remarks: z.string().trim().min(1, "Remarks is required"),
 });
 
+function dateOnly(value) {
+  if (!value) return "Not provided";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not provided";
+  return new Intl.DateTimeFormat("en-PH", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function ageFromBirthDate(value, atValue) {
+  if (!value) return "Not provided";
+  const birthDate = new Date(value);
+  if (Number.isNaN(birthDate.getTime())) return "Not provided";
+  const today = atValue ? new Date(atValue) : new Date();
+  let age = today.getFullYear() - birthDate.getUTCFullYear();
+  const month = today.getMonth() - birthDate.getUTCMonth();
+  if (month < 0 || (month === 0 && today.getDate() < birthDate.getUTCDate()))
+    age--;
+  return String(age);
+}
+
+function Field({ label, value }) {
+  return (
+    <div className="min-w-0">
+      <dt className="mb-1 text-xs font-medium text-[#52657D]">{label}</dt>
+      <dd className="whitespace-pre-wrap break-words text-sm leading-6">
+        {value === null || value === undefined || value === ""
+          ? "Not provided"
+          : String(value)}
+      </dd>
+    </div>
+  );
+}
+
+function Section({ title, children, oneColumn = false }) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-[#E1E5E9] bg-white">
+      <h2 className="border-b border-[#E1E5E9] bg-[#F8FAF9] px-5 py-4 text-sm font-semibold">
+        {title}
+      </h2>
+      <dl
+        className={`grid gap-x-6 gap-y-5 p-5 ${oneColumn ? "" : "sm:grid-cols-2"}`}
+      >
+        {children}
+      </dl>
+    </section>
+  );
+}
+
+function Statement({ children }) {
+  return <div className="text-sm leading-6 text-[#172033]">{children}</div>;
+}
+
 export default function ReviewResidential({ data, params }) {
   const router = useRouter();
-  console.log(data.residentialFormData);
   const { residentialFormData: residential } = data.residentialFormData;
-  const display = data.residentialFormData.displayName;
-  console.log("RESIDENTIAL DATA", residential);
+  const inspectorDisplay = data.residentialFormData.displayName;
+  const application = residential?.application;
   const {
     register,
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: zodResolver(submitFormSchema),
-  });
+  } = useForm({ resolver: zodResolver(submitFormSchema) });
 
   const onSubmit = async (formData) => {
     try {
       if (formData.action === "APPROVED") {
-        await approveApplication({
-          id: params,
-          remarks: formData.remarks,
-        });
+        await approveApplication({ id: params, remarks: formData.remarks });
       } else {
-        await rejectApplication({
-          id: params,
-          remarks: formData.remarks,
-        });
+        await rejectApplication({ id: params, remarks: formData.remarks });
       }
-      router.replace("/application-admin/pending");
       toast.success(
         formData.action === "APPROVED"
           ? "Successfully approved application"
           : "Successfully rejected application",
         { position: "top-center" },
       );
-      router.push("/application-admin/pending");
-    } catch (err) {
+      router.replace("/application-admin/pending");
+    } catch (error) {
       toast.error(
-        `Something went wrong submitting your application:  ${
-          err ? err.message : ""
-        }`,
-        {
-          position: "top-center",
-        },
+        `Something went wrong submitting your review: ${error?.message || ""}`,
+        { position: "top-center" },
       );
     }
   };
 
-  const readOnlyInputClass =
-    "w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-800 pointer-events-none";
+  const hasHeir = Boolean(
+    residential?.heirPredecessorName ||
+    residential?.heirRelationship ||
+    residential?.heirDateOfDeath,
+  );
+  const hasTransferee = Boolean(
+    residential?.transfereePredecessorName ||
+    residential?.transferAction ||
+    residential?.transactionDate,
+  );
+  const hasEmploymentMarriage = Boolean(
+    residential?.employmentMarriageOccupationDate ||
+    residential?.marriageWithName,
+  );
 
   return (
-    <div
-      className="flex-1 w-full min-h-screen overflow-y-auto p-4 md:p-8 font-sans rounded-lg"
-      style={{ backgroundColor: "#4DAA74" }}
-    >
-      <div className="max-w-6xl mx-auto w-full bg-white rounded-xl shadow-xl p-6 md:p-10 h-fit">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-gray-100">
+    <div className="min-h-screen w-full overflow-y-auto bg-[#F4F7F5] p-4 font-sans md:p-8">
+      <div className="mx-auto w-full max-w-6xl text-[#172033]">
+        <header className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">
-              Review Residential Free Patent
-            </h1>
-            <p className="text-sm text-gray-600">
-              Application No.:{" "}
-              <span className="font-medium text-gray-900">
-                {residential?.application.referenceNo}
-              </span>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#52657D]">
+              Application review
             </p>
-            <p className="text-sm text-gray-600">
-              Date Submitted:{" "}
-              <span className="font-medium text-gray-900">
-                {localDate(residential?.application?.submittedAt)}
-              </span>
+            <h1 className="text-2xl font-semibold">Residential Free Patent</h1>
+            <p className="mt-2 text-sm text-[#52657D]">
+              {application?.referenceNo}
             </p>
           </div>
-          <div
-            className={`${StatusColor(
-              residential?.application?.status,
-            )} mt-4 md:mt-0 px-4 py-1.5 font-bold text-sm rounded-lg  shadow-sm`}
+          <span
+            className={`${StatusColor(application?.status)} inline-flex rounded-full px-3 py-1 text-xs font-semibold`}
           >
-            {residential?.application?.status}
-          </div>
-        </div>
+            {application?.status}
+          </span>
+        </header>
 
-        <div className="space-y-8">
-          {/* Section: Applicant Information */}
-          <div>
-            <h2 className="text-sm font-bold text-gray-800  mb-3 uppercase">
-              Applicant Information
-            </h2>
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="space-y-5">
+            <Section title="Applicant information">
+              <Field label="Last name" value={residential?.lastName} />
+              <Field label="First name" value={residential?.firstName} />
+              <Field label="Middle name" value={residential?.middleName} />
+              <Field label="Mailing address" value={residential?.fullAddress} />
+              <Field label="Citizenship" value={residential?.citizenship} />
+              <Field label="Civil status" value={residential?.civilStatus} />
+              <Field
+                label="Date of birth"
+                value={dateOnly(residential?.dateOfBirth)}
+              />
+              <Field
+                label="Age at submission"
+                value={ageFromBirthDate(
+                  residential?.dateOfBirth,
+                  application?.submittedAt,
+                )}
+              />
+              <Field label="Sex" value={residential?.sex} />
+              {residential?.spouseName && (
+                <Field label="Spouse name" value={residential.spouseName} />
+              )}
+              <Field label="Mobile number" value={residential?.contactNo} />
+              <Field label="Email" value={residential?.email} />
+            </Section>
 
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    value={residential?.lastName}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    value={residential?.firstName}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                    Middle Name
-                  </label>
-                  <input
-                    type="text"
-                    value={residential?.middleName || "N/A"}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                    Extension Name
-                  </label>
-                  <input
-                    type="text"
-                    value={residential?.extensionName || "N/A"}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
-                </div>
-              </div>
+            <Section title="Lot/Parcel information">
+              <Field label="Lot number" value={residential?.lotNo} />
+              <Field label="Survey number" value={residential?.surveyNo} />
+              <Field label="Area (sq. m.)" value={residential?.landAreaSqm} />
+              <Field label="Location" value={residential?.specificLocation} />
+              <Field label="Barangay" value={residential?.barangay} />
+              <Field
+                label="City/Municipality"
+                value={residential?.municipality}
+              />
+              <Field label="Province" value={residential?.province} />
+            </Section>
 
-              <div className="grid grid-cols-1 gap-4 mb-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                    Complete Address
-                  </label>
-                  <input
-                    type="text"
-                    value={residential?.fullAddress}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
-                </div>
-              </div>
-            </div>
+            <Section title="Declarations" oneColumn>
+              <Statement>
+                1. The applicant declares that they are a natural-born Filipino
+                citizen and will provide the evidence listed in the official
+                form.
+              </Statement>
+              <Statement>
+                2. The applicant declares that they are not an awardee of a
+                Residential Free Patent within the same city or municipality.
+              </Statement>
+              <Statement>
+                3. The applicant declares that they do not own more than twelve
+                (12) hectares of land.
+              </Statement>
+              <Statement>
+                4. a. The applicant has actually occupied and resided in the
+                subject lot continuously since{" "}
+                <strong>{dateOnly(residential?.occupationDate)}</strong>.
+              </Statement>
+            </Section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Citizenship
-                </label>
-                <input
-                  type="text"
-                  value={residential?.citizenship}
-                  className={readOnlyInputClass}
-                  readOnly
+            {hasHeir && (
+              <Section title="If applicant is an heir">
+                <Field
+                  label="Predecessor-in-interest"
+                  value={residential?.heirPredecessorName}
                 />
-              </div>
-
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Civil Status
-                </label>
-                <input
-                  type="text"
-                  value={residential?.civilStatus}
-                  className={readOnlyInputClass}
-                  readOnly
+                <Field
+                  label="Relationship"
+                  value={residential?.heirRelationship}
                 />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Contact Number
-                </label>
-                <input
-                  type="text"
-                  value={residential?.contactNo ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
+                <Field
+                  label="Date of death"
+                  value={dateOnly(residential?.heirDateOfDeath)}
                 />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Email Address
-                </label>
-                <input
-                  type="text"
-                  value={residential?.email ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Date of Birth
-                </label>
-                <input
-                  type="text"
-                  value={localDate(residential?.dateOfBirth) ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Place of Birth
-                </label>
-                <input
-                  type="text"
-                  value={residential?.placeOfBirth ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-
-            {residential?.civilStatus === "MARRIED" && (
-              <div className="grid grid-cols-1 gap-4 mb-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                    Name of Spouse
-                  </label>
-                  <input
-                    type="text"
-                    value={residential?.spouseName ?? ""}
-                    className={readOnlyInputClass}
-                    readOnly
-                  />
-                </div>
-              </div>
+                <Statement>
+                  Document requirement: death certificate of the decedent.
+                </Statement>
+              </Section>
             )}
-          </div>
 
-          {/* Section: Land Information */}
-          <div>
-            <h2 className="text-sm font-bold text-gray-800  mb-3">
-              Land Information
-            </h2>
+            {hasTransferee && (
+              <Section title="If applicant is a transferee">
+                <Field
+                  label="Predecessor-in-interest"
+                  value={residential?.transfereePredecessorName}
+                />
+                <Field
+                  label="Transfer action"
+                  value={residential?.transferAction}
+                />
+                <Field
+                  label="Date of transaction"
+                  value={dateOnly(residential?.transactionDate)}
+                />
+                <Statement>
+                  Document requirement: corresponding transfer document.
+                </Statement>
+              </Section>
+            )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Province
-                </label>
-                <input
-                  type="text"
-                  value={residential?.province ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
+            {hasEmploymentMarriage && (
+              <Section title="If absent due to employment and/or marriage">
+                <Field
+                  label="Date occupation began"
+                  value={dateOnly(
+                    residential?.employmentMarriageOccupationDate,
+                  )}
                 />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Municipality
-                </label>
-                <input
-                  type="text"
-                  value={residential?.municipality ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
+                <Field
+                  label="Marriage with"
+                  value={residential?.marriageWithName}
                 />
-              </div>
-            </div>
+                <Statement>
+                  Document requirement: Certificate of Employment, Barangay
+                  Certification, Sworn Affidavit, Marriage Certificate, or other
+                  supporting evidence.
+                </Statement>
+              </Section>
+            )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Barangay
-                </label>
-                <input
-                  type="text"
-                  value={residential?.barangay ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Specific Location
-                </label>
-                <input
-                  type="text"
-                  value={residential?.specificLocation ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Lot No.
-                </label>
-                <input
-                  type="text"
-                  value={residential?.lotNo ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Land Area (SQM)
-                </label>
-                <input
-                  type="text"
-                  value={residential?.landAreaSqm ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-          </div>
-          <div>
-            <h2 className="text-sm font-bold text-gray-800  mb-3">
-              Affidavit Support
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Province
-                </label>
-                <input
-                  type="text"
-                  value={residential?.affidavitProvince ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  City / Municipality
-                </label>
-                <input
-                  type="text"
-                  value={residential?.affidavitCity ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Affiant's Name
-                </label>
-                <input
-                  type="text"
-                  value={residential?.affiantName ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Affiant's Address
-                </label>
-                <input
-                  type="text"
-                  value={residential?.affiantAddress ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Land Location
-                </label>
-                <input
-                  type="text"
-                  value={residential?.affidavitLandLocation ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Applicant's Full Name
-                </label>
-                <input
-                  type="text"
-                  value={residential?.applicantFullName ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Years in Possession
-                </label>
-                <input
-                  type="text"
-                  value={residential?.yearsOfOccupation ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Purpose of Use
-                </label>
-                <input
-                  type="text"
-                  value={residential?.purposeOfUse ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Date Signed
-                </label>
-                <input
-                  type="text"
-                  value={localDate(residential?.affidavitDate) ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <label className="block text-xs font-bold text-gray-700 mb-1 ">
-                  Location Signed
-                </label>
-                <input
-                  type="text"
-                  value={residential?.affidavitLocation ?? ""}
-                  className={readOnlyInputClass}
-                  readOnly
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col text-left gap-2">
-            <p className="text-xs font-bold text-gray-700 mb-1 mt-4">
-              Inspector info
-            </p>
-
-            <div
-              className={`${readOnlyInputClass} whitespace-normal wrap-break-words min-w-0`}
-            >
-              {display ?? "-"}
-            </div>
-          </div>
-          {residential?.application?.status === "PENDING" && (
-            /* Bottom Action Buttons (for the Reviewer) */
-            <div className="border rounded-xl p-4 text-black">
-              <h3 className="font-bold mb-4">ACTION</h3>
-              <form
-                className="space-y-8"
-                onSubmit={handleSubmit(onSubmit)}
-                disabled={isSubmitting}
+            {residential?.forceAbsenceOccupationDate && (
+              <Section
+                title="If absent due to force majeure, fraud, violence, or intimidation"
+                oneColumn
               >
-                <div className="flex flex-col justify-center gap-4">
-                  <div className="flex flex-col gap-1 text-left">
+                <Field
+                  label="Date occupation began"
+                  value={dateOnly(residential.forceAbsenceOccupationDate)}
+                />
+                <Statement>
+                  Document requirement: barangay blotter, summons,
+                  complaint-affidavit, Barangay Certification, Sworn Affidavit,
+                  or other supporting evidence.
+                </Statement>
+              </Section>
+            )}
+
+            {residential?.motherLotOccupationDate && (
+              <Section
+                title="If applicant previously occupied the mother lot"
+                oneColumn
+              >
+                <Field
+                  label="Date occupation of the mother lot began"
+                  value={dateOnly(residential.motherLotOccupationDate)}
+                />
+                <Statement>
+                  Document requirement: proof of relationship, extrajudicial
+                  settlement, transfer document, waiver, Deed of Donation, or
+                  Partition Agreement.
+                </Statement>
+              </Section>
+            )}
+
+            <Section title="Remaining declarations" oneColumn>
+              <Statement>
+                5. The land is zoned as residential or mixed use.
+              </Statement>
+              <Statement>
+                6. No petition for judicial titling has been filed for the same
+                lot.
+              </Statement>
+              <Statement>
+                7. The applicant agrees to demarcate applicable easements.
+              </Statement>
+              <Statement>
+                8. The applicant understands the consequences of false
+                statements and affidavits.
+              </Statement>
+              <Statement>
+                9. The applicant declares that the application was read,
+                understood, and is true and correct.
+              </Statement>
+            </Section>
+          </div>
+
+          <aside className="space-y-5 lg:sticky lg:top-5">
+            <section className="rounded-xl border border-[#E1E5E9] bg-white p-5">
+              <h2 className="mb-4 text-sm font-semibold">Application status</h2>
+              <span
+                className={`${StatusColor(application?.status)} inline-flex rounded-full px-3 py-1 text-xs font-semibold`}
+              >
+                {application?.status}
+              </span>
+              <dl className="mt-5 space-y-4 text-sm">
+                <div>
+                  <dt className="text-xs text-[#52657D]">Submitted</dt>
+                  <dd className="mt-1">
+                    {localDate(application?.submittedAt)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-[#52657D]">Assigned inspector</dt>
+                  <dd className="mt-1 break-words">
+                    {inspectorDisplay || "Not provided"}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+
+            {application?.status === "PENDING" && (
+              <section className="rounded-xl border border-[#E1E5E9] bg-white p-5">
+                <h2 className="mb-4 text-sm font-semibold">Review action</h2>
+                <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+                  <div>
                     <Controller
                       name="action"
                       control={control}
@@ -521,17 +367,14 @@ export default function ReviewResidential({ data, params }) {
                           value={field.value ?? ""}
                           onValueChange={field.onChange}
                         >
-                          <SelectTrigger
-                            size="20"
-                            className="w-full px-2 py-2 mb-0 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start"
-                          >
-                            <SelectValue placeholder="*SELECT ACTION" />
+                          <SelectTrigger className="w-full border border-gray-300 bg-white text-sm">
+                            <SelectValue placeholder="Select action" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectGroup>
-                              {action.map((a) => (
-                                <SelectItem key={a.id} value={a.value}>
-                                  {a.value}
+                              {actions.map((value) => (
+                                <SelectItem key={value} value={value}>
+                                  {value}
                                 </SelectItem>
                               ))}
                             </SelectGroup>
@@ -540,56 +383,55 @@ export default function ReviewResidential({ data, params }) {
                       )}
                     />
                     {errors.action && (
-                      <div className="text-red-600 text-xs font-medium">
+                      <p className="mt-1 text-xs text-red-600">
                         {errors.action.message}
-                      </div>
+                      </p>
                     )}
                   </div>
-
-                  <div className="grid grid-cols-1 gap-4 mb-4">
-                    <div className="flex flex-col gap-1 text-left">
-                      <textarea
-                        {...register("remarks")}
-                        type="text"
-                        placeholder="Add remarks..."
-                        className="h-9  max-h-80 resize-none overflow-hidden w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors "
-                        onInput={(e) => {
-                          e.currentTarget.style.height = "auto";
-                          e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                        }}
-                      />
-                      {errors.remarks && (
-                        <div className="text-red-600 text-xs font-medium">
-                          {errors.remarks.message}
-                        </div>
-                      )}
-                    </div>
+                  <div>
+                    <textarea
+                      {...register("remarks")}
+                      rows="5"
+                      placeholder="Add remarks..."
+                      className="w-full resize-y rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#1a5632]"
+                    />
+                    {errors.remarks && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.remarks.message}
+                      </p>
+                    )}
                   </div>
-                  <button className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700">
-                    {isSubmitting ? <Spinner data-icon /> : "Submit Review"}
+                  <button
+                    disabled={isSubmitting}
+                    className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#005221] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                  >
+                    {isSubmitting ? <Spinner data-icon /> : "Submit review"}
                   </button>
-                </div>
-              </form>
-            </div>
-          )}
+                </form>
+              </section>
+            )}
 
-          {residential?.application?.status === "APPROVED" ||
-          residential?.application?.status === "REJECTED" ? (
-            <div>
-              <h2 className="text-sm font-bold text-gray-800 mb-3">Remarks</h2>
-              <div className="grid grid-cols-1 gap-4 mb-4">
-                <div className={`whitespace-pre-wrap ${readOnlyInputClass} `}>
-                  {residential?.application?.remarks}
-                </div>
-              </div>
-              <Link
-                className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700"
-                href={`/application-admin/${residential?.application?.status === "APPROVED" ? "approved" : "rejected"}`}
-              >
-                Go back
-              </Link>
-            </div>
-          ) : null}
+            {application?.status !== "PENDING" && (
+              <section className="rounded-xl border border-[#E1E5E9] bg-white p-5">
+                <h2 className="mb-3 text-sm font-semibold">Remarks</h2>
+                <p className="whitespace-pre-wrap break-words text-sm leading-6 text-[#52657D]">
+                  {application?.remarks || "No remarks."}
+                </p>
+                <Link
+                  className="mt-4 flex min-h-11 items-center justify-center rounded-lg bg-[#005221] px-4 py-2 text-sm font-medium text-white"
+                  href={`/application-admin/${application?.status === "APPROVED" ? "approved" : "rejected"}`}
+                >
+                  Go back
+                </Link>
+              </section>
+            )}
+
+            <p className="flex gap-2 text-xs leading-5 text-[#52657D]">
+              <FileText className="h-4 w-4 shrink-0" />
+              Residential export will be available when the DOCX exporter is
+              implemented.
+            </p>
+          </aside>
         </div>
       </div>
     </div>

@@ -101,48 +101,56 @@ model application_admin_service {
 }
 
 model agricultural_form {
-  id                     Int          @id @default(autoincrement())
-  applicationId          Int          @unique
-  lastName               String
-  firstName              String
-  middleName             String?
-  extensionName          String?
-  contactNo              String
-  email                  String
-  dateOfBirth            DateTime     @db.Date
-  sex                    sex
-  citizenship            String
-  naturalBorn            Boolean
-  civilStatus            civil_status
-  spouseName             String?
-  fullAddress            String
-  province               String
-  municipality           String
-  barangay               String
-  specificLocation       String
-  lotNo                  String
-  surveyNo               String?
-  landAreaSqm            Decimal      @db.Decimal(10, 2)
-  cultivationDate        String
-  improvementsMade       String
-  isTransferee           Boolean?     @default(false)
-  transfereeDetails      String?
-  heirDetailsRelation    String?
-  heirRelationDetails    String?
-  heir1Name              String?
-  heir1Address           String?
-  heir2Name              String?
-  heir2Address           String?
-  heirRepresentativeName String?
-  heirsOfAncestorName    String?
-  witness1Name           String
-  witness1Address        String
-  witness2Name           String
-  witness2Address        String
-  dateFiled              DateTime     @db.Date
-  assignedInspector      Int?
-  application            application  @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  inspectors             inspectors?  @relation(fields: [assignedInspector], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                          Int          @id @default(autoincrement())
+  applicationId               Int          @unique
+  lastName                    String
+  firstName                   String
+  middleName                  String?
+  extensionName               String?
+  contactNo                   String
+  email                       String
+  dateOfBirth                 DateTime     @db.Date
+  sex                         sex
+  citizenship                 String
+  naturalBorn                 Boolean
+  civilStatus                 civil_status
+  spouseName                  String?
+  fullAddress                 String
+  province                    String
+  municipality                String
+  barangay                    String
+  specificLocation            String
+  lotNo                       String
+  surveyNo                    String?
+  landAreaSqm                 Decimal      @db.Decimal(10, 2)
+  cultivationDate             String
+  improvementsMade            String
+  isTransferee                Boolean?     @default(false)
+  transfereeDetails           String?
+  heirDetailsRelation         String?
+  heirRelationDetails         String?
+  heir1Name                   String?
+  heir1Address                String?
+  heir2Name                   String?
+  heir2Address                String?
+  heirRepresentativeName      String?
+  heirsOfAncestorName         String?
+  witness1Name                String
+  witness1Address             String
+  witness2Name                String
+  witness2Address             String
+  dateFiled                   DateTime     @db.Date
+  assignedInspector           Int?
+  firstCultivatorName         String?
+  firstCultivationDate        DateTime?    @db.Date
+  previousCultivatorName      String?
+  previousCultivatorDeathDate DateTime?    @db.Date
+  heirImprovements            String?
+  heir3Name                   String?
+  heir3Address                String?
+  unoccupiedPeriodAndReason   String?
+  application                 application  @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  inspectors                  inspectors?  @relation(fields: [assignedInspector], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model application {
@@ -192,39 +200,52 @@ model chainsaw_registration_form {
 }
 
 model residential_free_patent_form {
-  id                    Int          @id @default(autoincrement())
-  applicationId         Int          @unique
-  lastName              String
-  firstName             String
-  middleName            String?
-  extensionName         String?
-  contactNo             String
-  email                 String
-  fullAddress           String
-  citizenship           String
-  civilStatus           civil_status
-  dateOfBirth           DateTime     @db.Date
-  placeOfBirth          String
-  spouseName            String?
-  province              String
-  municipality          String
-  barangay              String
-  specificLocation      String
-  lotNo                 String
-  landAreaSqm           Decimal      @db.Decimal(10, 2)
-  affidavitProvince     String
-  affidavitCity         String
-  affiantName           String
-  affiantAddress        String
-  affidavitLandLocation String
-  yearsOfOccupation     Int
-  purposeOfUse          String
-  affidavitDate         DateTime     @db.Date
-  affidavitLocation     String
-  applicantFullName     String
-  assignedInspector     Int
-  application           application  @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  inspectors            inspectors   @relation(fields: [assignedInspector], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                               Int                          @id @default(autoincrement())
+  applicationId                    Int                          @unique
+  lastName                         String
+  firstName                        String
+  middleName                       String?
+  extensionName                    String?
+  contactNo                        String
+  email                            String
+  fullAddress                      String
+  citizenship                      String
+  civilStatus                      civil_status
+  dateOfBirth                      DateTime                     @db.Date
+  placeOfBirth                     String?
+  spouseName                       String?
+  province                         String
+  municipality                     String
+  barangay                         String
+  specificLocation                 String
+  lotNo                            String
+  landAreaSqm                      Decimal                      @db.Decimal(10, 2)
+  affidavitProvince                String?
+  affidavitCity                    String?
+  affiantName                      String?
+  affiantAddress                   String?
+  affidavitLandLocation            String?
+  yearsOfOccupation                Int?
+  purposeOfUse                     String?
+  affidavitDate                    DateTime?                    @db.Date
+  affidavitLocation                String?
+  applicantFullName                String?
+  assignedInspector                Int
+  sex                              sex?
+  surveyNo                         String?
+  occupationDate                   DateTime?
+  heirPredecessorName              String?
+  heirRelationship                 String?
+  heirDateOfDeath                  DateTime?
+  transfereePredecessorName        String?
+  transferAction                   residential_transfer_action?
+  transactionDate                  DateTime?
+  employmentMarriageOccupationDate DateTime?
+  marriageWithName                 String?
+  forceAbsenceOccupationDate       DateTime?
+  motherLotOccupationDate          DateTime?
+  application                      application                  @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  inspectors                       inspectors                   @relation(fields: [assignedInspector], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model tree_cutting_permit_form {
@@ -420,6 +441,8 @@ enum civil_status {
   MARRIED
   WIDOWED
   ANNULLED
+  DIVORCED
+  SEPARATED
 }
 
 enum fuel_type {
@@ -452,4 +475,11 @@ enum vehicle_status {
 enum driver_schedule_status {
   RESERVED
   UNAVAILABLE
+}
+
+enum residential_transfer_action {
+  SOLD
+  DONATED
+  TRANSFERRED
+  ASSIGNED
 }

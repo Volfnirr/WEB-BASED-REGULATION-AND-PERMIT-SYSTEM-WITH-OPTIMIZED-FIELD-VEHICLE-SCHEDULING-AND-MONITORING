@@ -14,6 +14,7 @@ import agriculturalRoutes from "./routes/applications/agricultural.routes.js";
 import vehicleRoutes from "./routes/vehicle/vehicle.routes.js";
 import superAdmin from "./routes/super-admin/super-admin.routes.js";
 import driverRoutes from "./routes/vehicle/driver.routes.js";
+import applicationCopyRoutes from "./routes/applications/application-copy.routes.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -55,6 +56,8 @@ app.use("/api/v1/vehicles", vehicleRoutes);
 app.use("/api/v1/drivers", driverRoutes);
 
 app.use("/api/v1/super-admin", superAdmin);
+
+app.use("/api/v1/application-copies", applicationCopyRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server started PORT ${PORT}`);

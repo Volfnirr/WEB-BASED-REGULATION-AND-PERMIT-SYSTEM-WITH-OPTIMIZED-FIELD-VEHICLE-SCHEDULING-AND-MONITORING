@@ -14,7 +14,11 @@ export async function submitAgriculturalForm(data) {
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.message || "Failed to submit application.");
+    const error = new Error(
+      result.errorMessage || result.message || "Failed to submit application.",
+    );
+    error.fieldErrors = result.errorContext?.fieldErrors || {};
+    throw error;
   }
 
   return result;

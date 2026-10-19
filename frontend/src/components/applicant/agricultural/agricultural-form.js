@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -29,249 +29,335 @@ import { toTitleCase } from "@/lib/title-case";
 import AddressFields from "@/components/forms/AddressFields";
 import { getBarangays } from "@/lib/ph-pampanga/ph-address";
 
-const agriculturalFormSchema = z
-  .object({
-    lastName: z
-      .string()
-      .trim()
-      .min(1, "Last name is required")
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
-    firstName: z
-      .string()
-      .trim()
-      .min(1, "First name is required")
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
-    middleName: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
-      .optional(),
-    extension: z
-      .string()
-      .trim()
-      .max(50, "Maximum 50 characters allowed")
-      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
-      .optional(),
-    contactNumber: z
-      .string()
-      .trim()
-      .regex(/^09\d{9}$/, "Enter a valid 11-digit mobile number")
-      .max(11, "Maximum 11 characters allowed"),
-    birthday: z.coerce.date({
-      required_error: "Date of birth is required",
-      invalid_type_error: "Please enter a valid date",
-    }),
-    sex: z.enum(["Male", "Female"], {
-      errorMap: () => ({ message: "Please select a sex" }),
-    }),
-    citizenship: z
-      .string()
-      .trim()
-      .min(1, "Citizenship is required")
-      .max(100, "Maximum 100 characters allowed")
-      .regex(/^[A-Za-z\s-]+$/, "Only letters, spaces, and hyphens are allowed"),
-    naturalBorn: z.boolean({
-      error: "Please select an option",
-    }),
-    civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANNULLED"], {
-      errorMap: () => ({ message: "Please select civil status" }),
-    }),
-    spouse: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
-    mailingAddress: z
-      .string()
-      .trim()
-      .min(1, "Complete mailing address is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    province: z
-      .string()
-      .trim()
-      .min(1, "Province is required")
-      .max(255, "Maximum 255 characters allowed"),
-    municipality: z
-      .string()
-      .trim()
-      .min(1, "Municipality is required")
-      .max(255, "Maximum 255 characters allowed"),
-    barangay: z
-      .string()
-      .trim()
-      .min(1, "Barangay is required")
-      .max(255, "Maximum 255 characters allowed"),
-    location: z
-      .string()
-      .trim()
-      .min(1, "Specific locations is required")
-      .max(500, "Maximum 500 characters allowed"),
-    lotNo: z
-      .string()
-      .trim()
-      .min(1, "Lot number is required")
-      .max(255, "Maximum 255 characters allowed"),
-    surveyNo: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
-    landAreaSqm: z.coerce
-      .number({ required_error: "Land area is required" })
-      .positive("Land area must be greater than 0")
-      .max(99999999.99, "Value is too large for the database")
-      .refine(
-        (val) => Math.round(val * 100) === val * 100,
-        "Land area can only have up to 2 decimal places",
-      ),
-    cultivationDate: z
-      .string()
-      .trim()
-      .refine(
-        (val) =>
-          /^(\d{4}|(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4})$/.test(val),
-        { message: "Enter a date as MM/DD/YYYY or just YYYY" },
-      ),
-    improvements: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    transferee_info: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    heir_info: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    evidence: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    heir1_name: z
-      .string()
-      .trim()
-      .min(1, "Heir 1 name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    heir1_address: z
-      .string()
-      .trim()
-      .min(1, "Heir 1 adaress is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    heir2_name: z
-      .string()
-      .trim()
-      .min(1, "Heir 2 name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    heir2_address: z
-      .string()
-      .trim()
-      .min(1, "Heir 2 name is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    heir_rep_name: z
-      .string()
-      .trim()
-      .min(1, "Name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    heirs_of: z
-      .string()
-      .trim()
-      .min(1, "Ancestor name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    witness1_name: z
-      .string()
-      .trim()
-      .min(1, "Witness 1 name is required")
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
-    witness1_address: z
-      .string()
-      .trim()
-      .min(1, "Witness 1 address is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    witness2_name: z
-      .string()
-      .trim()
-      .min(1, "Witness 2 name is required")
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
-    witness2_address: z
-      .string()
-      .trim()
-      .min(1, "Witness 2 address is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    date_filed: z.coerce.date({
-      required_error: "Date filed is required",
-      invalid_type_error: "Please enter a valid date",
-    }),
-    privacyConsent: z.literal(true, {
-      errorMap: () => ({ message: "Please check this box to proceed" }),
-    }),
-    assignedInspector: z
-      .number({ error: "Please assign an inspector" })
-      .int("Invalid inspector")
-      .positive("Invalid inspector")
-      .max(9999, "Invalid inspector"),
-  })
-  .refine(
-    (data) => {
-      if (data.civilStatus === "MARRIED") return !!data.spouse?.trim();
-      return true;
-    },
-    {
-      path: ["spouse"],
-      message: "Spouse name is required for married applicants",
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.civilStatus !== "MARRIED") return !data.spouse?.trim();
-      return true;
-    },
-    {
-      path: ["spouse"],
-      message: "Spouse name should only be set if civil status is Married",
-    },
-  )
-  .refine(
-    (data) =>
-      getBarangays(data.province, data.municipality).includes(data.barangay),
-    {
-      path: ["barangay"],
-      message: "Selected barangay does not belong to the selected municipality",
-    },
+const hasValue = (value) =>
+  value !== undefined && value !== null && String(value).trim() !== "";
+const optionalText = (max = 1000) =>
+  z.preprocess(
+    (value) => (typeof value === "string" && !value.trim() ? undefined : value),
+    z.string().trim().max(max, "This value is too long").optional(),
+  );
+const requiredText = (label, max = 255) =>
+  z
+    .string(label + " is required")
+    .trim()
+    .min(1, label + " is required")
+    .max(max, label + " is too long");
+const personName = (label) =>
+  requiredText(label).regex(
+    /^[\p{L}\p{M} .'-]+$/u,
+    "Use letters, spaces, apostrophes, periods, or hyphens",
+  );
+function todayInManila() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const part = (type) => parts.find((entry) => entry.type === type).value;
+  return part("year") + "-" + part("month") + "-" + part("day");
+}
+function isRealDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + "T00:00:00.000Z");
+  return (
+    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
+}
+const dateField = (label) =>
+  requiredText(label, 10)
+    .refine(isRealDate, "Choose a valid full date")
+    .refine(
+      (value) => !isRealDate(value) || value <= todayInManila(),
+      label + " cannot be in the future",
+    );
+const optionalDate = (label) =>
+  z.preprocess(
+    (value) => (value === "" || value === null ? undefined : value),
+    dateField(label).optional(),
   );
 
-const civilStatusChoices = [
-  { id: 1, value: "SINGLE" },
-  { id: 2, value: "MARRIED" },
-  { id: 3, value: "WIDOWED" },
-  { id: 4, value: "ANNULLED" },
-];
+const agriculturalFormSchema = z
+  .object({
+    lastName: personName("Last name"),
+    firstName: personName("First name"),
+    middleName: optionalText(255),
+    contactNumber: requiredText("Contact number", 11).regex(
+      /^09\d{9}$/,
+      "Enter a valid 11-digit mobile number starting with 09",
+    ),
+    birthday: dateField("Date of birth"),
+    sex: z.enum(["Male", "Female"], "Please select a sex"),
+    citizenship: requiredText("Citizenship", 100),
+    naturalBorn: z.boolean("Please select Yes or No"),
+    civilStatus: z.enum(
+      ["SINGLE", "MARRIED", "DIVORCED", "SEPARATED", "WIDOWED"],
+      "Please select a civil status",
+    ),
+    spouse: optionalText(255),
+    mailingAddress: requiredText("Mailing address", 1000),
+    province: requiredText("Province"),
+    municipality: requiredText("Municipality"),
+    barangay: requiredText("Barangay"),
+    location: requiredText("Specific location", 500),
+    lotNo: requiredText("Lot number"),
+    surveyNo: requiredText("Survey number"),
+    landAreaSqm: z.preprocess(
+      (value) => (value === "" || value === null ? undefined : value),
+      z.coerce
+        .number("Enter a valid land area")
+        .positive("Land area must be greater than 0")
+        .max(99999999.99, "Land area is too large")
+        .refine(
+          (value) => Math.abs(value * 100 - Math.round(value * 100)) < 0.000001,
+          "Use at most 2 decimal places",
+        ),
+    ),
+    cultivationDate: dateField("Cultivation date"),
+    improvements: optionalText(),
+    firstCultivatorName: optionalText(255),
+    firstCultivationDate: optionalDate("First cultivation date"),
+    previousCultivatorName: optionalText(255),
+    previousCultivatorDeathDate: optionalDate("Date of death"),
+    heirImprovements: optionalText(),
+    evidence: optionalText(),
+    heir1_name: optionalText(255),
+    heir1_address: optionalText(),
+    heir2_name: optionalText(255),
+    heir2_address: optionalText(),
+    heir3_name: optionalText(255),
+    heir3_address: optionalText(),
+    unoccupiedPeriodAndReason: optionalText(),
+    witness1_name: personName("Witness 1 name"),
+    witness1_address: requiredText("Witness 1 address", 1000),
+    witness2_name: personName("Witness 2 name"),
+    witness2_address: requiredText("Witness 2 address", 1000),
+    assignedInspector: z
+      .number("Please select an inspector")
+      .int("Invalid inspector")
+      .positive("Please select an inspector"),
+    privacyConsent: z.literal(true, "Please agree to the Data Privacy Consent"),
+  })
+  .superRefine((data, context) => {
+    const requireField = (key, message) => {
+      if (!hasValue(data[key]))
+        context.addIssue({ code: "custom", path: [key], message });
+    };
+    if (data.civilStatus === "MARRIED")
+      requireField("spouse", "Spouse name is required when Married");
+    if (data.civilStatus !== "MARRIED" && hasValue(data.spouse)) {
+      context.addIssue({
+        code: "custom",
+        path: ["spouse"],
+        message: "Spouse name applies only when Married",
+      });
+    }
+    if (
+      !getBarangays(data.province, data.municipality).includes(data.barangay)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["barangay"],
+        message: "Select a barangay belonging to the selected municipality",
+      });
+    }
+    const transferee = ["firstCultivatorName", "firstCultivationDate"];
+    if (transferee.some((key) => hasValue(data[key]))) {
+      transferee.forEach((key) =>
+        requireField(
+          key,
+          "Complete both transferee fields or leave both blank",
+        ),
+      );
+    }
+    const heirCore = [
+      "previousCultivatorName",
+      "previousCultivatorDeathDate",
+      "heirImprovements",
+      "evidence",
+    ];
+    const heirRows = [1, 2, 3].flatMap((row) => [
+      "heir" + row + "_name",
+      "heir" + row + "_address",
+    ]);
+    if ([...heirCore, ...heirRows].some((key) => hasValue(data[key]))) {
+      heirCore.forEach((key) =>
+        requireField(
+          key,
+          "Complete this field when using the heir section (enter None for no improvements)",
+        ),
+      );
+    }
+    for (const row of [1, 2, 3]) {
+      const pair = ["heir" + row + "_name", "heir" + row + "_address"];
+      if (pair.some((key) => hasValue(data[key]))) {
+        pair.forEach((key) =>
+          requireField(
+            key,
+            "Enter both the heir name and address, or leave this row blank",
+          ),
+        );
+      }
+    }
+  });
 
-export default function AgriculturalForm({ inspectors }) {
+const civilStatusChoices = [
+  "SINGLE",
+  "MARRIED",
+  "DIVORCED",
+  "SEPARATED",
+  "WIDOWED",
+].map((value, id) => ({ id, value }));
+
+function AgriculturalDateField({ name, control, inputClass }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Controller
+      name={name}
+      control={control}
+      defaultValue=""
+      render={({ field, fieldState }) => {
+        const parsed = field.value
+          ? new Date(field.value + "T00:00:00")
+          : undefined;
+        const selected =
+          parsed && !Number.isNaN(parsed.getTime()) ? parsed : undefined;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return (
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger
+              render={
+                <button
+                  ref={field.ref}
+                  id={name}
+                  type="button"
+                  onBlur={field.onBlur}
+                  data-invalid={fieldState.invalid || undefined}
+                  className={
+                    inputClass +
+                    " flex min-h-10 items-center justify-between gap-2 text-left"
+                  }
+                >
+                  <span
+                    className={selected ? "text-gray-800" : "text-gray-400"}
+                  >
+                    {selected
+                      ? selected.toLocaleDateString("en-GB")
+                      : "DD/MM/YYYY"}
+                  </span>
+                  <CalendarDays size={18} className="shrink-0" />
+                </button>
+              }
+            />
+            <PopoverContent
+              className="w-auto overflow-hidden p-0"
+              align="start"
+            >
+              <Calendar
+                mode="single"
+                selected={selected}
+                defaultMonth={selected ?? today}
+                captionLayout="dropdown"
+                endMonth={today}
+                disabled={{ after: today }}
+                onSelect={(date) => {
+                  field.onChange(
+                    date
+                      ? date.getFullYear() +
+                          "-" +
+                          String(date.getMonth() + 1).padStart(2, "0") +
+                          "-" +
+                          String(date.getDate()).padStart(2, "0")
+                      : "",
+                  );
+                  field.onBlur();
+                  setOpen(false);
+                }}
+              />
+              {selected && (
+                <button
+                  type="button"
+                  className="w-full border-t p-2 text-sm text-gray-600"
+                  onClick={() => {
+                    field.onChange("");
+                    field.onBlur();
+                    setOpen(false);
+                  }}
+                >
+                  Clear date
+                </button>
+              )}
+            </PopoverContent>
+          </Popover>
+        );
+      }}
+    />
+  );
+}
+function AgriculturalField({
+  name,
+  label,
+  register,
+  control,
+  errors,
+  inputClass,
+  date = false,
+  multiline = false,
+}) {
+  return (
+    <div className="flex flex-col gap-1 text-left">
+      <label htmlFor={name} className="text-xs font-bold text-gray-700">
+        {label}
+      </label>
+      {date ? (
+        <AgriculturalDateField
+          name={name}
+          control={control}
+          inputClass={inputClass}
+        />
+      ) : multiline ? (
+        <textarea
+          id={name}
+          {...register(name)}
+          rows={2}
+          className={`${inputClass} resize-none overflow-hidden`}
+          onInput={(e) => {
+            e.currentTarget.style.height = "auto";
+            e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+          }}
+        />
+      ) : (
+        <input
+          id={name}
+          {...register(name)}
+          type="text"
+          className={inputClass}
+        />
+      )}
+      {errors[name] && (
+        <p className="text-red-600 text-xs font-medium">
+          {errors[name].message}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default function AgriculturalForm({ inspectors = [] }) {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-xs font-medium";
 
   const [showModal, setShowModal] = useState(false);
-  const [openBirthday, setOpenBirthday] = useState(false);
-  const [openDateFiled, setOpenDateFiled] = useState(false);
 
   const {
     register,
     handleSubmit,
     control,
     reset,
-    watch,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(agriculturalFormSchema),
@@ -279,11 +365,66 @@ export default function AgriculturalForm({ inspectors }) {
       province: "Pampanga",
       privacyConsent: false,
       civilStatus: "",
+      birthday: "",
+      cultivationDate: "",
+      firstCultivationDate: "",
+      previousCultivatorDeathDate: "",
     },
   });
 
-  const civilStatus = watch("civilStatus");
-  const agreedToPrivacy = watch("privacyConsent");
+  const [
+    civilStatus,
+    agreedToPrivacy,
+    birthday,
+    firstName,
+    middleName,
+    lastName,
+    ancestorName,
+  ] = useWatch({
+    control,
+    name: [
+      "civilStatus",
+      "privacyConsent",
+      "birthday",
+      "firstName",
+      "middleName",
+      "lastName",
+      "previousCultivatorName",
+    ],
+  });
+  const applicantName = [firstName, middleName, lastName]
+    .filter(Boolean)
+    .join(" ");
+  const heirValues = useWatch({
+    control,
+    name: [
+      "previousCultivatorName",
+      "previousCultivatorDeathDate",
+      "heirImprovements",
+      "evidence",
+      "heir1_name",
+      "heir1_address",
+      "heir2_name",
+      "heir2_address",
+      "heir3_name",
+      "heir3_address",
+    ],
+  });
+  const hasHeirDetails = heirValues.some(hasValue);
+  let age = "";
+  if (isRealDate(birthday || "")) {
+    const birth = new Date(birthday + "T00:00:00");
+    const today = new Date(todayInManila() + "T00:00:00");
+    age = today.getFullYear() - birth.getFullYear();
+    if (
+      today.getMonth() < birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() &&
+        today.getDate() < birth.getDate())
+    )
+      age--;
+    if (age < 0) age = "";
+  }
+  const fieldProps = { register, control, errors, inputClass };
 
   useEffect(() => {
     if (civilStatus !== "MARRIED") {
@@ -297,9 +438,16 @@ export default function AgriculturalForm({ inspectors }) {
       reset();
       setShowModal(true);
     } catch (err) {
-      toast.error("Something went wrong submitting your application.", {
-        position: "top-center",
+      Object.entries(err.fieldErrors || {}).forEach(([name, messages]) => {
+        if (messages?.length)
+          setError(name, { type: "server", message: messages[0] });
       });
+      toast.error(
+        err.message || "Something went wrong submitting your application.",
+        {
+          position: "top-center",
+        },
+      );
     }
   };
 
@@ -325,7 +473,7 @@ export default function AgriculturalForm({ inspectors }) {
               Applicant Information
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div className="flex flex-col gap-1 text-left">
                 <input
                   {...register("lastName")}
@@ -357,17 +505,6 @@ export default function AgriculturalForm({ inspectors }) {
                 />
                 {errors.middleName && (
                   <div className={errorClass}>{errors.middleName.message}</div>
-                )}
-              </div>
-              <div className="flex flex-col gap-1 text-left">
-                <input
-                  {...register("extension")}
-                  type="text"
-                  placeholder="NAME EXTENSION"
-                  className={inputClass}
-                />
-                {errors.extension && (
-                  <div className={errorClass}>{errors.extension.message}</div>
                 )}
               </div>
             </div>
@@ -506,49 +643,10 @@ export default function AgriculturalForm({ inspectors }) {
                   DATE OF BIRTH*
                 </label>
                 <div className="flex flex-col gap-1 text-left">
-                  <Controller
+                  <AgriculturalDateField
                     name="birthday"
                     control={control}
-                    render={({ field }) => (
-                      <Popover
-                        open={openBirthday}
-                        onOpenChange={setOpenBirthday}
-                      >
-                        <PopoverTrigger
-                          render={
-                            <button
-                              type="button"
-                              id="birthday"
-                              className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start ${
-                                field.value ? "text-gray-800" : "text-gray-400"
-                              }`}
-                            >
-                              <div className="flex flex-row justify-between items-center">
-                                {field.value
-                                  ? new Date(field.value).toLocaleDateString()
-                                  : "*DATE OF BIRTH"}
-                                <CalendarDays size={20} />
-                              </div>
-                            </button>
-                          }
-                        />
-                        <PopoverContent
-                          className="w-auto overflow-hidden p-0"
-                          align="start"
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            defaultMonth={field.value}
-                            captionLayout="dropdown"
-                            onSelect={(date) => {
-                              field.onChange(date);
-                              setOpenBirthday(false);
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    )}
+                    inputClass={inputClass}
                   />
                   {errors.birthday && (
                     <div className={errorClass}>{errors.birthday.message}</div>
@@ -605,6 +703,24 @@ export default function AgriculturalForm({ inspectors }) {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label
+                htmlFor="age"
+                className="block text-xs font-bold text-gray-700 mb-1"
+              >
+                AGE
+              </label>
+              <input
+                id="age"
+                value={age}
+                readOnly
+                className={inputClass + " bg-gray-50"}
+                placeholder="Calculated from birthday"
+              />
+            </div>
           </div>
 
           {/* Section: Land Information */}
@@ -665,9 +781,12 @@ export default function AgriculturalForm({ inspectors }) {
                 <input
                   {...register("surveyNo")}
                   type="text"
-                  placeholder="SURVEY NO."
+                  placeholder="*SURVEY NO."
                   className={inputClass}
                 />
+                {errors.surveyNo && (
+                  <p className={errorClass}>{errors.surveyNo.message}</p>
+                )}
               </div>
             </div>
           </div>
@@ -677,317 +796,225 @@ export default function AgriculturalForm({ inspectors }) {
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
               Declarations
             </h2>
-            <div className="text-sm text-gray-700 space-y-4 bg-[#fdfdfd] p-5 border border-gray-200 rounded-lg shadow-inner">
+            <div className="text-sm text-gray-700 space-y-6 bg-[#fdfdfd] p-5 border border-gray-200 rounded-lg shadow-inner">
               <p>1. I am not an owner of more than 12 hectares of land.</p>
               <p>
                 2. I have not filed any petition for judicial titling on the
                 same subject lot.
               </p>
-
-              <div className="mt-4">
-                <label className="block mb-1 font-medium">
-                  3. I entered upon and began cultivation of the same on:
-                </label>
-                <div className="flex flex-col gap-1 text-left mb-3">
-                  <input
-                    {...register("cultivationDate")}
-                    type="text"
-                    placeholder="MM/DD/YYYY or Year"
-                    className={`${inputClass} w-full md:w-64`}
+              <div className="space-y-3">
+                <p>
+                  3. I entered upon and began cultivation of the same on the
+                  date below, and since then, I have continuously cultivated the
+                  land; and have made thereon the following improvements:
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <AgriculturalField
+                    {...fieldProps}
+                    name="cultivationDate"
+                    label="DATE CULTIVATION BEGAN *"
+                    date
                   />
-                  {errors.cultivationDate && (
-                    <div className={errorClass}>
-                      {errors.cultivationDate.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <textarea
-                    {...register("improvements")}
-                    rows="2"
-                    placeholder="Improvements made..."
-                    className={`${inputClass} resize-none overflow-hidden`}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
-                  ></textarea>
+                  <AgriculturalField
+                    {...fieldProps}
+                    name="improvements"
+                    label="IMPROVEMENTS MADE"
+                    multiline
+                  />
                 </div>
               </div>
-
-              <div className="mt-4">
-                <label className="block mb-1 font-medium">
-                  4. (Optional, if applicant is a transferee)
-                </label>
-                <div className="flex flex-col gap-1 text-left">
-                  <textarea
-                    {...register("transferee_info")}
-                    rows="2"
-                    placeholder="State public land origin, date of first cultivation, etc."
-                    className={`${inputClass} resize-none overflow-hidden`}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
-                  ></textarea>
+              <p className="text-xs text-gray-600">
+                Complete each optional section that applies. Leave
+                non-applicable sections blank. If completing the heir section,
+                describe the improvements and attached evidence; enter None if
+                there are no improvements.
+              </p>
+              <div className="space-y-3">
+                <p>
+                  4. (Optional, if the applicant is a transferee) The land
+                  described and applied for is not claimed or occupied by any
+                  other person but is public land which was first occupied and
+                  cultivated by the person below on the date indicated.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <AgriculturalField
+                    {...fieldProps}
+                    name="firstCultivatorName"
+                    label="NAME OF FIRST CULTIVATOR"
+                  />
+                  <AgriculturalField
+                    {...fieldProps}
+                    name="firstCultivationDate"
+                    label="DATE FIRST OCCUPIED AND CULTIVATED"
+                    date
+                  />
                 </div>
               </div>
-
-              <div className="mt-4">
-                <label className="block mb-1 font-medium">
-                  5. (Optional, if applicant is an heir)
-                </label>
-                <div className="flex flex-col gap-1 text-left mb-3">
-                  <textarea
-                    {...register("heir_info")}
-                    rows="2"
-                    placeholder="State previous cultivator, date of death, improvements, etc."
-                    className={`${inputClass} resize-none overflow-hidden`}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
-                  ></textarea>
+              <div className="space-y-3">
+                <p>
+                  5. (Optional, if the applicant is an heir) The previous
+                  cultivator named below, who was my ancestor, died on the date
+                  indicated. Since his/her death, I have cultivated the said
+                  land and existing improvements thereon which consist of the
+                  following:
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <AgriculturalField
+                    {...fieldProps}
+                    name="previousCultivatorName"
+                    label="NAME OF PREVIOUS CULTIVATOR / ANCESTOR"
+                  />
+                  <AgriculturalField
+                    {...fieldProps}
+                    name="previousCultivatorDeathDate"
+                    label="DATE OF DEATH"
+                    date
+                  />
                 </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <textarea
-                    {...register("evidence")}
-                    rows="2"
-                    placeholder="Evidence of relationship, death, burial, and heirship is attached and consists of:"
-                    className={`${inputClass} resize-none overflow-hidden`}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = "auto";
-                      e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
-                    }}
-                  ></textarea>
+                <AgriculturalField
+                  {...fieldProps}
+                  name="heirImprovements"
+                  label="EXISTING IMPROVEMENTS"
+                  multiline
+                />
+                <p>
+                  Evidence of relationship, death, burial, and heirship is
+                  hereto attached and consists of:
+                </p>
+                <AgriculturalField
+                  {...fieldProps}
+                  name="evidence"
+                  label="DESCRIPTION OF ATTACHED EVIDENCE"
+                  multiline
+                />
+                <p className="text-xs text-gray-600">
+                  Document requirement: Evidence of relationship, death, burial,
+                  and heirship. Describe the documents here; provide the
+                  documents to DENR with your application.
+                </p>
+                <p>
+                  The following are the names and addresses of the heirs of my
+                  ancestor:
+                </p>
+                {[1, 2, 3].map((row) => (
+                  <div
+                    key={row}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  >
+                    <AgriculturalField
+                      {...fieldProps}
+                      name={"heir" + row + "_name"}
+                      label={"HEIR " + row + " NAME"}
+                    />
+                    <AgriculturalField
+                      {...fieldProps}
+                      name={"heir" + row + "_address"}
+                      label={"HEIR " + row + " ADDRESS"}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-3">
+                <p>
+                  6. (If the heir section applies) I am the person named below,
+                  the only heir/representative of the heirs of the ancestor
+                  below, entitled to succeed him/her according to the laws of
+                  the Philippines.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      APPLICANT NAME
+                    </label>
+                    <input
+                      readOnly
+                      value={hasHeirDetails ? applicantName : ""}
+                      className={inputClass + " bg-gray-50"}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      ANCESTOR NAME
+                    </label>
+                    <input
+                      readOnly
+                      value={hasHeirDetails ? ancestorName || "" : ""}
+                      className={inputClass + " bg-gray-50"}
+                    />
+                  </div>
                 </div>
               </div>
+              <div className="space-y-3">
+                <p>
+                  7. The land has been continuously occupied and cultivated by
+                  me or my said ancestor since the date of entry thereon as
+                  above stated, except during the following period, when the
+                  land was not occupied for the reason stated:
+                </p>
+                <AgriculturalField
+                  {...fieldProps}
+                  name="unoccupiedPeriodAndReason"
+                  label="PERIOD AND REASON (IF APPLICABLE)"
+                  multiline
+                />
+              </div>
+              <p>
+                8. To the best of my knowledge, information and belief, the land
+                applied for is an alienable and disposable public agricultural
+                land suitable for agricultural purposes.
+              </p>
+              <p>
+                9. I agree to demarcate applicable easements consistent with the
+                existing policies and regulations.
+              </p>
+              <div className="space-y-3">
+                <p>
+                  10. The following named witnesses will testify that the
+                  allegations in this application are true:
+                </p>
+                {[1, 2].map((row) => (
+                  <div
+                    key={row}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                  >
+                    <AgriculturalField
+                      {...fieldProps}
+                      name={"witness" + row + "_name"}
+                      label={"WITNESS " + row + " NAME *"}
+                    />
+                    <AgriculturalField
+                      {...fieldProps}
+                      name={"witness" + row + "_address"}
+                      label={"WITNESS " + row + " ADDRESS *"}
+                    />
+                  </div>
+                ))}
+              </div>
+              <p>
+                11. I understand that any applicant who willfully and knowingly
+                submit false statements or executes false affidavits in
+                connection with this application shall be deemed guilty of
+                perjury and that any person who, not being qualified to apply
+                for public lands, files an application or induces or permits
+                another to file it on his/her behalf shall be punishable in
+                accordance with existing laws. His/her application shall be
+                rejected or cancelled and all amount paid on account thereof
+                shall be forfeited in favor of the Government, and he/she shall
+                not be entitled to apply for any public land in the Philippines.
+              </p>
             </div>
           </div>
-
-          {/* Section: Heir Declaration & Witnesses */}
           <div>
             <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
-              Heir Declaration & Witnesses
+              Affidavit
             </h2>
-
-            <div className="space-y-4">
-              <p className="text-sm text-gray-700">
-                Names and addresses of the heirs of my ancestors:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("heir1_name")}
-                    type="text"
-                    placeholder="HEIR 1 NAME"
-                    className={inputClass}
-                  />
-                  {errors.heir1_name && (
-                    <div className={errorClass}>
-                      {errors.heir1_name.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("heir1_address")}
-                    type="text"
-                    placeholder="HEIR 1 ADDRESS"
-                    className={inputClass}
-                  />
-                  {errors.heir1_address && (
-                    <div className={errorClass}>
-                      {errors.heir1_address.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("heir2_name")}
-                    type="text"
-                    placeholder="HEIR 2 NAME"
-                    className={inputClass}
-                  />
-                  {errors.heir2_name && (
-                    <div className={errorClass}>
-                      {errors.heir2_name.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("heir2_address")}
-                    type="text"
-                    placeholder="HEIR 2 ADDRESS"
-                    className={inputClass}
-                  />
-                  {errors.heir2_address && (
-                    <div className={errorClass}>
-                      {errors.heir2_address.message}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700 mt-4">
-                <span>6. I am</span>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("heir_rep_name")}
-                    type="text"
-                    placeholder="NAME"
-                    className={`${inputClass} w-48`}
-                  />
-                  {errors.heir_rep_name && (
-                    <div className={errorClass}>
-                      {errors.heir_rep_name.message}
-                    </div>
-                  )}
-                </div>
-                <span>, the only heir/representative of the heirs of</span>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("heirs_of")}
-                    type="text"
-                    placeholder="ANCESTOR NAME"
-                    className={`${inputClass} w-48`}
-                  />
-                  {errors.heirs_of && (
-                    <div className={errorClass}>{errors.heirs_of.message}</div>
-                  )}
-                </div>
-              </div>
-
-              <p className="text-sm text-gray-700 mt-6 font-medium">
-                Witnesses to this application residing in the neighborhood:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("witness1_name")}
-                    type="text"
-                    placeholder="*WITNESS 1 NAME"
-                    className={inputClass}
-                  />
-                  {errors.witness1_name && (
-                    <div className={errorClass}>
-                      {errors.witness1_name.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("witness1_address")}
-                    type="text"
-                    placeholder="*WITNESS 1 ADDRESS"
-                    className={inputClass}
-                  />
-                  {errors.witness1_address && (
-                    <div className={errorClass}>
-                      {errors.witness1_address.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("witness2_name")}
-                    type="text"
-                    placeholder="*WITNESS 2 NAME"
-                    className={inputClass}
-                  />
-                  {errors.witness2_name && (
-                    <div className={errorClass}>
-                      {errors.witness2_name.message}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 text-left">
-                  <input
-                    {...register("witness2_address")}
-                    type="text"
-                    placeholder="*WITNESS 2 ADDRESS"
-                    className={inputClass}
-                  />
-                  {errors.witness2_address && (
-                    <div className={errorClass}>
-                      {errors.witness2_address.message}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Section: Sworn Statement */}
-          <div>
-            <h2 className="text-sm font-bold text-gray-800 uppercase mb-3">
-              Sworn Statement
-            </h2>
-            <div className="bg-white p-4 border border-gray-200 rounded my-4">
-              <p className="mb-2 font-medium italic">
-                I hereby certify under oath that the foregoing is true and
-                correct to the best of my knowledge and belief.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  DATE FILED*
-                </label>
-                <div className="flex flex-col gap-1 text-left">
-                  <Controller
-                    name="date_filed"
-                    control={control}
-                    render={({ field }) => (
-                      <Popover
-                        open={openDateFiled}
-                        onOpenChange={setOpenDateFiled}
-                      >
-                        <PopoverTrigger
-                          render={
-                            <button
-                              type="button"
-                              id="date_filed"
-                              className={`w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm transition-colors text-start ${
-                                field.value ? "text-gray-800" : "text-gray-400"
-                              }`}
-                            >
-                              <div className="flex flex-row justify-between items-center">
-                                {field.value
-                                  ? new Date(field.value).toLocaleDateString()
-                                  : "*DATE FILED"}
-                                <CalendarDays size={20} />
-                              </div>
-                            </button>
-                          }
-                        />
-                        <PopoverContent
-                          className="w-auto overflow-hidden p-0"
-                          align="start"
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            defaultMonth={field.value}
-                            onSelect={(date) => {
-                              field.onChange(date);
-                              setOpenDateFiled(false);
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    )}
-                  />
-                  {errors.date_filed && (
-                    <div className={errorClass}>
-                      {errors.date_filed.message}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <p className="text-sm leading-6 text-gray-700">
+              That I have read, or someone has read to me, and I thoroughly
+              understand the foregoing application and that I signed the same
+              and this affidavit in the presence of the officer who administered
+              the oath; and that each and every statement in the application is
+              true and correct.
+            </p>
           </div>
           <div>
             <div className="flex flex-col gap-1 text-left">

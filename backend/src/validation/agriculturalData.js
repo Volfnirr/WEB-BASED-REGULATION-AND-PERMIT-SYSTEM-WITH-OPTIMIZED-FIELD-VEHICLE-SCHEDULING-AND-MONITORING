@@ -1,222 +1,174 @@
 import { z } from "zod";
 import { getBarangays } from "../lib/ph-pampanga/ph-address.js";
 
+const hasValue = (value) =>
+  value !== undefined && value !== null && String(value).trim() !== "";
+const optionalText = (max = 1000) =>
+  z.preprocess(
+    (value) => (typeof value === "string" && !value.trim() ? undefined : value),
+    z.string().trim().max(max, "This value is too long").optional(),
+  );
+const requiredText = (label, max = 255) =>
+  z
+    .string(label + " is required")
+    .trim()
+    .min(1, label + " is required")
+    .max(max, label + " is too long");
+const personName = (label) =>
+  requiredText(label).regex(
+    /^[\p{L}\p{M} .'-]+$/u,
+    "Use letters, spaces, apostrophes, periods, or hyphens",
+  );
+function todayInManila() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const part = (type) => parts.find((entry) => entry.type === type).value;
+  return part("year") + "-" + part("month") + "-" + part("day");
+}
+function isRealDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + "T00:00:00.000Z");
+  return (
+    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
+}
+const dateField = (label) =>
+  requiredText(label, 10)
+    .refine(isRealDate, "Choose a valid full date")
+    .refine(
+      (value) => !isRealDate(value) || value <= todayInManila(),
+      label + " cannot be in the future",
+    );
+const optionalDate = (label) =>
+  z.preprocess(
+    (value) => (value === "" || value === null ? undefined : value),
+    dateField(label).optional(),
+  );
+
 export const agriculturalFormSchema = z
   .object({
-    lastName: z
-      .string()
-      .trim()
-      .min(1, "Last name is required")
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
-    firstName: z
-      .string()
-      .trim()
-      .min(1, "First name is required")
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
-    middleName: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
-      .optional(),
-    extension: z
-      .string()
-      .trim()
-      .max(50, "Maximum 50 characters allowed")
-      .regex(/^[A-Za-z\s]*$/, "Only letters and spaces are allowed")
-      .optional(),
-    contactNumber: z
-      .string()
-      .trim()
-      .regex(/^09\d{9}$/, "Enter a valid 11-digit mobile number")
-      .max(11, "Maximum 11 characters allowed"),
-    birthday: z.coerce.date({
-      required_error: "Date of birth is required",
-      invalid_type_error: "Please enter a valid date",
-    }),
-    sex: z.enum(["Male", "Female"], {
-      errorMap: () => ({ message: "Please select a sex" }),
-    }),
-    citizenship: z
-      .string()
-      .trim()
-      .min(1, "Citizenship is required")
-      .max(100, "Maximum 100 characters allowed")
-      .regex(/^[A-Za-z\s-]+$/, "Only letters, spaces, and hyphens are allowed"),
-    naturalBorn: z.boolean({
-      error: "Please select an option",
-    }),
-    civilStatus: z.enum(["SINGLE", "MARRIED", "WIDOWED", "ANNULLED"], {
-      errorMap: () => ({ message: "Please select civil status" }),
-    }),
-    spouse: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
-    mailingAddress: z
-      .string()
-      .trim()
-      .min(1, "Complete mailing address is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    province: z
-      .string()
-      .trim()
-      .min(1, "Province is required")
-      .max(255, "Maximum 255 characters allowed"),
-    municipality: z
-      .string()
-      .trim()
-      .min(1, "Municipality is required")
-      .max(255, "Maximum 255 characters allowed"),
-    barangay: z
-      .string()
-      .trim()
-      .min(1, "Barangay is required")
-      .max(255, "Maximum 255 characters allowed"),
-    location: z
-      .string()
-      .trim()
-      .min(1, "Specific locations is required")
-      .max(500, "Maximum 500 characters allowed"),
-    lotNo: z
-      .string()
-      .trim()
-      .min(1, "Lot number is required")
-      .max(255, "Maximum 255 characters allowed"),
-    surveyNo: z
-      .string()
-      .trim()
-      .max(255, "Maximum 255 characters allowed")
-      .optional(),
-    landAreaSqm: z.coerce
-      .number({ required_error: "Land area is required" })
-      .positive("Land area must be greater than 0")
-      .max(99999999.99, "Value is too large for the database")
-      .refine(
-        (val) => Math.round(val * 100) === val * 100,
-        "Land area can only have up to 2 decimal places",
-      ),
-    cultivationDate: z
-      .string()
-      .trim()
-      .refine(
-        (val) =>
-          /^(\d{4}|(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4})$/.test(val),
-        { message: "Enter a date as MM/DD/YYYY or just YYYY" },
-      ),
-    improvements: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    transferee_info: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    heir_info: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    evidence: z
-      .string()
-      .trim()
-      .max(1000, "Maximum 1000 characters allowed")
-      .optional(),
-    heir1_name: z
-      .string()
-      .trim()
-      .min(1, "Heir 1 name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    heir1_address: z
-      .string()
-      .trim()
-      .min(1, "Heir 1 adaress is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    heir2_name: z
-      .string()
-      .trim()
-      .min(1, "Heir 2 name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    heir2_address: z
-      .string()
-      .trim()
-      .min(1, "Heir 2 name is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    heir_rep_name: z
-      .string()
-      .trim()
-      .min(1, "Name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    heirs_of: z
-      .string()
-      .trim()
-      .min(1, "Ancestor name is required")
-      .max(255, "Maximum 255 characters allowed"),
-    witness1_name: z
-      .string()
-      .trim()
-      .min(1, "Witness 1 name is required")
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
-    witness1_address: z
-      .string()
-      .trim()
-      .min(1, "Witness 1 address is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    witness2_name: z
-      .string()
-      .trim()
-      .min(1, "Witness 2 name is required")
-      .max(255, "Maximum 255 characters allowed")
-      .regex(/^[A-Za-z\s]+$/, "Only letters and spaces are allowed"),
-    witness2_address: z
-      .string()
-      .trim()
-      .min(1, "Witness 2 address is required")
-      .max(1000, "Maximum 1000 characters allowed"),
-    date_filed: z.coerce.date({
-      required_error: "Date filed is required",
-      invalid_type_error: "Please enter a valid date",
-    }),
-    privacyConsent: z.literal(true, {
-      errorMap: () => ({ message: "Please check this box to proceed" }),
-    }),
+    lastName: personName("Last name"),
+    firstName: personName("First name"),
+    middleName: optionalText(255),
+    contactNumber: requiredText("Contact number", 11).regex(
+      /^09\d{9}$/,
+      "Enter a valid 11-digit mobile number starting with 09",
+    ),
+    birthday: dateField("Date of birth"),
+    sex: z.enum(["Male", "Female"], "Please select a sex"),
+    citizenship: requiredText("Citizenship", 100),
+    naturalBorn: z.boolean("Please select Yes or No"),
+    civilStatus: z.enum(
+      ["SINGLE", "MARRIED", "DIVORCED", "SEPARATED", "WIDOWED"],
+      "Please select a civil status",
+    ),
+    spouse: optionalText(255),
+    mailingAddress: requiredText("Mailing address", 1000),
+    province: requiredText("Province"),
+    municipality: requiredText("Municipality"),
+    barangay: requiredText("Barangay"),
+    location: requiredText("Specific location", 500),
+    lotNo: requiredText("Lot number"),
+    surveyNo: requiredText("Survey number"),
+    landAreaSqm: z.preprocess(
+      (value) => (value === "" || value === null ? undefined : value),
+      z.coerce
+        .number("Enter a valid land area")
+        .positive("Land area must be greater than 0")
+        .max(99999999.99, "Land area is too large")
+        .refine(
+          (value) => Math.abs(value * 100 - Math.round(value * 100)) < 0.000001,
+          "Use at most 2 decimal places",
+        ),
+    ),
+    cultivationDate: dateField("Cultivation date"),
+    improvements: optionalText(),
+    firstCultivatorName: optionalText(255),
+    firstCultivationDate: optionalDate("First cultivation date"),
+    previousCultivatorName: optionalText(255),
+    previousCultivatorDeathDate: optionalDate("Date of death"),
+    heirImprovements: optionalText(),
+    evidence: optionalText(),
+    heir1_name: optionalText(255),
+    heir1_address: optionalText(),
+    heir2_name: optionalText(255),
+    heir2_address: optionalText(),
+    heir3_name: optionalText(255),
+    heir3_address: optionalText(),
+    unoccupiedPeriodAndReason: optionalText(),
+    witness1_name: personName("Witness 1 name"),
+    witness1_address: requiredText("Witness 1 address", 1000),
+    witness2_name: personName("Witness 2 name"),
+    witness2_address: requiredText("Witness 2 address", 1000),
     assignedInspector: z
-      .number({ error: "Please assign an inspector" })
+      .number("Please select an inspector")
       .int("Invalid inspector")
-      .positive("Invalid inspector")
-      .max(9999, "Invalid inspector"),
+      .positive("Please select an inspector"),
+    privacyConsent: z.literal(true, "Please agree to the Data Privacy Consent"),
   })
-  .refine(
-    (data) => {
-      if (data.civilStatus === "MARRIED") return !!data.spouse?.trim();
-      return true;
-    },
-    {
-      path: ["spouse"],
-      message: "Spouse name is required for married applicants",
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.civilStatus !== "MARRIED") return !data.spouse?.trim();
-      return true;
-    },
-    {
-      path: ["spouse"],
-      message: "Spouse name should only be set if civil status is Married",
-    },
-  )
-  .refine(
-    (data) =>
-      getBarangays(data.province, data.municipality).includes(data.barangay),
-    {
-      path: ["barangay"],
-      message: "Selected barangay does not belong to the selected municipality",
-    },
-  );
+  .superRefine((data, context) => {
+    const requireField = (key, message) => {
+      if (!hasValue(data[key]))
+        context.addIssue({ code: "custom", path: [key], message });
+    };
+    if (data.civilStatus === "MARRIED")
+      requireField("spouse", "Spouse name is required when Married");
+    if (data.civilStatus !== "MARRIED" && hasValue(data.spouse)) {
+      context.addIssue({
+        code: "custom",
+        path: ["spouse"],
+        message: "Spouse name applies only when Married",
+      });
+    }
+    if (
+      !getBarangays(data.province, data.municipality).includes(data.barangay)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["barangay"],
+        message: "Select a barangay belonging to the selected municipality",
+      });
+    }
+    const transferee = ["firstCultivatorName", "firstCultivationDate"];
+    if (transferee.some((key) => hasValue(data[key]))) {
+      transferee.forEach((key) =>
+        requireField(
+          key,
+          "Complete both transferee fields or leave both blank",
+        ),
+      );
+    }
+    const heirCore = [
+      "previousCultivatorName",
+      "previousCultivatorDeathDate",
+      "heirImprovements",
+      "evidence",
+    ];
+    const heirRows = [1, 2, 3].flatMap((row) => [
+      "heir" + row + "_name",
+      "heir" + row + "_address",
+    ]);
+    if ([...heirCore, ...heirRows].some((key) => hasValue(data[key]))) {
+      heirCore.forEach((key) =>
+        requireField(
+          key,
+          "Complete this field when using the heir section (enter None for no improvements)",
+        ),
+      );
+    }
+    for (const row of [1, 2, 3]) {
+      const pair = ["heir" + row + "_name", "heir" + row + "_address"];
+      if (pair.some((key) => hasValue(data[key]))) {
+        pair.forEach((key) =>
+          requireField(
+            key,
+            "Enter both the heir name and address, or leave this row blank",
+          ),
+        );
+      }
+    }
+  });
