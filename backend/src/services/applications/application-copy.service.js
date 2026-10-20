@@ -26,11 +26,7 @@ export function parseApplicationIds(input) {
     );
   return [...new Set(input.map(Number))];
 }
-export function requireApplicationAccess(
-  application,
-  user,
-  exportOnly = false,
-) {
+export function requireApplicationAccess(application, user) {
   if (!user?.id) throw new ApplicationCopyError(401, "Login required.");
   if (!["USER", "APPLICATION_ADMIN"].includes(user.role))
     throw new ApplicationCopyError(403, "You cannot access this application.");
@@ -42,11 +38,6 @@ export function requireApplicationAccess(
       : application.assignedToId === user.id;
   if (!permitted)
     throw new ApplicationCopyError(403, "You cannot access this application.");
-  if (exportOnly && application.status !== "APPROVED")
-    throw new ApplicationCopyError(
-      409,
-      "Only approved applications can be exported. Refresh the list and try again.",
-    );
 }
 function serializeValue(value, type) {
   if (value === null || value === undefined) return null;
@@ -139,7 +130,7 @@ export function toApplicationCopy(application) {
     submittedAt: application.submittedAt,
     reviewedAt: application.reviewedAt,
     remarks: application.remarks,
-    canExport: application.status === "APPROVED",
+    canExport: true,
     sections,
   };
 }
@@ -175,7 +166,7 @@ for (const definition of FORM_DEFINITIONS) {
   };
 }
 export function createApplicationCopyService(db) {
-  async function load(client, ids, user, exportOnly) {
+  async function load(client, ids, user) {
     const applications = await client.application.findMany({
       where: {
         id: {
@@ -186,13 +177,13 @@ export function createApplicationCopyService(db) {
     });
     return ids.map((id) => {
       const app = applications.find((a) => a.id === id);
-      requireApplicationAccess(app, user, exportOnly);
+      requireApplicationAccess(app, user);
       return toApplicationCopy(app);
     });
   }
   return {
     async detail(id, user) {
-      const [copy] = await load(db, parseApplicationIds([id]), user, false);
+      const [copy] = await load(db, parseApplicationIds([id]), user);
       return copy;
     },
     async exportCopies(input, user, build) {
@@ -203,17 +194,19 @@ export function createApplicationCopyService(db) {
           403,
           "Export is unavailable for this account.",
         );
-      return db.$transaction(
+      const copies = await db.$transaction(
         async (tx) => {
           for (const id of [...ids].sort((a, b) => a - b))
             await tx.$queryRaw`SELECT id FROM application WHERE id = ${id} FOR SHARE`;
-          return build(await load(tx, ids, user, true));
+          return load(tx, ids, user);
         },
         {
           maxWait: 5000,
           timeout: 30000,
         },
       );
+      // Build private downloads after the authorized database snapshot is read.
+      return build(copies);
     },
   };
 }

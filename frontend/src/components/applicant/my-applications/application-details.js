@@ -10,6 +10,8 @@ import {
   downloadApplicationCopies,
 } from "@/lib/api/applications/application-copies";
 import { StatusColor } from "@/lib/status";
+import ApplicationExportFormat from "./export-format";
+import useExportFormat from "./use-export-format";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function LoadingBar({ className = "" }) {
@@ -110,6 +112,7 @@ function fieldText(field) {
 export default function ApplicationDetails({ id }) {
   const { user, isPending } = useUser();
   const [busy, setBusy] = useState(false);
+  const [format, setFormat] = useExportFormat();
   const [error, setError] = useState("");
   const query = useQuery({
     queryKey: ["application-copy", user?.id, id],
@@ -153,7 +156,7 @@ export default function ApplicationDetails({ id }) {
     setBusy(true);
     setError("");
     try {
-      await downloadApplicationCopies([copy.id]);
+      await downloadApplicationCopies([copy.id], format);
     } catch (failure) {
       setError(failure.message);
       query.refetch();
@@ -173,15 +176,24 @@ export default function ApplicationDetails({ id }) {
           <p className="mt-2 text-sm text-[#52657D]">{copy.referenceNo}</p>
         </div>
         {copy.canExport && (
-          <button
-            type="button"
-            disabled={busy || query.isFetching}
-            onClick={download}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#005221] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          >
-            <Download size={16} />
-            {busy ? "Preparing download…" : "Export DOCX"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <ApplicationExportFormat
+              value={format}
+              onChange={setFormat}
+              disabled={busy}
+            />
+            <button
+              type="button"
+              disabled={busy || query.isFetching}
+              onClick={download}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#005221] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            >
+              <Download size={16} />
+              {busy
+                ? "Preparing download…"
+                : `Download ${format === "pdf" ? "PDF" : "Word"}`}
+            </button>
+          </div>
         )}
       </header>
       {error && (
@@ -250,8 +262,8 @@ export default function ApplicationDetails({ id }) {
           <p className="flex gap-2 text-xs leading-5 text-[#52657D]">
             <FileText className="h-4 w-4 shrink-0" />
             {copy.canExport
-              ? "Download an approved application copy for your records."
-              : "DOCX export becomes available after approval."}
+              ? "Download a Word or PDF copy of this application at any status."
+              : "Application export is unavailable."}
           </p>
         </aside>
       </div>

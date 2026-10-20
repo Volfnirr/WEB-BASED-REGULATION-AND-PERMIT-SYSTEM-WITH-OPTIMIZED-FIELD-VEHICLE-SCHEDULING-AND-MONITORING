@@ -13,11 +13,11 @@ export async function getApplicationCopy(id, signal) {
   if (!response.ok) throw new Error(await errorMessage(response));
   return (await response.json()).application;
 }
-export async function downloadApplicationCopies(ids) {
+export async function downloadApplicationCopies(ids, format = "pdf") {
   const single = ids.length === 1;
   const response = await fetch(
     single
-      ? `${base()}/${encodeURIComponent(ids[0])}/export`
+      ? `${base()}/${encodeURIComponent(ids[0])}/export?format=${encodeURIComponent(format)}`
       : `${base()}/export`,
     {
       method: single ? "GET" : "POST",
@@ -31,6 +31,7 @@ export async function downloadApplicationCopies(ids) {
             },
             body: JSON.stringify({
               ids,
+              format,
             }),
           }),
     },
@@ -43,7 +44,7 @@ export async function downloadApplicationCopies(ids) {
     /filename="([^"]+)"/.exec(
       response.headers.get("Content-Disposition") || "",
     )?.[1] ||
-    (single ? `application-${ids[0]}.docx` : "approved-applications.zip");
+    (single ? `application-${ids[0]}.${format}` : `applications-${format}.zip`);
   document.body.appendChild(link);
   link.click();
   link.remove();

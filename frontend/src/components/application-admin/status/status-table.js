@@ -15,17 +15,18 @@ import { localDateTime } from "@/lib/local-date";
 import { StatusColor } from "@/lib/status";
 import { useUser } from "@/lib/context/account-info-context";
 import { downloadApplicationCopies } from "@/lib/api/applications/application-copies";
+import ApplicationExportFormat from "@/components/applicant/my-applications/export-format";
+import useExportFormat from "@/components/applicant/my-applications/use-export-format";
 export default function ViewApplicationsTable({ columns, rows }) {
   const { user } = useUser();
+  const [format, setFormat] = useExportFormat();
   const [selected, setSelected] = useState([]),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const eligible = rows
     .filter(
       (row) =>
-        row.status === "APPROVED" &&
-        row.assignedToId === user?.id &&
-        user?.role === "APPLICATION_ADMIN",
+        row.assignedToId === user?.id && user?.role === "APPLICATION_ADMIN",
     )
     .map((row) => row.id);
   const active = selected.filter((id) => eligible.includes(id));
@@ -34,7 +35,7 @@ export default function ViewApplicationsTable({ columns, rows }) {
     setBusy(true);
     setError("");
     try {
-      await downloadApplicationCopies(ids);
+      await downloadApplicationCopies(ids, format);
     } catch (failure) {
       setError(failure.message);
     } finally {
@@ -48,9 +49,14 @@ export default function ViewApplicationsTable({ columns, rows }) {
           <p className="text-xs text-[#52657D]" role="status">
             {active.length
               ? `${active.length} selected`
-              : "Select approved applications assigned to you."}
+              : "Select applications assigned to you."}
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <ApplicationExportFormat
+              value={format}
+              onChange={setFormat}
+              disabled={busy}
+            />
             {active.length > 0 && (
               <button
                 type="button"
@@ -85,7 +91,7 @@ export default function ViewApplicationsTable({ columns, rows }) {
               <TableHead className="w-12 px-4">
                 <input
                   type="checkbox"
-                  aria-label="Select all approved applications on this page"
+                  aria-label="Select all accessible applications on this page"
                   checked={active.length === eligible.length}
                   disabled={busy}
                   onChange={(event) =>
@@ -178,7 +184,7 @@ export default function ViewApplicationsTable({ columns, rows }) {
                       className="flex min-h-9 items-center gap-1 text-xs text-[#52657D] cursor-pointer"
                     >
                       <Download size={13} />
-                      Export DOCX
+                      {`Export ${format === "pdf" ? "PDF" : "Word"}`}
                     </button>
                   )}
                 </TableCell>

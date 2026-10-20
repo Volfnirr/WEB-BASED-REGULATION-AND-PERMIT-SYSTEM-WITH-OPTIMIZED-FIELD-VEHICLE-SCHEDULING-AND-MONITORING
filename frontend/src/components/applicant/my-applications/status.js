@@ -20,6 +20,8 @@ import {
 import { StatusColor } from "@/lib/status";
 import { downloadApplicationCopies } from "@/lib/api/applications/application-copies";
 import { displayApplicationDate } from "./application-details";
+import ApplicationExportFormat from "./export-format";
+import useExportFormat from "./use-export-format";
 const services = [
   ["agricultural", "Agricultural Free Patent"],
   ["residential", "Residential Free Patent"],
@@ -59,6 +61,7 @@ function ApplicationFilter({ label, value, options, onChange }) {
   );
 }
 export default function ApplicationStatusPage({ initialData = [] }) {
+  const [format, setFormat] = useExportFormat();
   const [search, setSearch] = useState(""),
     [status, setStatus] = useState(""),
     [service, setService] = useState(""),
@@ -87,9 +90,7 @@ export default function ApplicationStatusPage({ initialData = [] }) {
   const pages = Math.max(1, Math.ceil(filtered.length / 8)),
     current = Math.min(page, pages),
     rows = filtered.slice((current - 1) * 8, current * 8),
-    eligible = rows
-      .filter((row) => row.status === "APPROVED")
-      .map((row) => row.id),
+    eligible = rows.map((row) => row.id),
     active = selected.filter((id) => eligible.includes(id));
   function change(setter, value) {
     setter(value);
@@ -106,7 +107,7 @@ export default function ApplicationStatusPage({ initialData = [] }) {
     setBusy(true);
     setError("");
     try {
-      await downloadApplicationCopies(ids);
+      await downloadApplicationCopies(ids, format);
     } catch (failure) {
       setError(failure.message);
     } finally {
@@ -126,14 +127,10 @@ export default function ApplicationStatusPage({ initialData = [] }) {
     <input
       type="checkbox"
       checked={active.includes(row.id)}
-      disabled={row.status !== "APPROVED" || busy}
+      disabled={busy}
       onChange={() => toggle(row.id)}
       aria-label={`Select ${row.referenceNo} for export`}
-      title={
-        row.status === "APPROVED"
-          ? "Select for export"
-          : "Available after approval"
-      }
+      title="Select for export"
       className="h-4 w-4 accent-green-800 disabled:opacity-30"
     />
   );
@@ -141,8 +138,8 @@ export default function ApplicationStatusPage({ initialData = [] }) {
     <div className="w-full min-w-0 space-y-5 text-[#172033]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[#52657D]">
-          Track your requests, review submitted details, and download approved
-          copies.
+          Track your requests, review submitted details, and download Word or
+          PDF copies at any status.
         </p>
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -254,9 +251,14 @@ export default function ApplicationStatusPage({ initialData = [] }) {
           <p className="text-xs text-[#52657D]" role="status">
             {active.length
               ? `${active.length} selected`
-              : "Select approved applications to export."}
+              : "Select applications to export."}
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <ApplicationExportFormat
+              value={format}
+              onChange={setFormat}
+              disabled={busy}
+            />
             {active.length > 0 && (
               <button
                 type="button"
@@ -335,7 +337,7 @@ export default function ApplicationStatusPage({ initialData = [] }) {
                     <th className="w-12 p-4">
                       <input
                         type="checkbox"
-                        aria-label="Select all approved applications on this page"
+                        aria-label="Select all applications on this page"
                         checked={
                           eligible.length > 0 &&
                           active.length === eligible.length
@@ -394,7 +396,7 @@ export default function ApplicationStatusPage({ initialData = [] }) {
                       </td>
                       <td className="px-4 py-3">
                         {view(row)}
-                        {row.status === "APPROVED" && (
+                        {
                           <button
                             type="button"
                             disabled={busy}
@@ -402,9 +404,9 @@ export default function ApplicationStatusPage({ initialData = [] }) {
                             className="flex min-h-9 items-center gap-1 text-xs text-[#52657D] cursor-pointer"
                           >
                             <Download size={13} />
-                            Export DOCX
+                            {`Export ${format === "pdf" ? "PDF" : "Word"}`}
                           </button>
-                        )}
+                        }
                       </td>
                     </tr>
                   ))}
@@ -438,7 +440,7 @@ export default function ApplicationStatusPage({ initialData = [] }) {
                   </p>
                   <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                     {view(row)}
-                    {row.status === "APPROVED" && (
+                    {
                       <button
                         type="button"
                         disabled={busy}
@@ -448,7 +450,7 @@ export default function ApplicationStatusPage({ initialData = [] }) {
                         <Download size={14} />
                         Export DOCX
                       </button>
-                    )}
+                    }
                   </div>
                 </article>
               ))}
