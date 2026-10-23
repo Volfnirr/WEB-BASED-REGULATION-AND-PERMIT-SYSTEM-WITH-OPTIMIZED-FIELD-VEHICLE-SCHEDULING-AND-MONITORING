@@ -27,6 +27,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 const navigation = [
   { label: "Home", href: "#home" },
@@ -311,13 +312,14 @@ export default function LandingPageUI() {
 
         <div className="mx-auto flex min-h-[650px] max-w-[1440px] items-center px-5 py-20 sm:min-h-[700px] sm:px-8 lg:min-h-[760px] lg:px-12">
           <div className="max-w-3xl text-white">
-            {/* <div
-              className="hero-item mb-7 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold tracking-wide text-emerald-50 backdrop-blur sm:text-sm"
+            <div
+              className="hero-item mb-7 inline-flex items-center gap-2 rounded-full border border-red-700 bg-red/10 px-4 py-2 text-xs font-semibold tracking-wide text-red-150 backdrop-blur sm:text-sm"
               style={{ animationDelay: "100ms" }}
             >
-              <Leaf size={15} className="text-lime-300" />
-              Official Online Services Portal
-            </div> */}
+              <AlertCircle size={15} className="hidden md:block text-red-500" />
+              This system is currently in the testing phase and has not yet been
+              official deployed.
+            </div>
 
             <h1
               className="hero-item max-w-4xl text-[clamp(3.1rem,8vw,7.4rem)] font-black leading-[0.93] tracking-[-0.06em]"
