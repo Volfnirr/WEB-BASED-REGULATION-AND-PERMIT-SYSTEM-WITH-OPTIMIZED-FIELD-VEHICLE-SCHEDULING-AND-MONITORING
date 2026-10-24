@@ -1,5 +1,6 @@
 "use client";
-
+import { useState } from "react";
+import InspectorAssignment from "@/components/review/inspector-assignment";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -86,8 +87,12 @@ function Statement({ children }) {
 export default function ReviewResidential({ data, params }) {
   const router = useRouter();
   const { residentialFormData: residential } = data.residentialFormData;
-  const inspectorDisplay = data.residentialFormData.displayName;
   const application = residential?.application;
+  const [savedInspector, setSavedInspector] = useState(
+    residential?.assignedInspector ?? null,
+  );
+  const [inspectorBusy, setInspectorBusy] = useState(false);
+  const [inspectorDirty, setInspectorDirty] = useState(false);
   const {
     register,
     handleSubmit,
@@ -98,6 +103,11 @@ export default function ReviewResidential({ data, params }) {
   const onSubmit = async (formData) => {
     try {
       if (formData.action === "APPROVED") {
+        if (inspectorBusy || inspectorDirty || !savedInspector) {
+          throw new Error(
+            "Assign and save an inspector before approving this application",
+          );
+        }
         await approveApplication({ id: params, remarks: formData.remarks });
       } else {
         await rejectApplication({ id: params, remarks: formData.remarks });
@@ -345,14 +355,19 @@ export default function ReviewResidential({ data, params }) {
                     {localDate(application?.submittedAt)}
                   </dd>
                 </div>
-                <div>
-                  <dt className="text-xs text-[#52657D]">Assigned inspector</dt>
-                  <dd className="mt-1 break-words">
-                    {inspectorDisplay || "Not provided"}
-                  </dd>
-                </div>
               </dl>
             </section>
+
+            <InspectorAssignment
+              applicationId={params}
+              status={residential?.application?.status}
+              assignedInspector={residential?.assignedInspector}
+              displayName={data.residentialFormData.displayName}
+              onSaved={setSavedInspector}
+              onBusyChange={setInspectorBusy}
+              onDirtyChange={setInspectorDirty}
+              reviewSubmitting={isSubmitting}
+            />
 
             {application?.status === "PENDING" && (
               <section className="rounded-xl border border-[#E1E5E9] bg-white p-5">
@@ -402,7 +417,7 @@ export default function ReviewResidential({ data, params }) {
                     )}
                   </div>
                   <button
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || inspectorBusy}
                     className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#005221] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
                   >
                     {isSubmitting ? <Spinner data-icon /> : "Submit review"}

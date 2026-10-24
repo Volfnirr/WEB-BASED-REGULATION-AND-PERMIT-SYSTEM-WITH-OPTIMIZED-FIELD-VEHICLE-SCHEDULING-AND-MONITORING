@@ -25,7 +25,6 @@ import { CalendarDays } from "lucide-react";
 
 import { submitAgriculturalForm } from "@/lib/api/applications/agricultural/agricultural";
 import { Spinner } from "@/components/ui/spinner";
-import { toTitleCase } from "@/lib/title-case";
 import AddressFields from "@/components/forms/AddressFields";
 import { getBarangays } from "@/lib/ph-pampanga/ph-address";
 
@@ -132,10 +131,6 @@ const agriculturalFormSchema = z
     witness1_address: requiredText("Witness 1 address", 1000),
     witness2_name: personName("Witness 2 name"),
     witness2_address: requiredText("Witness 2 address", 1000),
-    assignedInspector: z
-      .number("Please select an inspector")
-      .int("Invalid inspector")
-      .positive("Please select an inspector"),
     privacyConsent: z.literal(true, "Please agree to the Data Privacy Consent"),
   })
   .superRefine((data, context) => {
@@ -344,7 +339,7 @@ function AgriculturalField({
   );
 }
 
-export default function AgriculturalForm({ inspectors = [] }) {
+export default function AgriculturalForm() {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const errorClass = "text-red-600 text-xs font-medium";
@@ -1015,79 +1010,6 @@ export default function AgriculturalForm({ inspectors = [] }) {
               the oath; and that each and every statement in the application is
               true and correct.
             </p>
-          </div>
-          <div>
-            <div className="flex flex-col gap-1 text-left">
-              <label className="text-left text-sm font-bold text-gray-800 mb-1 uppercase">
-                Select Inspector
-              </label>
-
-              <Controller
-                name="assignedInspector"
-                control={control}
-                render={({ field }) => {
-                  const selectedInspector = inspectors.find(
-                    (i) => i.id === field.value,
-                  );
-
-                  const getInspectorName = (i) =>
-                    toTitleCase(
-                      [i.firstName, i.middleName, i.lastName, i.extensionName]
-                        .filter(Boolean)
-                        .join(" "),
-                    );
-
-                  return (
-                    <Select
-                      value={field.value ? String(field.value) : ""}
-                      onValueChange={(value) => field.onChange(Number(value))}
-                    >
-                      <SelectTrigger className={inputClass}>
-                        {selectedInspector ? (
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="font-semibold text-gray-800 truncate">
-                              {getInspectorName(selectedInspector)}
-                            </span>
-
-                            <span className="text-gray-400 truncate">
-                              ({selectedInspector.email})
-                            </span>
-                          </div>
-                        ) : (
-                          <SelectValue placeholder="Select an inspector" />
-                        )}
-                      </SelectTrigger>
-
-                      <SelectContent className="max-h-80">
-                        <SelectGroup>
-                          {inspectors
-                            .filter((i) => i.isAvailable)
-                            .map((i) => (
-                              <SelectItem key={i.id} value={String(i.id)}>
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span className="font-semibold text-green-800 truncate">
-                                    {getInspectorName(i)}
-                                  </span>
-
-                                  <span className="text-xs text-gray-400 truncate">
-                                    ({i.email})
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  );
-                }}
-              />
-
-              {errors.assignedInspector && (
-                <div className={errorClass}>
-                  {errors.assignedInspector.message}
-                </div>
-              )}
-            </div>
           </div>
           {/* DATA PRIVACY CONSENT SECTION */}
           <div className="bg-[#f0f7f3] border border-[#d1e5d8] rounded-lg p-4 text-sm text-gray-700">

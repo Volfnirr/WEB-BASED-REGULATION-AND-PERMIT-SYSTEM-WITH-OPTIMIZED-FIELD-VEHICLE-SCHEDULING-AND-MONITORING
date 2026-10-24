@@ -104,10 +104,6 @@ export const agriculturalFormSchema = z
     witness1_address: requiredText("Witness 1 address", 1000),
     witness2_name: personName("Witness 2 name"),
     witness2_address: requiredText("Witness 2 address", 1000),
-    assignedInspector: z
-      .number("Please select an inspector")
-      .int("Invalid inspector")
-      .positive("Please select an inspector"),
     privacyConsent: z.literal(true, "Please agree to the Data Privacy Consent"),
   })
   .superRefine((data, context) => {

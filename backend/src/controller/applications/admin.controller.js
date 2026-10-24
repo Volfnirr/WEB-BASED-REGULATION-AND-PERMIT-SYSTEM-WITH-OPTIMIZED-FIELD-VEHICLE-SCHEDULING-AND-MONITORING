@@ -3,7 +3,11 @@ import * as appAdmin from "../../services/applications/admin.service.js";
 import { createAuditLog } from "../../services/audit.service.js";
 import { sendEmail } from "../../email/sendEmail.js";
 import { statusEmail } from "../../email/templates.js";
-
+import {
+  pendingReview,
+  requireInspector,
+  applicationId,
+} from "../../services/applications/inspector-workflow.js";
 const VALID_STATUSES = ["PENDING", "APPROVED", "REJECTED"];
 
 export async function listAppAdminAssignedApplications(req, res) {
@@ -126,6 +130,7 @@ export async function selfAssignApplication(req, res) {
 // Approve an application
 export async function approveApplication(req, res) {
   try {
+    applicationId(req.params.id);
     const applicationData = await appAdmin.getApplicationForSelfAssign(
       req.params.id,
     );
@@ -153,6 +158,12 @@ export async function approveApplication(req, res) {
     }
 
     const application = await prisma.$transaction(async (tx) => {
+      const currentApplication = await pendingReview(
+        req.params.id,
+        req.user,
+        tx,
+      );
+      requireInspector(currentApplication);
       const approvedApplication = await appAdmin.approveApplication(
         req.params.id,
         req.validatedData.remarks,
@@ -191,6 +202,36 @@ export async function approveApplication(req, res) {
       application,
     });
   } catch (error) {
+    if (error.message === "INVALID_APPLICATION_ID") {
+      return res.status(400).json({
+        message: "Invalid application id",
+      });
+    }
+
+    if (error.message === "APPLICATION_NOT_FOUND") {
+      return res.status(404).json({
+        message: "Application not found",
+      });
+    }
+
+    if (error.message === "APPLICATION_REVIEW_FORBIDDEN") {
+      return res.status(403).json({
+        message: "You cannot review this application",
+      });
+    }
+
+    if (error.message === "APPLICATION_NOT_PENDING") {
+      return res.status(409).json({
+        message: "Only pending applications can be changed",
+      });
+    }
+
+    if (error.message === "INSPECTOR_REQUIRED") {
+      return res.status(409).json({
+        message:
+          "Assign and save an inspector before approving this application",
+      });
+    }
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
@@ -199,6 +240,7 @@ export async function approveApplication(req, res) {
 //Reject an application
 export async function rejectApplication(req, res) {
   try {
+    applicationId(req.params.id);
     const applicationData = await appAdmin.getApplicationForSelfAssign(
       req.params.id,
     );
@@ -226,6 +268,7 @@ export async function rejectApplication(req, res) {
     }
 
     const application = await prisma.$transaction(async (tx) => {
+      await pendingReview(req.params.id, req.user, tx);
       const rejectedApplication = await appAdmin.rejectApplication(
         req.params.id,
         req.validatedData.remarks,
@@ -264,6 +307,29 @@ export async function rejectApplication(req, res) {
       application,
     });
   } catch (error) {
+    if (error.message === "INVALID_APPLICATION_ID") {
+      return res.status(400).json({
+        message: "Invalid application id",
+      });
+    }
+
+    if (error.message === "APPLICATION_NOT_FOUND") {
+      return res.status(404).json({
+        message: "Application not found",
+      });
+    }
+
+    if (error.message === "APPLICATION_REVIEW_FORBIDDEN") {
+      return res.status(403).json({
+        message: "You cannot review this application",
+      });
+    }
+
+    if (error.message === "APPLICATION_NOT_PENDING") {
+      return res.status(409).json({
+        message: "Only pending applications can be changed",
+      });
+    }
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }

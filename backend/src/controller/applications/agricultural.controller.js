@@ -108,9 +108,13 @@ export async function viewAgriculturalFormById(req, res) {
         req.params.id,
       );
 
+    if (!applicationData) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
     if (applicationData.assignedToId !== req.user.id) {
-      return res.status(409).json({
-        message: `You are not authorized to access this form data, the only one with access is ${applicationData.user_application_assignedToIdTouser.name}`,
+      return res.status(403).json({
+        message: "You are not authorized to access this application review",
       });
     }
 
@@ -118,24 +122,18 @@ export async function viewAgriculturalFormById(req, res) {
       req.params.id,
     );
 
-    const inspectorName = await prisma.inspectors.findUnique({
-      where: {
-        id: Number(agriculturalFormData.assignedInspector),
-      },
-    });
-
-    console.log(inspectorName);
-    const displayName = `${toTitleCase(
-      [
-        inspectorName.firstName,
-        inspectorName.middleName,
-        inspectorName.lastName,
-        inspectorName.extensionName,
-      ]
-        .filter(Boolean)
-        .join(" "),
-    )} (${inspectorName.email})`;
-    console.log(displayName);
+    if (!agriculturalFormData) {
+      return res.status(404).json({ message: "Application form not found" });
+    }
+    const inspectorName =
+      agriculturalFormData.assignedInspector == null
+        ? null
+        : await prisma.inspectors.findUnique({
+            where: { id: agriculturalFormData.assignedInspector },
+          });
+    const displayName = inspectorName
+      ? `${toTitleCase([inspectorName.firstName, inspectorName.middleName, inspectorName.lastName, inspectorName.extensionName].filter(Boolean).join(" "))} (${inspectorName.email})`
+      : "Not assigned";
 
     const newAgri = {
       agriculturalFormData,

@@ -151,11 +151,6 @@ const residentialFormSchema = z
     motherLotOccupationDate: optionalPastOrTodayDate(
       "Date of occupation cannot be in the future",
     ),
-    assignedInspector: z
-      .number({ error: "Please assign an inspector" })
-      .int("Invalid inspector")
-      .positive("Invalid inspector")
-      .max(9999, "Invalid inspector"),
   })
   .superRefine((data, context) => {
     if (data.civilStatus === "MARRIED" && !hasValue(data.spouseName)) {
@@ -350,7 +345,7 @@ function Requirement({ children }) {
   );
 }
 
-export default function ResidentialForm({ inspectors = [] }) {
+export default function ResidentialForm() {
   const inputClass =
     "w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5632] focus:border-transparent text-sm text-gray-800 placeholder-gray-400 transition-colors";
   const [showModal, setShowModal] = useState(false);
@@ -399,18 +394,6 @@ export default function ResidentialForm({ inspectors = [] }) {
       );
     }
   };
-
-  const inspectorName = (inspector) =>
-    toTitleCase(
-      [
-        inspector.firstName,
-        inspector.middleName,
-        inspector.lastName,
-        inspector.extensionName,
-      ]
-        .filter(Boolean)
-        .join(" "),
-    );
 
   return (
     <div className="flex min-h-7/8 w-full flex-1 items-center justify-center overflow-y-auto bg-[#4DAA74] p-4 mb-2 md:p-8 font-sans relative">
@@ -913,59 +896,6 @@ export default function ResidentialForm({ inspectors = [] }) {
                 and correct.
               </p>
             </div>
-          </section>
-
-          <section>
-            <label className="mb-1 block text-sm font-bold uppercase text-gray-800">
-              Select Inspector
-            </label>
-            <Controller
-              name="assignedInspector"
-              control={control}
-              render={({ field }) => {
-                const selectedInspector = inspectors.find(
-                  (item) => item.id === field.value,
-                );
-                return (
-                  <Select
-                    value={field.value ? String(field.value) : ""}
-                    onValueChange={(value) => field.onChange(Number(value))}
-                  >
-                    <SelectTrigger className={inputClass}>
-                      {selectedInspector ? (
-                        <div className="flex min-w-0 items-center gap-2">
-                          <span className="truncate font-semibold text-gray-800">
-                            {inspectorName(selectedInspector)}
-                          </span>
-                          <span className="truncate text-gray-400">
-                            ({selectedInspector.email})
-                          </span>
-                        </div>
-                      ) : (
-                        <SelectValue placeholder="Select an inspector" />
-                      )}
-                    </SelectTrigger>
-                    <SelectContent className="max-h-80">
-                      <SelectGroup>
-                        {inspectors
-                          .filter((item) => item.isAvailable)
-                          .map((item) => (
-                            <SelectItem key={item.id} value={String(item.id)}>
-                              <span className="font-semibold text-green-800">
-                                {inspectorName(item)}
-                              </span>{" "}
-                              <span className="text-xs text-gray-400">
-                                ({item.email})
-                              </span>
-                            </SelectItem>
-                          ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                );
-              }}
-            />
-            <ErrorMessage error={errors.assignedInspector} />
           </section>
 
           <section className="rounded-lg border border-[#d1e5d8] bg-[#f0f7f3] p-4 text-sm text-gray-700">

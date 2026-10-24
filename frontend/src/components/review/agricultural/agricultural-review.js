@@ -1,5 +1,6 @@
 "use client";
-
+import { useState } from "react";
+import InspectorAssignment from "@/components/review/inspector-assignment";
 import { localDate } from "@/lib/local-date";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -66,7 +67,11 @@ function submittedAge(birthday, submittedAt) {
 
 export default function ReviewAgricultural({ data, params }) {
   const agricultural = data.agriculturalFormData.agriculturalFormData;
-  const display = data.agriculturalFormData.displayName;
+  const [savedInspector, setSavedInspector] = useState(
+    agricultural?.assignedInspector ?? null,
+  );
+  const [inspectorBusy, setInspectorBusy] = useState(false);
+  const [inspectorDirty, setInspectorDirty] = useState(false);
   const router = useRouter();
   const applicantName = [
     agricultural?.firstName,
@@ -107,6 +112,11 @@ export default function ReviewAgricultural({ data, params }) {
   const onSubmit = async (formData) => {
     try {
       if (formData.action === "APPROVED") {
+        if (inspectorBusy || inspectorDirty || !savedInspector) {
+          throw new Error(
+            "Assign and save an inspector before approving this application",
+          );
+        }
         await approveApplication({
           id: params,
           remarks: formData.remarks,
@@ -630,17 +640,16 @@ export default function ReviewAgricultural({ data, params }) {
               Date filed: {agriculturalDate(agricultural?.dateFiled)}
             </p>
           </div>
-          <div className="flex flex-col text-left gap-2">
-            <p className="text-xs font-bold text-gray-700 mb-1 mt-4">
-              Inspector info
-            </p>
-
-            <div
-              className={`${readOnlyInputClass} whitespace-normal wrap-break-words min-w-0`}
-            >
-              {display ?? "-"}
-            </div>
-          </div>
+          <InspectorAssignment
+            applicationId={params}
+            status={agricultural?.application?.status}
+            assignedInspector={agricultural?.assignedInspector}
+            displayName={data.agriculturalFormData.displayName}
+            onSaved={setSavedInspector}
+            onBusyChange={setInspectorBusy}
+            onDirtyChange={setInspectorDirty}
+            reviewSubmitting={isSubmitting}
+          />
 
           {agricultural?.application?.status === "PENDING" && (
             /* Bottom Action Buttons (for the Reviewer) */
@@ -704,7 +713,10 @@ export default function ReviewAgricultural({ data, params }) {
                       )}
                     </div>
                   </div>
-                  <button className="bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700">
+                  <button
+                    disabled={isSubmitting || inspectorBusy}
+                    className="disabled:opacity-50 bg-green-600 flex justify-center text-center text-white py-3 rounded-lg hover:bg-green-700"
+                  >
                     {isSubmitting ? <Spinner data-icon /> : "Submit Review"}
                   </button>
                 </div>

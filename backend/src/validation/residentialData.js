@@ -128,12 +128,6 @@ export const residentialFormSchema = z
     motherLotOccupationDate: optionalPastOrTodayDate(
       "Date of occupation cannot be in the future",
     ),
-
-    assignedInspector: z
-      .number({ error: "Please assign an inspector" })
-      .int("Invalid inspector")
-      .positive("Invalid inspector")
-      .max(9999, "Invalid inspector"),
   })
   .strict()
   .superRefine((data, context) => {

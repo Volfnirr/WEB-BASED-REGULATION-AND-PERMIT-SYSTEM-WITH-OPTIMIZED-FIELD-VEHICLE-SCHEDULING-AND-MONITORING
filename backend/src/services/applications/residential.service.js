@@ -46,7 +46,6 @@ export async function submitResidentialForm(
           marriageWithName: data.marriageWithName || null,
           forceAbsenceOccupationDate: data.forceAbsenceOccupationDate || null,
           motherLotOccupationDate: data.motherLotOccupationDate || null,
-          assignedInspector: data.assignedInspector,
         },
       },
     },
@@ -227,12 +226,4 @@ export async function listResidentialAppStatus() {
       rejected: weeklyRejected,
     },
   };
-}
-
-export async function listAllAvailInspectors(params) {
-  return prisma.inspectors.findMany({
-    where: {
-      isAvailable: true,
-    },
-  });
 }

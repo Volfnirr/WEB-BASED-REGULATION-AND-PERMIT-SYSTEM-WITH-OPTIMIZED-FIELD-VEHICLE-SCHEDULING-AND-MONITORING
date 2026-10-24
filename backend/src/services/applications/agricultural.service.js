@@ -80,7 +80,6 @@ export async function submitAgriculturalForm(
           witness2Name: data.witness2_name,
           witness2Address: data.witness2_address,
           dateFiled: filingDateInManila(),
-          assignedInspector: data.assignedInspector,
         },
       },
     },

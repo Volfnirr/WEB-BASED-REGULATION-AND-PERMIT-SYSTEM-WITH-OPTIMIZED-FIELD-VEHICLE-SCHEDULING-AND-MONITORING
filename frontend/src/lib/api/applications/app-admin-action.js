@@ -76,3 +76,32 @@ export async function getAdminlistAllApplicationsStatus() {
 
   return result;
 }
+
+export async function getAvailableInspectors() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/inspectors`,
+    { credentials: "include", cache: "no-store" },
+  );
+  const result = await response.json();
+  if (!response.ok)
+    throw new Error(result.message || "Unable to load inspectors");
+  return result;
+}
+
+export async function saveApplicationInspector(id, assignedInspector) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/${id}/inspector`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assignedInspector }),
+    },
+  );
+  const result = await response.json();
+  if (!response.ok)
+    throw new Error(
+      result.message || result.errorMessage || "Unable to save inspector",
+    );
+  return result;
+}

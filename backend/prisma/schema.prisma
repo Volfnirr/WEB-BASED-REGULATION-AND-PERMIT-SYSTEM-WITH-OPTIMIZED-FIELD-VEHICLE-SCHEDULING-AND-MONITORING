@@ -230,7 +230,7 @@ model residential_free_patent_form {
   affidavitDate                    DateTime?                    @db.Date
   affidavitLocation                String?
   applicantFullName                String?
-  assignedInspector                Int
+  assignedInspector                Int?
   sex                              sex?
   surveyNo                         String?
   occupationDate                   DateTime?
@@ -245,7 +245,7 @@ model residential_free_patent_form {
   forceAbsenceOccupationDate       DateTime?
   motherLotOccupationDate          DateTime?
   application                      application                  @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  inspectors                       inspectors                   @relation(fields: [assignedInspector], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  inspectors                       inspectors?                  @relation(fields: [assignedInspector], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model tree_cutting_permit_form {

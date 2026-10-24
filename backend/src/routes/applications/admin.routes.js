@@ -8,6 +8,12 @@ import { remarks } from "../../validation/remarksData.js";
 import { validate } from "../../middleware/validate.js";
 
 import {
+  availableInspectors,
+  assignInspector,
+} from "../../controller/applications/inspector.controller.js";
+import { inspectorAssignment } from "../../validation/inspectorAssignmentData.js";
+
+import {
   listAppAdminAssignedApplications,
   listAllApplicationsStatus,
   selfAssignApplication,
@@ -65,6 +71,23 @@ router.patch(
   requireAppAdminServices([1, 2, 3, 4]),
   validate(remarks),
   rejectApplication,
+);
+
+router.get(
+  "/inspectors",
+  requireAuthentication,
+  requireAuthorization("APPLICATION_ADMIN"),
+  requireAppAdminServices([1, 2]),
+  availableInspectors,
+);
+
+router.patch(
+  "/:id/inspector",
+  requireAuthentication,
+  requireAuthorization("APPLICATION_ADMIN"),
+  requireAppAdminServices([1, 2]),
+  validate(inspectorAssignment),
+  assignInspector,
 );
 
 export default router;

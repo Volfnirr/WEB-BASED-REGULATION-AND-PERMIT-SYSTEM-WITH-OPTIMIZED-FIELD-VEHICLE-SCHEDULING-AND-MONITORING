@@ -103,9 +103,13 @@ export async function viewResidentialFormById(req, res) {
         req.params.id,
       );
 
+    if (!applicationData) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
     if (applicationData.assignedToId !== req.user.id) {
-      return res.status(409).json({
-        message: `You are not authorized to access this form data, the only one with access is ${applicationData.user_application_assignedToIdTouser.name}`,
+      return res.status(403).json({
+        message: "You are not authorized to access this application review",
       });
     }
 
@@ -113,22 +117,19 @@ export async function viewResidentialFormById(req, res) {
       req.params.id,
     );
 
-    const inspectorName = await prisma.inspectors.findUnique({
-      where: {
-        id: Number(residentialFormData.assignedInspector),
-      },
-    });
+    if (!residentialFormData) {
+      return res.status(404).json({ message: "Application form not found" });
+    }
+    const inspectorName =
+      residentialFormData.assignedInspector == null
+        ? null
+        : await prisma.inspectors.findUnique({
+            where: { id: residentialFormData.assignedInspector },
+          });
+    const displayName = inspectorName
+      ? `${toTitleCase([inspectorName.firstName, inspectorName.middleName, inspectorName.lastName, inspectorName.extensionName].filter(Boolean).join(" "))} (${inspectorName.email})`
+      : "Not assigned";
 
-    const displayName = `${toTitleCase(
-      [
-        inspectorName.firstName,
-        inspectorName.middleName,
-        inspectorName.lastName,
-        inspectorName.extensionName,
-      ]
-        .filter(Boolean)
-        .join(" "),
-    )} (${inspectorName.email})`;
     const newResi = {
       residentialFormData,
       displayName,
@@ -150,19 +151,6 @@ export async function listResidentialAppStatus(req, res) {
     return res.status(200).json({
       message: "Successfully get the residential application status",
       status,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-}
-
-export async function listAllAvailInspectors(req, res) {
-  try {
-    const inspectors = await residentialService.listAllAvailInspectors();
-    return res.status(200).json({
-      message: "Successfully retrieved the residential application status",
-      inspectors,
     });
   } catch (error) {
     console.log(error);
